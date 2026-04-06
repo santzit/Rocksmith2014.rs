@@ -104,12 +104,7 @@ fn parse_chord_mask(e: &BytesStart) -> ChordMask {
 
 #[derive(Debug, Clone, Default)]
 pub struct Tuning {
-    pub string0: i16,
-    pub string1: i16,
-    pub string2: i16,
-    pub string3: i16,
-    pub string4: i16,
-    pub string5: i16,
+    pub strings: [i16; 6],
 }
 
 #[derive(Debug, Clone, Default)]
@@ -155,8 +150,8 @@ pub struct ArrangementProperties {
 }
 
 #[derive(Debug, Clone, Default)]
-pub struct ArrangementMeta {
-    pub title: String,
+pub struct MetaData {
+    pub song_name: String,
     pub arrangement: String,
     pub part: i32,
     pub offset: i32,
@@ -191,7 +186,7 @@ pub struct Ebeat {
 
 #[derive(Debug, Clone, Default)]
 pub struct Phrase {
-    pub max_difficulty: i32,
+    pub max_difficulty: u8,
     pub name: String,
     pub disparity: i8,
     pub ignore: i8,
@@ -201,9 +196,9 @@ pub struct Phrase {
 #[derive(Debug, Clone, Default)]
 pub struct PhraseIteration {
     pub time: i32,
-    pub phrase_id: i32,
-    pub variation: String,
-    pub hero_levels: Vec<HeroLevel>,
+    pub end_time: i32,
+    pub phrase_id: u32,
+    pub hero_levels: Option<Vec<HeroLevel>>,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -227,22 +222,22 @@ pub struct PhraseProperty {
     pub difficulty: i32,
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone)]
 pub struct ChordTemplate {
     pub chord_name: String,
     pub display_name: String,
-    pub finger0: i8,
-    pub finger1: i8,
-    pub finger2: i8,
-    pub finger3: i8,
-    pub finger4: i8,
-    pub finger5: i8,
-    pub fret0: i8,
-    pub fret1: i8,
-    pub fret2: i8,
-    pub fret3: i8,
-    pub fret4: i8,
-    pub fret5: i8,
+    pub fingers: [i8; 6],
+    pub frets: [i8; 6],
+}
+impl Default for ChordTemplate {
+    fn default() -> Self {
+        Self {
+            chord_name: String::new(),
+            display_name: String::new(),
+            fingers: [-1; 6],
+            frets: [-1; 6],
+        }
+    }
 }
 
 #[derive(Debug, Clone, Default)]
@@ -310,7 +305,7 @@ pub struct HandShape {
 
 #[derive(Debug, Clone, Default)]
 pub struct Level {
-    pub difficulty: i32,
+    pub difficulty: i8,
     pub anchors: Vec<Anchor>,
     pub hand_shapes: Vec<HandShape>,
     pub notes: Vec<Note>,
@@ -340,7 +335,7 @@ pub struct ToneChange {
 
 #[derive(Debug, Clone, Default)]
 pub struct InstrumentalArrangement {
-    pub meta: ArrangementMeta,
+    pub meta: MetaData,
     pub ebeats: Vec<Ebeat>,
     pub phrases: Vec<Phrase>,
     pub phrase_iterations: Vec<PhraseIteration>,
@@ -744,19 +739,19 @@ fn parse_phrase_iterations(reader: &mut Reader<&[u8]>) -> Result<Vec<PhraseItera
         match reader.read_event()? {
             XmlEvent::Empty(e) if e.name().as_ref() == b"phraseIteration" => {
                 let time = get_attr(&e, b"time").map(|s| time_from_str(&s)).unwrap_or(0);
+                let end_time = get_attr(&e, b"endTime").map(|s| time_from_str(&s)).unwrap_or(0);
                 let phrase_id = get_attr(&e, b"phraseId").and_then(|s| s.parse().ok()).unwrap_or(0);
-                let variation = get_attr(&e, b"variation").unwrap_or_default();
-                iterations.push(PhraseIteration { time, phrase_id, variation, hero_levels: vec![] });
+                iterations.push(PhraseIteration { time, end_time, phrase_id, hero_levels: None });
             }
             XmlEvent::Start(e) if e.name().as_ref() == b"phraseIteration" => {
                 let time = get_attr(&e, b"time").map(|s| time_from_str(&s)).unwrap_or(0);
+                let end_time = get_attr(&e, b"endTime").map(|s| time_from_str(&s)).unwrap_or(0);
                 let phrase_id = get_attr(&e, b"phraseId").and_then(|s| s.parse().ok()).unwrap_or(0);
-                let variation = get_attr(&e, b"variation").unwrap_or_default();
-                let mut hero_levels = vec![];
+                let mut hero_levels = None;
                 loop {
                     match reader.read_event()? {
                         XmlEvent::Start(ce) if ce.name().as_ref() == b"heroLevels" => {
-                            hero_levels = parse_hero_levels(reader)?;
+                            hero_levels = Some(parse_hero_levels(reader)?);
                         }
                         XmlEvent::Empty(ce) if ce.name().as_ref() == b"heroLevels" => {}
                         XmlEvent::End(ce) if ce.name().as_ref() == b"phraseIteration" => break,
@@ -764,7 +759,7 @@ fn parse_phrase_iterations(reader: &mut Reader<&[u8]>) -> Result<Vec<PhraseItera
                         _ => {}
                     }
                 }
-                iterations.push(PhraseIteration { time, phrase_id, variation, hero_levels });
+                iterations.push(PhraseIteration { time, end_time, phrase_id, hero_levels });
             }
             XmlEvent::End(e) if e.name().as_ref() == b"phraseIterations" => break,
             XmlEvent::Eof => break,
@@ -798,18 +793,22 @@ fn parse_chord_template_from_elem(e: &BytesStart) -> ChordTemplate {
     ChordTemplate {
         chord_name: get_attr(e, b"chordName").unwrap_or_default(),
         display_name: get_attr(e, b"displayName").unwrap_or_default(),
-        finger0: get_attr(e, b"finger0").and_then(|s| s.parse().ok()).unwrap_or(-1),
-        finger1: get_attr(e, b"finger1").and_then(|s| s.parse().ok()).unwrap_or(-1),
-        finger2: get_attr(e, b"finger2").and_then(|s| s.parse().ok()).unwrap_or(-1),
-        finger3: get_attr(e, b"finger3").and_then(|s| s.parse().ok()).unwrap_or(-1),
-        finger4: get_attr(e, b"finger4").and_then(|s| s.parse().ok()).unwrap_or(-1),
-        finger5: get_attr(e, b"finger5").and_then(|s| s.parse().ok()).unwrap_or(-1),
-        fret0: get_attr(e, b"fret0").and_then(|s| s.parse().ok()).unwrap_or(-1),
-        fret1: get_attr(e, b"fret1").and_then(|s| s.parse().ok()).unwrap_or(-1),
-        fret2: get_attr(e, b"fret2").and_then(|s| s.parse().ok()).unwrap_or(-1),
-        fret3: get_attr(e, b"fret3").and_then(|s| s.parse().ok()).unwrap_or(-1),
-        fret4: get_attr(e, b"fret4").and_then(|s| s.parse().ok()).unwrap_or(-1),
-        fret5: get_attr(e, b"fret5").and_then(|s| s.parse().ok()).unwrap_or(-1),
+        fingers: [
+            get_attr(e, b"finger0").and_then(|s| s.parse().ok()).unwrap_or(-1),
+            get_attr(e, b"finger1").and_then(|s| s.parse().ok()).unwrap_or(-1),
+            get_attr(e, b"finger2").and_then(|s| s.parse().ok()).unwrap_or(-1),
+            get_attr(e, b"finger3").and_then(|s| s.parse().ok()).unwrap_or(-1),
+            get_attr(e, b"finger4").and_then(|s| s.parse().ok()).unwrap_or(-1),
+            get_attr(e, b"finger5").and_then(|s| s.parse().ok()).unwrap_or(-1),
+        ],
+        frets: [
+            get_attr(e, b"fret0").and_then(|s| s.parse().ok()).unwrap_or(-1),
+            get_attr(e, b"fret1").and_then(|s| s.parse().ok()).unwrap_or(-1),
+            get_attr(e, b"fret2").and_then(|s| s.parse().ok()).unwrap_or(-1),
+            get_attr(e, b"fret3").and_then(|s| s.parse().ok()).unwrap_or(-1),
+            get_attr(e, b"fret4").and_then(|s| s.parse().ok()).unwrap_or(-1),
+            get_attr(e, b"fret5").and_then(|s| s.parse().ok()).unwrap_or(-1),
+        ],
     }
 }
 
@@ -990,12 +989,14 @@ fn parse_arrangement_properties(e: &BytesStart) -> ArrangementProperties {
 
 fn parse_tuning(e: &BytesStart) -> Tuning {
     Tuning {
-        string0: get_attr(e, b"string0").and_then(|s| s.parse().ok()).unwrap_or(0),
-        string1: get_attr(e, b"string1").and_then(|s| s.parse().ok()).unwrap_or(0),
-        string2: get_attr(e, b"string2").and_then(|s| s.parse().ok()).unwrap_or(0),
-        string3: get_attr(e, b"string3").and_then(|s| s.parse().ok()).unwrap_or(0),
-        string4: get_attr(e, b"string4").and_then(|s| s.parse().ok()).unwrap_or(0),
-        string5: get_attr(e, b"string5").and_then(|s| s.parse().ok()).unwrap_or(0),
+        strings: [
+            get_attr(e, b"string0").and_then(|s| s.parse().ok()).unwrap_or(0),
+            get_attr(e, b"string1").and_then(|s| s.parse().ok()).unwrap_or(0),
+            get_attr(e, b"string2").and_then(|s| s.parse().ok()).unwrap_or(0),
+            get_attr(e, b"string3").and_then(|s| s.parse().ok()).unwrap_or(0),
+            get_attr(e, b"string4").and_then(|s| s.parse().ok()).unwrap_or(0),
+            get_attr(e, b"string5").and_then(|s| s.parse().ok()).unwrap_or(0),
+        ],
     }
 }
 
@@ -1007,7 +1008,7 @@ fn parse_song(reader: &mut Reader<&[u8]>) -> Result<InstrumentalArrangement> {
             XmlEvent::Start(e) => {
                 match e.name().as_ref() {
                     b"title" => {
-                        arr.meta.title = read_text_content(reader)?;
+                        arr.meta.song_name = read_text_content(reader)?;
                     }
                     b"arrangement" => {
                         arr.meta.arrangement = read_text_content(reader)?;
@@ -1311,7 +1312,7 @@ impl InstrumentalArrangement {
         let song_start = BytesStart::new("song");
         writer.write_event(XmlEvent::Start(song_start))?;
 
-        write_text_element(&mut writer, "title", &self.meta.title)?;
+        write_text_element(&mut writer, "title", &self.meta.song_name)?;
         write_text_element(&mut writer, "arrangement", &self.meta.arrangement)?;
         write_text_element(&mut writer, "part", &self.meta.part.to_string())?;
         write_text_element(&mut writer, "offset", &format!("{:.3}", self.meta.offset as f64 / 1000.0))?;
@@ -1329,12 +1330,12 @@ impl InstrumentalArrangement {
         writer.write_event(XmlEvent::Empty(avg_tempo_elem))?;
 
         let mut tuning_elem = BytesStart::new("tuning");
-        tuning_elem.push_attribute(("string0", self.meta.tuning.string0.to_string().as_str()));
-        tuning_elem.push_attribute(("string1", self.meta.tuning.string1.to_string().as_str()));
-        tuning_elem.push_attribute(("string2", self.meta.tuning.string2.to_string().as_str()));
-        tuning_elem.push_attribute(("string3", self.meta.tuning.string3.to_string().as_str()));
-        tuning_elem.push_attribute(("string4", self.meta.tuning.string4.to_string().as_str()));
-        tuning_elem.push_attribute(("string5", self.meta.tuning.string5.to_string().as_str()));
+        tuning_elem.push_attribute(("string0", self.meta.tuning.strings[0].to_string().as_str()));
+        tuning_elem.push_attribute(("string1", self.meta.tuning.strings[1].to_string().as_str()));
+        tuning_elem.push_attribute(("string2", self.meta.tuning.strings[2].to_string().as_str()));
+        tuning_elem.push_attribute(("string3", self.meta.tuning.strings[3].to_string().as_str()));
+        tuning_elem.push_attribute(("string4", self.meta.tuning.strings[4].to_string().as_str()));
+        tuning_elem.push_attribute(("string5", self.meta.tuning.strings[5].to_string().as_str()));
         writer.write_event(XmlEvent::Empty(tuning_elem))?;
 
         write_text_element(&mut writer, "capo", &self.meta.capo.to_string())?;
@@ -1453,16 +1454,19 @@ impl InstrumentalArrangement {
             for pi in &self.phrase_iterations {
                 let mut pie = BytesStart::new("phraseIteration");
                 pie.push_attribute(("time", time_to_str(pi.time).as_str()));
+                pie.push_attribute(("endTime", time_to_str(pi.end_time).as_str()));
                 pie.push_attribute(("phraseId", pi.phrase_id.to_string().as_str()));
-                pie.push_attribute(("variation", pi.variation.as_str()));
-                if pi.hero_levels.is_empty() {
+                pie.push_attribute(("variation", ""));  // variation field removed from struct; write empty for XML compatibility
+                let hero_levels_nonempty = pi.hero_levels.as_ref().map_or(false, |v| !v.is_empty());
+                if !hero_levels_nonempty {
                     writer.write_event(XmlEvent::Empty(pie))?;
                 } else {
                     writer.write_event(XmlEvent::Start(pie))?;
+                    let hls = pi.hero_levels.as_ref().unwrap();
                     let mut hl_elem = BytesStart::new("heroLevels");
-                    hl_elem.push_attribute(("count", pi.hero_levels.len().to_string().as_str()));
+                    hl_elem.push_attribute(("count", hls.len().to_string().as_str()));
                     writer.write_event(XmlEvent::Start(hl_elem))?;
-                    for hl in &pi.hero_levels {
+                    for hl in hls {
                         let mut hle = BytesStart::new("heroLevel");
                         hle.push_attribute(("hero", hl.hero.to_string().as_str()));
                         hle.push_attribute(("difficulty", hl.difficulty.to_string().as_str()));
@@ -1496,18 +1500,18 @@ impl InstrumentalArrangement {
                 let mut cte = BytesStart::new("chordTemplate");
                 cte.push_attribute(("chordName", ct.chord_name.as_str()));
                 cte.push_attribute(("displayName", ct.display_name.as_str()));
-                cte.push_attribute(("finger0", ct.finger0.to_string().as_str()));
-                cte.push_attribute(("finger1", ct.finger1.to_string().as_str()));
-                cte.push_attribute(("finger2", ct.finger2.to_string().as_str()));
-                cte.push_attribute(("finger3", ct.finger3.to_string().as_str()));
-                cte.push_attribute(("finger4", ct.finger4.to_string().as_str()));
-                cte.push_attribute(("finger5", ct.finger5.to_string().as_str()));
-                cte.push_attribute(("fret0", ct.fret0.to_string().as_str()));
-                cte.push_attribute(("fret1", ct.fret1.to_string().as_str()));
-                cte.push_attribute(("fret2", ct.fret2.to_string().as_str()));
-                cte.push_attribute(("fret3", ct.fret3.to_string().as_str()));
-                cte.push_attribute(("fret4", ct.fret4.to_string().as_str()));
-                cte.push_attribute(("fret5", ct.fret5.to_string().as_str()));
+                cte.push_attribute(("finger0", ct.fingers[0].to_string().as_str()));
+                cte.push_attribute(("finger1", ct.fingers[1].to_string().as_str()));
+                cte.push_attribute(("finger2", ct.fingers[2].to_string().as_str()));
+                cte.push_attribute(("finger3", ct.fingers[3].to_string().as_str()));
+                cte.push_attribute(("finger4", ct.fingers[4].to_string().as_str()));
+                cte.push_attribute(("finger5", ct.fingers[5].to_string().as_str()));
+                cte.push_attribute(("fret0", ct.frets[0].to_string().as_str()));
+                cte.push_attribute(("fret1", ct.frets[1].to_string().as_str()));
+                cte.push_attribute(("fret2", ct.frets[2].to_string().as_str()));
+                cte.push_attribute(("fret3", ct.frets[3].to_string().as_str()));
+                cte.push_attribute(("fret4", ct.frets[4].to_string().as_str()));
+                cte.push_attribute(("fret5", ct.frets[5].to_string().as_str()));
                 writer.write_event(XmlEvent::Empty(cte))?;
             }
             writer.write_event(XmlEvent::End(BytesEnd::new("chordTemplates")))?;
@@ -1721,7 +1725,7 @@ mod tests {
     #[test]
     fn test_parse_basic() {
         let arr = InstrumentalArrangement::from_xml(SIMPLE_XML).unwrap();
-        assert_eq!(arr.meta.title, "Test Song");
+        assert_eq!(arr.meta.song_name, "Test Song");
         assert_eq!(arr.meta.arrangement, "Lead");
         assert_eq!(arr.meta.artist_name, "Test Artist");
         assert_eq!(arr.meta.song_length, 120_000);
@@ -1773,7 +1777,7 @@ mod tests {
         let arr = InstrumentalArrangement::from_xml(SIMPLE_XML).unwrap();
         let xml_out = arr.to_xml().unwrap();
         let arr2 = InstrumentalArrangement::from_xml(&xml_out).unwrap();
-        assert_eq!(arr.meta.title, arr2.meta.title);
+        assert_eq!(arr.meta.song_name, arr2.meta.song_name);
         assert_eq!(arr.ebeats.len(), arr2.ebeats.len());
         assert_eq!(arr.levels[0].notes.len(), arr2.levels[0].notes.len());
         assert_eq!(arr.levels[0].notes[0].fret, arr2.levels[0].notes[0].fret);
