@@ -1,5 +1,7 @@
 [workspace]
 members = [
     "rocksmith2014-psarc",
+    "rocksmith2014-sng",
+    "rocksmith2014-xml",
 ]
 resolver = "2"
