@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<song version="8">
+  <title>Test CDLC Song</title>
+  <arrangement>Lead</arrangement>
+  <part>1</part>
+  <offset>0</offset>
+  <centOffset>0</centOffset>
+  <songLength>60.000</songLength>
+  <startBeat>0</startBeat>
+  <averageTempo>120.000</averageTempo>
+  <arrangementProperties represent="1" standardTuning="1" nonStandardChords="0"
+    barreChords="0" powerChords="0" dropDPower="0" openChords="1" fingerPicking="0"
+    pickDirection="0" doubleStops="0" palmMutes="1" harmonics="0" pinchHarmonics="0"
+    hopo="1" tremolo="0" slides="1" unpitchedSlides="0" bends="1" tapping="0"
+    vibrato="0" fretHandMutes="0" slapPop="0" twoFingerPicking="0" fifthsAndOctaves="0"
+    syncopation="0" bassPick="0" sustain="0" pathLead="1" pathRhythm="0" pathBass="0" />
+  <lastConversionDateTime>2024-01-01 12:00:00</lastConversionDateTime>
+  <tuning string0="0" string1="0" string2="0" string3="0" string4="0" string5="0" />
+  <capo>0</capo>
+  <artistName>Test Artist</artistName>
+  <artistNameSort>Test Artist</artistNameSort>
+  <albumName>Test Album</albumName>
+  <albumNameSort>Test Album</albumNameSort>
+  <albumYear>2024</albumYear>
+  <albumArt>0</albumArt>
+  <crowdSpeed>1</crowdSpeed>
+  <tonebase>Tone_A</tonebase>
+  <tonea>Tone_A</tonea>
+  <toneb></toneb>
+  <tonec></tonec>
+  <toned></toned>
+  <phrases count="2">
+    <phrase maxDifficulty="0" disparity="0" ignore="0" solo="0" name="COUNT" />
+    <phrase maxDifficulty="0" disparity="0" ignore="0" solo="0" name="END" />
+  </phrases>
+  <phraseIterations count="2">
+    <phraseIteration time="0.000" phraseId="0" variation="" />
+    <phraseIteration time="50.000" phraseId="1" variation="" />
+  </phraseIterations>
+  <newLinkedDiffs count="0" />
+  <linkedDiffs count="0" />
+  <phraseProperties count="0" />
+  <chordTemplates count="1">
+    <chordTemplate chordName="G" displayName="G" finger0="-1" finger1="-1" finger2="0"
+      finger3="0" finger4="0" finger5="-1" fret0="-1" fret1="-1" fret2="3" fret3="2"
+      fret4="0" fret5="-1" />
+  </chordTemplates>
+  <fretHandMuteTemplates count="0" />
+  <ebeats count="4">
+    <ebeat time="0.000" measure="1" />
+    <ebeat time="0.500" measure="-1" />
+    <ebeat time="1.000" measure="2" />
+    <ebeat time="1.500" measure="-1" />
+  </ebeats>
+  <tones count="0" />
+  <sections count="1">
+    <section name="noguitar" number="1" startTime="0.000" endTime="60.000"
+      startPhraseIterationId="0" endPhraseIterationId="1" />
+  </sections>
+  <events count="0" />
+  <levels count="1">
+    <level difficulty="0">
+      <anchors count="1">
+        <anchor time="1.000" endTime="10.000" fret="5" width="4" />
+      </anchors>
+      <handShapes count="1">
+        <handShape chordId="0" startTime="2.000" endTime="2.500" />
+      </handShapes>
+      <notes count="3">
+        <note time="1.000" linkNext="0" accent="0" bend="0" fret="5" hammerOn="0"
+          harmonic="0" hopo="0" ignore="0" leftHand="-1" mute="0" palmMute="0"
+          pluck="-1" pullOff="0" slap="-1" slideTo="-1" string="0" sustain="0"
+          tremolo="0" harmonicPinch="0" pickDirection="0" rightHand="-1"
+          slideUnpitchTo="-1" tap="0" vibrato="0" />
+        <note time="2.000" linkNext="0" accent="0" bend="0" fret="7" hammerOn="0"
+          harmonic="0" hopo="0" ignore="0" leftHand="-1" mute="0" palmMute="0"
+          pluck="-1" pullOff="0" slap="-1" slideTo="-1" string="1" sustain="0"
+          tremolo="0" harmonicPinch="0" pickDirection="0" rightHand="-1"
+          slideUnpitchTo="-1" tap="0" vibrato="0" />
+        <note time="3.000" linkNext="0" accent="0" bend="0" fret="5" hammerOn="0"
+          harmonic="0" hopo="0" ignore="0" leftHand="-1" mute="0" palmMute="0"
+          pluck="-1" pullOff="0" slap="-1" slideTo="-1" string="2" sustain="0.500"
+          tremolo="0" harmonicPinch="0" pickDirection="0" rightHand="-1"
+          slideUnpitchTo="-1" tap="0" vibrato="0" />
+      </notes>
+      <chords count="1">
+        <chord time="4.000" linkNext="0" accent="0" fretHandMute="0" highDensity="0"
+          ignore="0" palmMute="0" hopo="0" strum="down" chordId="0" />
+      </chords>
+      <fretHandMutes count="0" />
+    </level>
+  </levels>
+</song>
