@@ -1,0 +1,5 @@
+[workspace]
+members = [
+    "rocksmith2014-psarc",
+]
+resolver = "2"
