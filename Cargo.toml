@@ -1,0 +1,24 @@
+[package]
+name = "rocksmith2014"
+version = "0.1.0"
+edition = "2021"
+description = "Rust FFI library for reading Rocksmith 2014 PSARC, SNG and XML files"
+license = "MIT"
+repository = "https://github.com/santzit/Rocksmith2014.rs"
+
+[lib]
+crate-type = ["cdylib", "staticlib", "rlib"]
+
+[dependencies]
+aes = "0.8"
+ctr = "0.9"
+cfb-mode = "0.8"
+cipher = "0.4"
+flate2 = "1"
+md-5 = "0.10"
+quick-xml = { version = "0.37", features = ["serialize"] }
+serde = { version = "1", features = ["derive"] }
+thiserror = "2"
+
+[dev-dependencies]
+tempfile = "3"
