@@ -52,10 +52,11 @@ bitflags::bitflags! {
     pub struct ChordMask: u8 {
         const FRET_HAND_MUTE = 1 << 0;
         const HIGH_DENSITY   = 1 << 1;
-        const IGNORE         = 1 << 2;
-        const LINK_NEXT      = 1 << 3;
-        const PALM_MUTE      = 1 << 4;
-        const ACCENT         = 1 << 5;
+        const HOPO           = 1 << 2;
+        const IGNORE         = 1 << 3;
+        const LINK_NEXT      = 1 << 4;
+        const PALM_MUTE      = 1 << 5;
+        const ACCENT         = 1 << 6;
     }
 }
 
@@ -93,6 +94,7 @@ fn parse_chord_mask(e: &BytesStart) -> ChordMask {
     let mut mask = ChordMask::empty();
     if flag_from_attr(e, b"fretHandMute") { mask |= ChordMask::FRET_HAND_MUTE; }
     if flag_from_attr(e, b"highDensity")  { mask |= ChordMask::HIGH_DENSITY; }
+    if flag_from_attr(e, b"hopo")         { mask |= ChordMask::HOPO; }
     if flag_from_attr(e, b"ignore")       { mask |= ChordMask::IGNORE; }
     if flag_from_attr(e, b"linkNext")     { mask |= ChordMask::LINK_NEXT; }
     if flag_from_attr(e, b"palmMute")     { mask |= ChordMask::PALM_MUTE; }
@@ -1025,6 +1027,14 @@ fn parse_song(reader: &mut Reader<&[u8]>) -> Result<InstrumentalArrangement> {
                         let s = read_text_content(reader)?;
                         arr.meta.cent_offset = s.parse().unwrap_or(0.0);
                     }
+                    b"songLength" => {
+                        let s = read_text_content(reader)?;
+                        arr.meta.song_length = time_from_str(&s);
+                    }
+                    b"averageTempo" => {
+                        let s = read_text_content(reader)?;
+                        arr.meta.average_tempo = s.parse().unwrap_or(120.0);
+                    }
                     b"lastConversionDateTime" => {
                         arr.meta.last_conversion_date_time = read_text_content(reader)?;
                     }
@@ -1258,6 +1268,7 @@ fn write_chord(writer: &mut Writer<Vec<u8>>, chord: &Chord) -> Result<()> {
     }
     write_flag(&mut elem, "fretHandMute", chord.mask.contains(ChordMask::FRET_HAND_MUTE));
     write_flag(&mut elem, "highDensity",  chord.mask.contains(ChordMask::HIGH_DENSITY));
+    write_flag(&mut elem, "hopo",         chord.mask.contains(ChordMask::HOPO));
     write_flag(&mut elem, "ignore",       chord.mask.contains(ChordMask::IGNORE));
     write_flag(&mut elem, "linkNext",     chord.mask.contains(ChordMask::LINK_NEXT));
     write_flag(&mut elem, "palmMute",     chord.mask.contains(ChordMask::PALM_MUTE));

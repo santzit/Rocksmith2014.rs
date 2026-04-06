@@ -207,6 +207,11 @@ fn test_chord_mask_setters() {
     let without_hd = with_hd & !ChordMask::HIGH_DENSITY;
     assert!(!without_hd.contains(ChordMask::HIGH_DENSITY));
 
+    let with_hopo = base2 | ChordMask::HOPO;
+    assert!(with_hopo.contains(ChordMask::HOPO));
+    let without_hopo = with_hopo & !ChordMask::HOPO;
+    assert!(!without_hopo.contains(ChordMask::HOPO));
+
     let with_ig = base2 | ChordMask::HIGH_DENSITY | ChordMask::IGNORE;
     assert!(with_ig.contains(ChordMask::IGNORE));
     let without_ig = with_ig & !ChordMask::IGNORE;
@@ -232,6 +237,7 @@ fn test_chord_mask_getters() {
     assert!(!empty.contains(ChordMask::ACCENT));
     assert!(!empty.contains(ChordMask::FRET_HAND_MUTE));
     assert!(!empty.contains(ChordMask::HIGH_DENSITY));
+    assert!(!empty.contains(ChordMask::HOPO));
     assert!(!empty.contains(ChordMask::IGNORE));
     assert!(!empty.contains(ChordMask::LINK_NEXT));
     assert!(!empty.contains(ChordMask::PALM_MUTE));
@@ -240,12 +246,14 @@ fn test_chord_mask_getters() {
     assert!(set.contains(ChordMask::ACCENT));
     assert!(set.contains(ChordMask::FRET_HAND_MUTE));
     assert!(set.contains(ChordMask::HIGH_DENSITY));
+    assert!(!set.contains(ChordMask::HOPO));
     assert!(!set.contains(ChordMask::IGNORE));
     assert!(!set.contains(ChordMask::LINK_NEXT));
     assert!(!set.contains(ChordMask::PALM_MUTE));
 
-    let set2 = ChordMask::IGNORE | ChordMask::LINK_NEXT;
+    let set2 = ChordMask::HOPO | ChordMask::IGNORE | ChordMask::LINK_NEXT;
     assert!(!set2.contains(ChordMask::ACCENT));
+    assert!(set2.contains(ChordMask::HOPO));
     assert!(set2.contains(ChordMask::IGNORE));
     assert!(set2.contains(ChordMask::LINK_NEXT));
     assert!(!set2.contains(ChordMask::PALM_MUTE));
@@ -253,4 +261,31 @@ fn test_chord_mask_getters() {
     let set3 = ChordMask::PALM_MUTE;
     assert!(!set3.contains(ChordMask::ACCENT));
     assert!(set3.contains(ChordMask::PALM_MUTE));
+}
+
+/// "ChordMask HOPO round-trips through XML serialization"
+#[test]
+fn test_chord_mask_hopo_roundtrip() {
+    let mut arr = InstrumentalArrangement::default();
+    arr.levels.push(Level {
+        difficulty: 0,
+        chords: vec![Chord {
+            time: 1000,
+            chord_id: 0,
+            mask: ChordMask::HOPO,
+            ..Default::default()
+        }],
+        ..Default::default()
+    });
+
+    let xml = arr.to_xml().expect("to_xml");
+    let arr2 = InstrumentalArrangement::from_xml(&xml).expect("from_xml");
+    assert!(
+        arr2.levels[0].chords[0].mask.contains(ChordMask::HOPO),
+        "HOPO flag should survive XML round-trip"
+    );
+    assert!(
+        !arr2.levels[0].chords[0].mask.contains(ChordMask::ACCENT),
+        "ACCENT flag should not be set"
+    );
 }
