@@ -668,10 +668,9 @@ fn sng_fixed_string_null_terminated() {
     let parsed = Sng::from_unpacked_bytes(&bytes).unwrap();
     assert_eq!(parsed.phrases[0].name, long_name);
 
-    // The raw bytes of the string field must end with a null byte within the 32-byte buffer
-    // Find the phrase string in the output: count=1(4), solo(1), disp(1), ign(1), pad(1), maxdiff(4), iter(4) = 16 bytes
-    // string starts at position 4 + 16 = 20
-    let string_start = 4 + 1 + 1 + 1 + 1 + 4 + 4; // count + phrase fields before name
+    // The raw bytes of the string field must end with a null byte within the 32-byte buffer.
+    // Layout: beats_count(4) + phrases_count(4) + solo(1)+disp(1)+ign(1)+pad(1)+maxdiff(4)+iter(4) = 20
+    let string_start = 4 + 4 + 1 + 1 + 1 + 1 + 4 + 4;
     let string_end = string_start + 32;
     assert_eq!(bytes[string_end - 1], 0u8, "last byte of 32-byte string field must be 0");
 }

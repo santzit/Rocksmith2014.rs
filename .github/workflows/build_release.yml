@@ -1,0 +1,133 @@
+name: Build and Publish Linux Release
+
+# Mirrors the DLC Builder linux publish workflow from Rocksmith2014.NET.
+# Triggered whenever a GitHub Release is published.
+on:
+  release:
+    types: [published]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  publish-linux:
+    name: Publish – Linux (x86_64)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Rust toolchain (stable)
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Cargo registry & build artefacts
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: linux-x86_64-cargo-release-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: linux-x86_64-cargo-release-
+
+      # Build the shared library (.so) and the static library (.a)
+      - name: Build release artefacts
+        run: cargo build --release
+
+      # Rename artefacts to include the crate name for clarity
+      - name: Rename artefacts
+        run: |
+          cp target/release/librocksmith2014.so librocksmith2014-linux-x86_64.so || true
+          cp target/release/librocksmith2014.a  librocksmith2014-linux-x86_64.a  || true
+
+      # Upload both artefacts to the GitHub Release that triggered this run
+      - name: Upload release artefacts
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            librocksmith2014-linux-x86_64.so
+            librocksmith2014-linux-x86_64.a
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  publish-windows:
+    name: Publish – Windows (x86_64)
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Rust toolchain (stable)
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Cargo registry & build artefacts
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: windows-x86_64-cargo-release-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: windows-x86_64-cargo-release-
+
+      - name: Build release artefacts
+        run: cargo build --release
+
+      - name: Rename artefacts
+        run: |
+          Copy-Item target/release/rocksmith2014.dll  rocksmith2014-windows-x86_64.dll  -ErrorAction SilentlyContinue
+          Copy-Item target/release/rocksmith2014.lib  rocksmith2014-windows-x86_64.lib  -ErrorAction SilentlyContinue
+        shell: pwsh
+
+      - name: Upload release artefacts
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            rocksmith2014-windows-x86_64.dll
+            rocksmith2014-windows-x86_64.lib
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  publish-macos:
+    name: Publish – macOS (universal)
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Rust toolchain (stable)
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install aarch64 target
+        run: rustup target add aarch64-apple-darwin
+
+      - name: Cache Cargo registry & build artefacts
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: macos-cargo-release-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: macos-cargo-release-
+
+      - name: Build x86_64
+        run: cargo build --release --target x86_64-apple-darwin
+
+      - name: Build aarch64
+        run: cargo build --release --target aarch64-apple-darwin
+
+      # Create a universal (fat) binary for macOS
+      - name: Lipo universal dylib
+        run: |
+          lipo -create \
+            target/x86_64-apple-darwin/release/librocksmith2014.dylib \
+            target/aarch64-apple-darwin/release/librocksmith2014.dylib \
+            -output librocksmith2014-macos-universal.dylib
+
+      - name: Upload release artefacts
+        uses: softprops/action-gh-release@v2
+        with:
+          files: librocksmith2014-macos-universal.dylib
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

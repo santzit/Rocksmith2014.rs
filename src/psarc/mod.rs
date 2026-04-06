@@ -199,10 +199,10 @@ impl Psarc {
             block_sizes.push(bs);
         }
 
-        // --- manifest (first entry, if count > 1) ---
-        let (manifest_entry, data_entries) = if raw_entries.len() > 1
-            && raw_entries[0].is_manifest()
-        {
+        // --- manifest (first entry when count > 1) ---
+        // Real Rocksmith PSARCs have a non-zero manifest digest; the .NET implementation
+        // unconditionally treats entry 0 as the manifest regardless of its digest.
+        let (manifest_entry, data_entries) = if raw_entries.len() > 1 {
             let mut it = raw_entries.into_iter();
             let manifest = it.next().unwrap();
             (Some(manifest), it.collect::<Vec<_>>())
