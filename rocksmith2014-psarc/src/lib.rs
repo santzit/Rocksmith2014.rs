@@ -168,7 +168,9 @@ impl<R: Read + Seek> Psarc<R> {
     fn read_blocks(&mut self, entry: &Entry) -> Result<Vec<u8>> {
         let block_size = self.header.block_size_alloc as usize;
         let mut z_index = entry.z_index_begin as usize;
-        let mut result = Vec::with_capacity(entry.length as usize);
+        // Cap initial capacity to avoid excessive pre-allocation from corrupted archives.
+        let initial_cap = (entry.length as usize).min(10 * block_size);
+        let mut result = Vec::with_capacity(initial_cap);
 
         self.source.seek(SeekFrom::Start(entry.offset))?;
 
@@ -235,18 +237,12 @@ impl Psarc<()> {
         let z_type = z_type(header.block_size_alloc);
 
         // Build manifest text (newline-separated list of entry names).
-        let manifest_text = entries
+        let manifest_bytes = entries
             .iter()
-            .enumerate()
-            .map(|(i, e)| {
-                if i == 0 {
-                    e.name.clone()
-                } else {
-                    format!("\n{}", e.name)
-                }
-            })
-            .collect::<String>();
-        let manifest_bytes = manifest_text.into_bytes();
+            .map(|e| e.name.as_str())
+            .collect::<Vec<_>>()
+            .join("\n")
+            .into_bytes();
 
         // All file slots: manifest first, then actual entries.
         // The manifest has an empty name (used for MD5 = [0; 16]).
@@ -438,18 +434,13 @@ fn use_plain(name: &str) -> bool {
         || name.ends_with("7z")
 }
 
-/// Returns the number of bytes used per entry in the block size table,
-/// equivalent to `floor(log_256(block_size_alloc))`.
+/// Returns the number of bytes used per entry in the block size table.
 ///
-/// Standard value: `block_size_alloc = 65536` → z_type = 2 (uint16 entries).
+/// Computes `floor(log_256(block_size_alloc))` using bit-shift arithmetic.
+/// Standard value: `block_size_alloc = 65536` (= 256²) → z_type = 2.
 pub(crate) fn z_type(block_size_alloc: u32) -> usize {
-    let mut x = block_size_alloc as u64;
-    let mut result = 0usize;
-    while x > 255 {
-        x >>= 8;
-        result += 1;
-    }
-    result
+    // Count how many times the value can be divided by 256.
+    (u32::BITS - block_size_alloc.leading_zeros()).saturating_sub(1) as usize / 8
 }
 
 /// Parses the TOC entries and the block size table from the raw (decrypted)
