@@ -538,7 +538,7 @@ impl SngWrite for BendValue {
     fn sng_write<W: Write>(&self, w: &mut W) -> Result<()> {
         write_f32(w, self.time)?;
         write_f32(w, self.step)?;
-        write_u32(w, 0)?;
+        write_u32(w, self.unused)?;
         Ok(())
     }
 }

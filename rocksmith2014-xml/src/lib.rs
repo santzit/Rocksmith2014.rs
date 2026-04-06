@@ -1187,9 +1187,6 @@ fn write_note(writer: &mut Writer<Vec<u8>>, note: &Note) -> Result<()> {
     write_flag(&mut elem, "pullOff",       note.mask.contains(NoteMask::PULL_OFF));
     write_flag(&mut elem, "tremolo",       note.mask.contains(NoteMask::TREMOLO));
     write_flag(&mut elem, "pinchHarmonic", note.mask.contains(NoteMask::PINCH_HARMONIC));
-    write_flag(&mut elem, "pickDirection", note.mask.contains(NoteMask::PICK_DIRECTION));
-    write_flag(&mut elem, "slap",          note.mask.contains(NoteMask::SLAP));
-    write_flag(&mut elem, "pluck",         note.mask.contains(NoteMask::PLUCK));
     write_flag(&mut elem, "rightHand",     note.mask.contains(NoteMask::RIGHT_HAND));
 
     if note.bend_values.is_empty() {
@@ -1344,6 +1341,7 @@ impl InstrumentalArrangement {
         write_text_element(&mut writer, "artistName", &self.meta.artist_name)?;
         write_text_element(&mut writer, "artistNameSort", &self.meta.artist_name_sort)?;
         write_text_element(&mut writer, "albumName", &self.meta.album_name)?;
+        write_text_element(&mut writer, "albumNameSort", &self.meta.album_name_sort)?;
         write_text_element(&mut writer, "albumYear", &self.meta.album_year.to_string())?;
         write_text_element(&mut writer, "crowdSpeed", &self.meta.crowd_speed.to_string())?;
 
