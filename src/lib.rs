@@ -17,3 +17,4 @@ pub mod xml;
 pub mod ffi;
 
 pub use error::{Error, Result};
+pub use xml::utils;

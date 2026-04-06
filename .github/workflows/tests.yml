@@ -14,6 +14,9 @@ jobs:
     name: Test (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
 
+    permissions:
+      contents: read
+
     strategy:
       fail-fast: false
       matrix:
@@ -45,6 +48,9 @@ jobs:
   ffi-build:
     name: FFI cdylib build (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
+
+    permissions:
+      contents: read
 
     strategy:
       fail-fast: false

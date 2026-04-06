@@ -434,7 +434,7 @@ fn sng_roundtrip_note_detailed() {
         sustain: 44.0,
         max_bend: 1.0,
         bend_data: vec![
-            BendValue { time: 66.66, step: f32::INFINITY.recip() },
+            BendValue { time: 66.66, step: 0.0f32 }, // recip(∞) = 0.0, tested as literal for clarity
             BendValue { time: 66.66, step: 0.5 },
         ],
     };
@@ -514,7 +514,7 @@ fn sng_roundtrip_section() {
         end_time: 62.7,
         start_phrase_iteration_id: 5,
         end_phrase_iteration_id: 6,
-        string_mask: (0..36).map(|i: i8| i).collect::<Vec<_>>().try_into().unwrap(),
+        string_mask: (0i8..36).collect::<Vec<_>>().try_into().unwrap(),
     };
     let mut sng = empty_sng_with_metadata(make_metadata());
     sng.sections.push(s.clone());

@@ -1,8 +1,15 @@
+pub mod show_light;
+pub mod utils;
+pub mod vocal;
+
 use std::{ffi::CString, path::Path};
 
 use quick_xml::{events::Event, Reader};
 
 use crate::error::{Error, Result};
+
+pub use show_light::{ShowLight, ShowLights, FOG_MIN, FOG_MAX, BEAM_MIN, BEAM_MAX, BEAM_OFF};
+pub use vocal::{XmlVocal, VocalsArrangement};
 
 // ---------------------------------------------------------------------------
 // Data types

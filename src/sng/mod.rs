@@ -98,7 +98,8 @@ fn decrypt_sng(cur: &mut Cursor<&[u8]>, platform: Platform) -> Result<Vec<u8>> {
     }
     let _header = read_u32_le(cur)?;
 
-    // IV
+    // IV is read from the packed SNG file header, not hard-coded.
+    // (The encryption keys themselves are fixed for the Rocksmith 2014 format.)
     let mut iv = [0u8; 16];
     cur.read_exact(&mut iv)?;
 
