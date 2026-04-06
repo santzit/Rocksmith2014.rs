@@ -160,6 +160,25 @@ impl<R: Read + Seek> Psarc<R> {
         Ok(())
     }
 
+    /// Reads all entries into memory as [`NamedEntry`] values.
+    ///
+    /// This is useful for implementing archive editing: read all entries,
+    /// apply a transformation, then write a new archive with [`Psarc::create`].
+    pub fn read_all_named_entries(&mut self) -> Result<Vec<NamedEntry>> {
+        let toc = self.toc.clone();
+        let manifest = self.manifest.clone();
+
+        let mut entries = Vec::with_capacity(toc.len());
+        for (i, entry) in toc.iter().enumerate() {
+            let data = self.read_blocks(entry)?;
+            entries.push(NamedEntry {
+                name: manifest[i].clone(),
+                data,
+            });
+        }
+        Ok(entries)
+    }
+
     // -------------------------------------------------------------------------
     // Internal helpers
     // -------------------------------------------------------------------------
