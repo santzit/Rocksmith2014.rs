@@ -13,6 +13,7 @@ fn cdlc_dir() -> PathBuf {
         .parent()
         .unwrap()
         .join("tests")
+        .join("Rocksmith2014.PSARC.Tests")
         .join("cdlc")
 }
 

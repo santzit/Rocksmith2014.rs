@@ -17,7 +17,7 @@ fn psarc_dir() -> PathBuf {
         .parent()
         .unwrap()
         .join("tests")
-        .join("psarc")
+        .join("Rocksmith2014.PSARC.Tests")
 }
 
 // =============================================================================
