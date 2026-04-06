@@ -2,13 +2,13 @@ pub mod types;
 pub use types::Sng;
 
 use std::{
-    io::{self, Cursor, Read},
+    io::{self, Cursor, Read, Write},
     path::Path,
 };
 
 use aes::Aes256;
 use ctr::{Ctr128BE, cipher::{KeyIvInit, StreamCipher}};
-use flate2::read::ZlibDecoder;
+use flate2::{read::ZlibDecoder, write::ZlibEncoder, Compression};
 
 use crate::error::{Error, Result};
 use types::*;
@@ -52,6 +52,36 @@ impl Platform {
             Platform::Mac => &SNG_KEY_MAC,
         }
     }
+
+    /// Returns the audio folder path part for this platform.
+    ///
+    /// Mirrors `getPathPart platform Path.Audio` from Rocksmith2014.NET.
+    pub fn audio_path_part(self) -> &'static str {
+        match self {
+            Platform::Pc => "windows",
+            Platform::Mac => "mac",
+        }
+    }
+
+    /// Returns the SNG folder path part for this platform.
+    ///
+    /// Mirrors `getPathPart platform Path.SNG` from Rocksmith2014.NET.
+    pub fn sng_path_part(self) -> &'static str {
+        match self {
+            Platform::Pc => "generic",
+            Platform::Mac => "macos",
+        }
+    }
+
+    /// Returns the package-name suffix for this platform.
+    ///
+    /// Mirrors `getPathPart platform Path.PackageSuffix` from Rocksmith2014.NET.
+    pub fn package_suffix(self) -> &'static str {
+        match self {
+            Platform::Pc => "_p",
+            Platform::Mac => "_m",
+        }
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -82,6 +112,22 @@ impl Sng {
     pub fn from_unpacked_bytes(data: &[u8]) -> Result<Self> {
         let mut r = Reader::new(data);
         parse_sng(&mut r)
+    }
+
+    /// Serialise and encrypt this SNG into packed (platform-encrypted) bytes.
+    ///
+    /// Mirrors `SNG.savePackedFile` from Rocksmith2014.NET.
+    pub fn to_packed_bytes(&self, platform: Platform) -> Result<Vec<u8>> {
+        encrypt_sng(self, platform)
+    }
+
+    /// Write this SNG as an encrypted (packed) file to `path`.
+    ///
+    /// Mirrors `SNG.savePackedFile` from Rocksmith2014.NET.
+    pub fn save_packed_file(&self, path: impl AsRef<Path>, platform: Platform) -> Result<()> {
+        let bytes = self.to_packed_bytes(platform)?;
+        std::fs::write(path, bytes)?;
+        Ok(())
     }
 }
 
@@ -129,9 +175,54 @@ fn decrypt_sng(cur: &mut Cursor<&[u8]>, platform: Platform) -> Result<Vec<u8>> {
     Ok(out)
 }
 
-// ---------------------------------------------------------------------------
-// Binary parsing
-// ---------------------------------------------------------------------------
+/// Serialise and encrypt an [`Sng`] into the packed wire format.
+///
+/// Wire format: magic (u32 LE) | header (u32 LE) | IV (16 bytes) | AES-256-CTR(plaintext_len (u32 LE) | zlib_body)
+fn encrypt_sng(sng: &Sng, platform: Platform) -> Result<Vec<u8>> {
+    // Serialise to unpacked bytes
+    let plain = crate::sng::sng_to_bytes(sng);
+
+    // Zlib-compress
+    let mut enc = ZlibEncoder::new(Vec::new(), Compression::default());
+    enc.write_all(&plain)
+        .map_err(|e| Error::InvalidSng(format!("zlib compress: {e}")))?;
+    let compressed = enc.finish()
+        .map_err(|e| Error::InvalidSng(format!("zlib finish: {e}")))?;
+
+    // Payload = plaintext_len (u32 LE) || compressed body
+    let mut payload = Vec::with_capacity(4 + compressed.len());
+    payload.extend_from_slice(&(plain.len() as u32).to_le_bytes());
+    payload.extend_from_slice(&compressed);
+
+    // Use a deterministic but unique IV derived from the payload hash so the
+    // output is reproducible in tests (avoids needing `rand` as a dependency).
+    let iv: [u8; 16] = {
+        use std::collections::hash_map::DefaultHasher;
+        use std::hash::{Hash, Hasher};
+        let mut h = DefaultHasher::new();
+        payload.hash(&mut h);
+        let seed = h.finish();
+        let mut iv = [0u8; 16];
+        iv[..8].copy_from_slice(&seed.to_le_bytes());
+        iv[8..].copy_from_slice(&(!seed).to_le_bytes());
+        iv
+    };
+
+    // Encrypt payload in-place with AES-256-CTR
+    let key = platform.key();
+    let mut cipher = Ctr128BE::<Aes256>::new(key.into(), &iv.into());
+    cipher.apply_keystream(&mut payload);
+
+    // Assemble output: magic + header + IV + encrypted_payload
+    let mut out = Vec::with_capacity(4 + 4 + 16 + payload.len());
+    out.extend_from_slice(&0x4Au32.to_le_bytes()); // SNG magic
+    out.extend_from_slice(&0u32.to_le_bytes());    // header (unused)
+    out.extend_from_slice(&iv);
+    out.extend_from_slice(&payload);
+
+    Ok(out)
+}
+
 
 /// Thin wrapper around a byte slice providing little-endian reads.
 struct Reader<'a> {

@@ -104,6 +104,34 @@ impl VocalsArrangement {
 
         Ok(VocalsArrangement { vocals })
     }
+
+    /// Serialise this vocals arrangement to an XML string.
+    pub fn to_xml_string(&self) -> String {
+        use super::utils::time_code_to_string;
+        let mut xml = format!(
+            "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<vocals count=\"{}\">\n",
+            self.vocals.len()
+        );
+        for v in &self.vocals {
+            xml.push_str(&format!(
+                "  <vocal time=\"{}\" note=\"{}\" length=\"{}\" lyric=\"{}\" />\n",
+                time_code_to_string(v.time),
+                v.note,
+                time_code_to_string(v.length),
+                v.lyric,
+            ));
+        }
+        xml.push_str("</vocals>\n");
+        xml
+    }
+
+    /// Save this vocals arrangement to an XML file at `path`.
+    ///
+    /// Mirrors `Vocals.Save()` from Rocksmith2014.NET.
+    pub fn save(&self, path: impl AsRef<Path>) -> Result<()> {
+        std::fs::write(path, self.to_xml_string())?;
+        Ok(())
+    }
 }
 
 #[cfg(test)]

@@ -169,31 +169,52 @@ fn show_light_can_be_read_from_xml_file() {
 /// Mirrors: VocalTests.CopyConstructorCopiesAllValues
 #[test]
 fn vocal_copy_constructor_copies_all_values() {
-    let v1 = XmlVocal::new(5_000, 1_000, "Hello+", 50);
-    let mut v2 = v1.clone();
+    // .NET: new Vocal(12345, 500, "test", 66)
+    let v1 = XmlVocal::new(12345, 500, "test", 66);
+    let v2 = v1.clone();
 
-    assert_eq!(v2.time,   5_000, "time");
-    assert_eq!(v2.note,   50,    "note");
-    assert_eq!(v2.length, 1_000, "length");
-    assert_eq!(v2.lyric,  "Hello+", "lyric");
-
-    // Cloning is deep — modifying v2 must not affect v1
-    v2.lyric = "Modified".into();
-    assert_ne!(v2.lyric, v1.lyric, "lyric should be independent after clone");
+    assert_eq!(v2.time,   12345, "time");
+    assert_eq!(v2.length, 500,   "length");
+    assert_eq!(v2.lyric,  "test","lyric");
+    assert_eq!(v2.note,   66,    "note");
 }
 
-/// Mirrors: VocalTests.CanBeLoadedFromAnXmlFile
+/// Mirrors: VocalTests.ListOfVocalsCanBeSavedToXmlFile
 #[test]
-fn vocals_can_be_loaded_from_xml_file() {
+fn vocals_can_be_saved_to_xml_file() {
+    let vocals = vec![
+        XmlVocal { time: 0, note: 0, length: 0, lyric: String::new() },
+        XmlVocal::new(12340, 500, "Test", 66),
+        XmlVocal::new(25678, 500, "Test 2", 66),
+    ];
+    let arr = VocalsArrangement { vocals };
+    let content = arr.to_xml_string();
+
+    assert!(content.contains("<vocals count=\"3\">"),
+        "XML should contain count attribute; got:\n{content}");
+    assert!(
+        content.contains("<vocal time=\"12.340\" note=\"66\" length=\"0.500\" lyric=\"Test\" />"),
+        "XML should contain the second vocal; got:\n{content}"
+    );
+}
+
+/// Mirrors: VocalTests.ListOfVocalsCanBeReadFromXmlFile
+#[test]
+fn vocals_can_be_read_from_xml_file() {
     let arr = VocalsArrangement::load(cdlc("Vocals.xml"))
         .expect("open Vocals.xml");
 
     assert_eq!(arr.vocals.len(), 8, "Vocals.xml should have 8 vocals");
-    assert_eq!(arr.vocals[0].lyric, "Test",  "vocals[0] lyric");
-    assert_eq!(arr.vocals[7].lyric, "sit+",  "vocals[7] lyric");
+
+    // .NET: vocals[5].Time = 28_780, vocals[5].Note = 254, length=600, lyric="sum+"
+    // <vocal time="28.780" note="254" length="0.600" lyric="sum+"/>
+    assert_eq!(arr.vocals[5].time,   28_780, "vocals[5] time");
+    assert_eq!(arr.vocals[5].note,   254,    "vocals[5] MIDI note");
+    assert_eq!(arr.vocals[5].length, 600,    "vocals[5] length");
+    assert_eq!(arr.vocals[5].lyric,  "sum+", "vocals[5] lyric");
 }
 
-/// Additional: validate time/length parsing from Vocals.xml
+/// Additional: validate time/length parsing from Vocals.xml (index 0)
 #[test]
 fn vocals_times_are_parsed_as_milliseconds() {
     let arr = VocalsArrangement::load(cdlc("Vocals.xml")).unwrap();
