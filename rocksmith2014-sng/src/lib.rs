@@ -74,6 +74,8 @@ pub enum Error {
     InvalidHeader,
     #[error("Crypto error")]
     Crypto,
+    #[error("Invalid array count: {0}")]
+    InvalidArrayCount(i32),
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
@@ -204,6 +206,9 @@ fn write_f64<W: Write>(w: &mut W, v: f64) -> io::Result<()> {
 
 fn read_vec_f32<R: Read>(r: &mut R) -> Result<Vec<f32>> {
     let count = read_i32(r)?;
+    if count < 0 {
+        return Err(Error::InvalidArrayCount(count));
+    }
     let mut v = Vec::with_capacity(count as usize);
     for _ in 0..count {
         v.push(read_f32(r)?);
@@ -221,6 +226,9 @@ fn write_vec_f32<W: Write>(w: &mut W, v: &[f32]) -> Result<()> {
 
 fn read_vec_i32<R: Read>(r: &mut R) -> Result<Vec<i32>> {
     let count = read_i32(r)?;
+    if count < 0 {
+        return Err(Error::InvalidArrayCount(count));
+    }
     let mut v = Vec::with_capacity(count as usize);
     for _ in 0..count {
         v.push(read_i32(r)?);
@@ -238,6 +246,9 @@ fn write_vec_i32<W: Write>(w: &mut W, v: &[i32]) -> Result<()> {
 
 fn read_vec_i16<R: Read>(r: &mut R) -> Result<Vec<i16>> {
     let count = read_i32(r)?;
+    if count < 0 {
+        return Err(Error::InvalidArrayCount(count));
+    }
     let mut v = Vec::with_capacity(count as usize);
     for _ in 0..count {
         v.push(read_i16(r)?);
@@ -263,6 +274,9 @@ trait SngWrite {
 
 fn read_array<T: SngRead, R: Read>(r: &mut R) -> Result<Vec<T>> {
     let count = read_i32(r)?;
+    if count < 0 {
+        return Err(Error::InvalidArrayCount(count));
+    }
     let mut v = Vec::with_capacity(count as usize);
     for _ in 0..count {
         v.push(T::sng_read(r)?);
@@ -1445,6 +1459,11 @@ pub struct Sng {
 }
 
 impl Sng {
+    /// Parses a raw (unencrypted, uncompressed) SNG binary blob.
+    ///
+    /// **Do not call this on data obtained directly from a PSARC archive.**
+    /// SNG entries inside a PSARC are still AES-256-CTR encrypted after the
+    /// PSARC block-zlib layer is stripped.  Use [`Sng::from_encrypted`] instead.
     pub fn read(data: &[u8]) -> Result<Self> {
         let mut r = std::io::Cursor::new(data);
         let beats = read_array::<Beat, _>(&mut r)?;
@@ -1518,6 +1537,22 @@ impl Sng {
         Ok(w)
     }
 
+    /// Decrypts and parses a packed (AES-256-CTR encrypted) SNG file.
+    ///
+    /// This is the correct function to call when the SNG data comes from a
+    /// PSARC archive: `Psarc::inflate_file` strips only the outer block-zlib
+    /// layer, leaving the AES encryption intact.
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// use rocksmith2014_sng::{Sng, Platform};
+    ///
+    /// // `encrypted_sng` = bytes returned by Psarc::inflate_file for a .sng entry
+    /// let encrypted_sng = std::fs::read("song_lead.sng").unwrap();
+    /// let sng = Sng::from_encrypted(&encrypted_sng, Platform::Pc).unwrap();
+    /// println!("Levels: {}", sng.levels.len());
+    /// ```
     pub fn from_encrypted(data: &[u8], platform: Platform) -> Result<Self> {
         let decrypted = decrypt_sng(data, platform)?;
         Sng::read(&decrypted)

@@ -6,6 +6,36 @@
 //! optionally be encrypted with AES-256 in CFB-128 mode. Individual file data
 //! is split into 64 KB blocks and compressed with zlib.
 //!
+//! # SNG files inside a PSARC
+//!
+//! SNG arrangement files stored in a PSARC are *double-layered*:
+//!
+//! ```text
+//! PSARC block-zlib  →  AES-256-CTR encrypted SNG  →  inner zlib  →  raw binary
+//! ```
+//!
+//! [`Psarc::inflate_file`] only strips the outer PSARC block-zlib layer.
+//! The returned bytes for a `.sng` entry are **still AES-256-CTR encrypted**.
+//! To decode them you must use `rocksmith2014_sng::Sng::from_encrypted`, **not**
+//! `Sng::read` (which expects raw, unencrypted binary):
+//!
+//! ```ignore
+//! // rocksmith2014_sng = "0.1"  must be in your Cargo.toml
+//! use rocksmith2014_psarc::Psarc;
+//! use rocksmith2014_sng::{Sng, Platform};
+//! use std::fs::File;
+//!
+//! let file = File::open("song.psarc").unwrap();
+//! let mut psarc = Psarc::read(file).unwrap();
+//!
+//! // inflate_file returns the AES-encrypted SNG blob — NOT raw binary.
+//! let encrypted_sng = psarc.inflate_file("songs/bin/generic/song_lead.sng").unwrap();
+//!
+//! // Decrypt + decompress with the correct platform key:
+//! let sng = Sng::from_encrypted(&encrypted_sng, Platform::Pc).unwrap();
+//! println!("Levels: {}", sng.levels.len());
+//! ```
+//!
 //! # Reading
 //!
 //! ```no_run
@@ -127,6 +157,22 @@ impl<R: Read + Seek> Psarc<R> {
     }
 
     /// Inflates the file with the given name and returns its decompressed bytes.
+    ///
+    /// # SNG files
+    ///
+    /// For entries whose name ends with `.sng`, the returned bytes are
+    /// **still AES-256-CTR encrypted**.  The PSARC layer only applies
+    /// block-zlib decompression; the inner AES encryption is left intact.
+    /// Use `rocksmith2014_sng::Sng::from_encrypted` to fully decode the result:
+    ///
+    /// ```no_run
+    /// // (Illustrative — requires rocksmith2014_sng in your Cargo.toml)
+    /// // let encrypted = psarc.inflate_file("songs/bin/generic/song_lead.sng").unwrap();
+    /// // let sng = Sng::from_encrypted(&encrypted, Platform::Pc).unwrap();
+    /// ```
+    ///
+    /// Calling `Sng::read` on the raw output of this function will fail or
+    /// produce garbage, because the data is still encrypted.
     pub fn inflate_file(&mut self, name: &str) -> Result<Vec<u8>> {
         let entry = self
             .manifest
