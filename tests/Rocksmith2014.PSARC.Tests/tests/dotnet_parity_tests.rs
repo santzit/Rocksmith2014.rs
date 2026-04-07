@@ -14,10 +14,6 @@ use std::path::PathBuf;
 /// Returns the path to the .NET-sourced test PSARC files.
 fn psarc_dir() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .parent()
-        .unwrap()
-        .join("tests")
-        .join("Rocksmith2014.PSARC.Tests")
 }
 
 // =============================================================================

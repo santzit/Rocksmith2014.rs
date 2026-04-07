@@ -380,6 +380,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "rocksmith2014-psarc-tests"
+version = "0.1.0"
+dependencies = [
+ "rocksmith2014-psarc",
+ "tempfile",
+]
+
+[[package]]
 name = "rocksmith2014-sng"
 version = "0.1.0"
 dependencies = [
@@ -392,12 +400,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "rocksmith2014-sng-tests"
+version = "0.1.0"
+dependencies = [
+ "rocksmith2014-sng",
+]
+
+[[package]]
 name = "rocksmith2014-xml"
 version = "0.1.0"
 dependencies = [
  "bitflags",
  "quick-xml",
  "thiserror",
+]
+
+[[package]]
+name = "rocksmith2014-xml-tests"
+version = "0.1.0"
+dependencies = [
+ "rocksmith2014-xml",
 ]
 
 [[package]]

@@ -3,5 +3,8 @@ members = [
     "rocksmith2014-psarc",
     "rocksmith2014-sng",
     "rocksmith2014-xml",
+    "tests/Rocksmith2014.PSARC.Tests",
+    "tests/Rocksmith2014.SNG.Tests",
+    "tests/Rocksmith2014.XML.Tests",
 ]
 resolver = "2"

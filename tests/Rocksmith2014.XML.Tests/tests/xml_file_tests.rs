@@ -13,10 +13,6 @@ use std::path::PathBuf;
 /// Returns the path to the XML test data directory.
 fn xml_dir() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .parent()
-        .unwrap()
-        .join("tests")
-        .join("Rocksmith2014.XML.Tests")
 }
 
 // ---------------------------------------------------------------------------

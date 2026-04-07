@@ -10,10 +10,6 @@ use std::path::PathBuf;
 /// Returns the path to the SNG test data directory.
 fn sng_dir() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .parent()
-        .unwrap()
-        .join("tests")
-        .join("Rocksmith2014.SNG.Tests")
 }
 
 /// The number of difficulty levels present in every test SNG file.
