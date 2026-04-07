@@ -57,7 +57,7 @@ fn time_signatures_are_calculated_correctly() {
         },
     ];
 
-    let ts = infer_time_signatures(beats.into_iter());
+    let ts = infer_time_signatures(beats);
 
     let expected = vec![
         (100, EofTimeSignature::Ts3_4),

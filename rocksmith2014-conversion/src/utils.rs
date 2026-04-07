@@ -36,7 +36,7 @@ pub fn find_phrase_iteration_id(time: i32, phrase_iterations: &[XmlPhraseIterati
     let mut id = phrase_iterations.len() - 1;
     while id > 0 {
         let pi_time = phrase_iterations[id].time;
-        if pi_time == time || pi_time < time {
+        if pi_time <= time {
             break;
         }
         id -= 1;
@@ -72,7 +72,7 @@ pub fn find_section_id(time: i32, sections: &[XmlSection]) -> usize {
 }
 
 /// Finds the anchor for the note at the given time code.
-pub fn find_anchor<'a>(time: i32, anchors: &'a [XmlAnchor]) -> &'a XmlAnchor {
+pub fn find_anchor(time: i32, anchors: &[XmlAnchor]) -> &XmlAnchor {
     let mut index = anchors.len() as isize - 1;
     while index >= 0 {
         if anchors[index as usize].time <= time {

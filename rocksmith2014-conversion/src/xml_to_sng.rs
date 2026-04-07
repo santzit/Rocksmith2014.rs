@@ -1,13 +1,13 @@
 use rocksmith2014_sng::{
-    Anchor as SngAnchor, Beat as SngBeat, BeatMask, BendValue as SngBendValue,
-    Chord as SngChord, ChordMask as SngChordMask, Event as SngEvent, FingerPrint,
-    MetaData as SngMetaData, Phrase as SngPhrase, PhraseExtraInfo,
-    PhraseIteration as SngPhraseIteration, Section as SngSection, Tone as SngTone, DNA,
+    Anchor as SngAnchor, Beat as SngBeat, BeatMask, BendValue as SngBendValue, Chord as SngChord,
+    ChordMask as SngChordMask, Event as SngEvent, FingerPrint, MetaData as SngMetaData,
+    Phrase as SngPhrase, PhraseIteration as SngPhraseIteration, Section as SngSection,
+    Tone as SngTone, DNA,
 };
 use rocksmith2014_xml::{
     Anchor as XmlAnchor, ArrangementEvent, BendValue as XmlBendValue, ChordTemplate, Ebeat,
-    HandShape, InstrumentalArrangement, Level as XmlLevel, Note as XmlNote,
-    Phrase as XmlPhrase, PhraseIteration as XmlPhraseIteration, Section as XmlSection, ToneChange,
+    HandShape, InstrumentalArrangement, Level as XmlLevel, Note as XmlNote, Phrase as XmlPhrase,
+    PhraseIteration as XmlPhraseIteration, Section as XmlSection, ToneChange,
 };
 
 use crate::utils::{

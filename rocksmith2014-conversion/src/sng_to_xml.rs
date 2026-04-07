@@ -365,6 +365,7 @@ pub fn convert_level(sng: &Sng, level: &SngLevel) -> XmlLevel {
 }
 
 /// Converts a full SNG arrangement into an XML InstrumentalArrangement.
+#[allow(clippy::field_reassign_with_default)]
 pub fn sng_to_xml(sng: &Sng) -> InstrumentalArrangement {
     let ebeats = sng.beats.iter().map(convert_beat).collect();
     let phrases = sng.phrases.iter().map(convert_phrase).collect();
@@ -384,14 +385,17 @@ pub fn sng_to_xml(sng: &Sng) -> InstrumentalArrangement {
     let levels = sng.levels.iter().map(|l| convert_level(sng, l)).collect();
     let tones = sng.tones.iter().map(|t| convert_tone(t, &[])).collect();
 
-    let mut meta = rocksmith2014_xml::MetaData::default();
-    meta.song_length = sec_to_ms(sng.metadata.song_length);
-    meta.last_conversion_date_time = bytes_to_string(&sng.metadata.last_conversion_date_time);
-    meta.part = sng.metadata.part as i32;
-    meta.capo = sng.metadata.capo_fret_id.max(0);
-    for (i, &t) in sng.metadata.tuning.iter().enumerate().take(6) {
-        meta.tuning.strings[i] = t;
-    }
+    let meta = {
+        let mut m = rocksmith2014_xml::MetaData::default();
+        m.song_length = sec_to_ms(sng.metadata.song_length);
+        m.last_conversion_date_time = bytes_to_string(&sng.metadata.last_conversion_date_time);
+        m.part = sng.metadata.part as i32;
+        m.capo = sng.metadata.capo_fret_id.max(0);
+        for (i, &t) in sng.metadata.tuning.iter().enumerate().take(6) {
+            m.tuning.strings[i] = t;
+        }
+        m
+    };
 
     InstrumentalArrangement {
         meta,
@@ -409,6 +413,7 @@ pub fn sng_to_xml(sng: &Sng) -> InstrumentalArrangement {
 }
 
 /// Returns the raw bend data as Option<Vec<XmlBendValue>> for test compatibility.
+#[allow(dead_code)]
 pub fn convert_bend_data32_opt(bd: &BendData32) -> Option<Vec<XmlBendValue>> {
     if bd.used_count == 0 {
         None

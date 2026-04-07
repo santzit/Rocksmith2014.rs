@@ -1,15 +1,14 @@
 use rocksmith2014_sng::{
-    AnchorExtension, BendData32, BendValue as SngBendValue, ChordNotes, FingerPrint,
-    Note as SngNote, NoteMask as SngNoteMask,
+    AnchorExtension, BendValue as SngBendValue, ChordNotes, FingerPrint, Note as SngNote,
+    NoteMask as SngNoteMask,
 };
 use rocksmith2014_xml::{
-    ChordMask as XmlChordMask, InstrumentalArrangement, Level as XmlLevel, Note as XmlNote,
-    NoteMask as XmlNoteMask,
+    ChordMask as XmlChordMask, InstrumentalArrangement, Note as XmlNote, NoteMask as XmlNoteMask,
 };
 
 use crate::{
     accu_data::AccuData,
-    utils::{find_anchor, find_phrase_iteration_id, ms_to_sec, sec_to_ms},
+    utils::{find_anchor, find_phrase_iteration_id, ms_to_sec},
     xml_to_sng::{convert_bend_value, XmlEntity},
 };
 
@@ -34,6 +33,7 @@ pub fn flag_on_anchor_change(prev: Option<&SngNote>, curr: &SngNote) -> u32 {
 }
 
 /// State for the stateful note converter.
+#[allow(dead_code)]
 pub struct NoteConverter<'a> {
     note_times: &'a [i32],
     pi_times: &'a [i32],
@@ -49,6 +49,7 @@ pub struct NoteConverter<'a> {
 }
 
 impl<'a> NoteConverter<'a> {
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         note_times: &'a [i32],
         pi_times: &'a [i32],
@@ -375,7 +376,7 @@ impl<'a> NoteConverter<'a> {
         }
 
         // Create SNG chord notes if needed
-        let (sng_chord_notes_id, needs_chord_notes) =
+        let (sng_chord_notes_id, _needs_chord_notes) =
             if !chord.chord_notes.is_empty() && should_create_chord_notes(&chord.chord_notes) {
                 let cn = build_sng_chord_notes(&chord.chord_notes, &[]);
                 let id = self.accu_data.chord_notes.len() as i32;

@@ -1,5 +1,5 @@
 use rocksmith2014_xml::{InstrumentalArrangement, Level, MetaData, Note, Phrase, PhraseIteration};
-use rocksmith2014_xml_processing::{check_instrumental, Issue, IssueType};
+use rocksmith2014_xml_processing::{check_instrumental, IssueType};
 
 fn basic_arr() -> InstrumentalArrangement {
     InstrumentalArrangement {

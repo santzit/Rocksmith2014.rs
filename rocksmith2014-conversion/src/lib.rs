@@ -69,8 +69,8 @@ pub fn xml_to_sng(arr: &InstrumentalArrangement) -> Sng {
     let mut accu = AccuData::init(arr);
 
     let beats = {
-        let mut converter = make_beat_converter(arr);
-        arr.ebeats.iter().map(|b| converter(b)).collect()
+        let converter = make_beat_converter(arr);
+        arr.ebeats.iter().map(converter).collect()
     };
 
     let phrases = arr
@@ -150,7 +150,7 @@ pub fn xml_to_sng(arr: &InstrumentalArrangement) -> Sng {
 
     let metadata = create_meta_data(&accu, first_note_time, arr);
 
-    let sng = Sng {
+    Sng {
         beats,
         phrases,
         chords: chord_templates,
@@ -165,7 +165,5 @@ pub fn xml_to_sng(arr: &InstrumentalArrangement) -> Sng {
         levels,
         metadata,
         ..Default::default()
-    };
-
-    sng
+    }
 }
