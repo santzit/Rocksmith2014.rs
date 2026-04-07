@@ -1,3 +1,73 @@
+//! Rust implementation of the Rocksmith 2014 XML arrangement format.
+//!
+//! This crate parses and generates the XML files that describe a Rocksmith 2014
+//! instrumental arrangement: notes, chords, chord templates, anchors, phrases,
+//! phrase iterations, sections, events, hand shapes, and arrangement metadata.
+//!
+//! # Reading an arrangement from XML
+//!
+//! ```no_run
+//! use rocksmith2014_xml::read_file;
+//!
+//! let arr = read_file("song_lead.xml").unwrap();
+//! println!("Title: {}", arr.meta.song_name);
+//! println!("Levels: {}", arr.levels.len());
+//! ```
+//!
+//! # Writing an arrangement back to XML
+//!
+//! ```no_run
+//! use rocksmith2014_xml::{read_file, write_file};
+//!
+//! let arr = read_file("song_lead.xml").unwrap();
+//! write_file(&arr, "song_lead_copy.xml").unwrap();
+//! ```
+//!
+//! # Round-trip using in-memory strings
+//!
+//! ```
+//! use rocksmith2014_xml::InstrumentalArrangement;
+//!
+//! let xml = r#"<?xml version="1.0" encoding="utf-8"?>
+//! <song>
+//!   <title>Test</title>
+//!   <arrangement>Lead</arrangement>
+//!   <part>1</part>
+//!   <offset>0.000</offset>
+//!   <centOffset>0</centOffset>
+//!   <songLength>120.000</songLength>
+//!   <startBeat>0.000</startBeat>
+//!   <averageTempo>120.000</averageTempo>
+//!   <version>7</version>
+//!   <artistName>Artist</artistName>
+//!   <artistNameSort>artist</artistNameSort>
+//!   <albumName>Album</albumName>
+//!   <albumNameSort>album</albumNameSort>
+//!   <albumYear>2014</albumYear>
+//!   <albumArt>art</albumArt>
+//!   <crowdSpeed>1</crowdSpeed>
+//!   <capo>0</capo>
+//!   <tuning mi0="0" mi1="0" mi2="0" mi3="0" mi4="0" mi5="0" />
+//!   <tones />
+//!   <sections />
+//!   <events />
+//!   <ebeats />
+//!   <phrases />
+//!   <phraseIterations />
+//!   <chordTemplates />
+//!   <fretHandMuteTemplates />
+//!   <linkedDiffs />
+//!   <newLinkedDiffs />
+//!   <phraseProperties />
+//!   <levels />
+//! </song>"#;
+//!
+//! let arr = InstrumentalArrangement::from_xml(xml).unwrap();
+//! assert_eq!(arr.meta.song_name, "Test");
+//! let roundtripped = arr.to_xml().unwrap();
+//! assert!(roundtripped.contains("<title>Test</title>"));
+//! ```
+
 use std::fs;
 use std::path::Path;
 use quick_xml::{Reader, Writer};

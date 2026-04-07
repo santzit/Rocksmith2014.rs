@@ -1,3 +1,43 @@
+//! Rust implementation of the Rocksmith 2014 SNG binary format.
+//!
+//! SNG files contain the full scored arrangement data (notes, phrases, levels, …)
+//! in a compact binary layout. PC and Mac builds use different AES-256-CTR keys to
+//! encrypt the payload before it is zlib-compressed.
+//!
+//! # Reading an encrypted SNG file
+//!
+//! ```no_run
+//! use rocksmith2014_sng::{Sng, Platform};
+//!
+//! let data = std::fs::read("song_lead.sng").unwrap();
+//! let sng = Sng::from_encrypted(&data, Platform::Pc).unwrap();
+//!
+//! println!("Beats: {}", sng.beats.len());
+//! println!("Levels: {}", sng.levels.len());
+//! ```
+//!
+//! # Writing an encrypted SNG file
+//!
+//! ```no_run
+//! use rocksmith2014_sng::{Sng, Platform};
+//!
+//! let sng = Sng::default();
+//! let encrypted = sng.to_encrypted(Platform::Pc).unwrap();
+//! std::fs::write("out.sng", &encrypted).unwrap();
+//! ```
+//!
+//! # Round-trip (raw unencrypted bytes)
+//!
+//! ```
+//! use rocksmith2014_sng::Sng;
+//!
+//! let original = Sng::default();
+//! let bytes = original.write().unwrap();
+//! let parsed = Sng::read(&bytes).unwrap();
+//! assert_eq!(parsed.beats.len(), 0);
+//! assert_eq!(parsed.levels.len(), 0);
+//! ```
+
 use std::io::{self, Read, Write};
 use flate2::read::ZlibDecoder;
 use flate2::write::ZlibEncoder;
