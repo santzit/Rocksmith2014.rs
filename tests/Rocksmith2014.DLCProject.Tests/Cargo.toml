@@ -3,3 +3,8 @@ name = "rocksmith2014-dlcproject-tests"
 version = "0.1.0"
 edition = "2021"
 publish = false
+
+[dev-dependencies]
+rocksmith2014-dlcproject = { path = "../../rocksmith2014-dlcproject" }
+rocksmith2014-sng = { path = "../../rocksmith2014-sng" }
+uuid = { version = "1", features = ["v4"] }
