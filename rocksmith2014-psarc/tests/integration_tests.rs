@@ -1,180 +1,11 @@
-//! Integration tests using real Rocksmith 2014 CDLC PSARC files.
+//! Additional integration tests for the rocksmith2014-psarc crate.
 //!
-//! These tests verify that the library can correctly open, parse, and extract
-//! content from actual Rocksmith 2014 archives.
+//! These tests focus on pure in-memory round-trip write → read scenarios that
+//! complement the .NET-parity tests in `dotnet_parity_tests.rs`.  No CDLC
+//! or third-party PSARC files are used here.
 
 use rocksmith2014_psarc::{NamedEntry, Psarc, PsarcError};
 use std::io::Cursor;
-use std::path::PathBuf;
-
-/// Returns the path to the test CDLC directory.
-fn cdlc_dir() -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .parent()
-        .unwrap()
-        .join("tests")
-        .join("Rocksmith2014.PSARC.Tests")
-        .join("cdlc")
-}
-
-/// Paths to all five real PSARC test files.
-fn test_psarc_paths() -> Vec<PathBuf> {
-    let dir = cdlc_dir();
-    vec![
-        dir.join("The-Cure-_In-Between-Days-_v2_p.psarc"),
-        dir.join("The-Cure_A-Forest_v3_DD_p.psarc"),
-        dir.join("Tom-Petty-and-the-Heartbreakers_Dont-Do-Me-Like-That_v2_p.psarc"),
-        dir.join("Tom-Petty_Love-Is-A-Long-Road-Dell_v1_1_p.psarc"),
-        dir.join("Tom-Petty_Runnin'-Down-a-Dream_v2_DD_p.psarc"),
-    ]
-}
-
-// ---------------------------------------------------------------------------
-// Reading tests
-// ---------------------------------------------------------------------------
-
-#[test]
-fn test_open_all_cdlc_files() {
-    for path in test_psarc_paths() {
-        let psarc = Psarc::open(&path)
-            .unwrap_or_else(|e| panic!("failed to open {}: {}", path.display(), e));
-
-        // Every CDLC should have at least one entry.
-        assert!(
-            !psarc.manifest().is_empty(),
-            "{} has an empty manifest",
-            path.display()
-        );
-    }
-}
-
-#[test]
-fn test_manifest_contains_expected_paths() {
-    for path in test_psarc_paths() {
-        let psarc = Psarc::open(&path)
-            .unwrap_or_else(|e| panic!("failed to open {}: {}", path.display(), e));
-
-        let manifest = psarc.manifest();
-
-        // Rocksmith 2014 CDLC packages always contain artwork.
-        let has_artwork = manifest.iter().any(|n| n.contains("album_") || n.contains("dlc_") || n.ends_with(".dds"));
-        assert!(
-            has_artwork,
-            "{} manifest should contain artwork; manifest={:?}",
-            path.display(),
-            &manifest[..manifest.len().min(10)]
-        );
-    }
-}
-
-#[test]
-fn test_manifest_entry_count_matches_toc() {
-    for path in test_psarc_paths() {
-        let psarc = Psarc::open(&path)
-            .unwrap_or_else(|e| panic!("failed to open {}: {}", path.display(), e));
-
-        assert_eq!(
-            psarc.manifest().len(),
-            psarc.toc().len(),
-            "{}: manifest length must equal TOC entry count",
-            path.display()
-        );
-    }
-}
-
-#[test]
-fn test_inflate_all_entries_produces_nonempty_data() {
-    for path in test_psarc_paths() {
-        let mut psarc = Psarc::open(&path)
-            .unwrap_or_else(|e| panic!("failed to open {}: {}", path.display(), e));
-
-        let toc: Vec<_> = psarc.toc().to_vec();
-        for entry in &toc {
-            let data = psarc
-                .inflate_entry(entry)
-                .unwrap_or_else(|e| panic!("{}: inflate_entry failed: {}", path.display(), e));
-            assert_eq!(
-                data.len() as u64,
-                entry.length,
-                "{}: inflated length {} != declared length {}",
-                path.display(),
-                data.len(),
-                entry.length
-            );
-        }
-    }
-}
-
-#[test]
-fn test_inflate_file_by_name() {
-    for path in test_psarc_paths() {
-        let mut psarc = Psarc::open(&path)
-            .unwrap_or_else(|e| panic!("failed to open {}: {}", path.display(), e));
-
-        // Inflate the first entry by name to confirm name-based lookup works.
-        let first_name = psarc.manifest()[0].clone();
-        let data = psarc
-            .inflate_file(&first_name)
-            .unwrap_or_else(|e| panic!("{}: inflate_file({:?}) failed: {}", path.display(), first_name, e));
-        assert!(!data.is_empty(), "{}: inflated first entry is empty", path.display());
-    }
-}
-
-#[test]
-fn test_inflate_file_not_found_returns_error() {
-    let path = test_psarc_paths().into_iter().next().unwrap();
-    let mut psarc = Psarc::open(&path).unwrap();
-
-    let result = psarc.inflate_file("this_file_does_not_exist.xyz");
-    assert!(
-        matches!(result, Err(PsarcError::FileNotFound(_))),
-        "expected FileNotFound, got {:?}",
-        result
-    );
-}
-
-#[test]
-fn test_entry_offsets_are_unique() {
-    for path in test_psarc_paths() {
-        let psarc = Psarc::open(&path)
-            .unwrap_or_else(|e| panic!("failed to open {}: {}", path.display(), e));
-
-        let mut offsets: Vec<u64> = psarc.toc().iter().map(|e| e.offset).collect();
-        offsets.sort_unstable();
-        offsets.dedup();
-        assert_eq!(
-            offsets.len(),
-            psarc.toc().len(),
-            "{}: duplicate offsets found in TOC",
-            path.display()
-        );
-    }
-}
-
-// ---------------------------------------------------------------------------
-// Extract-all test
-// ---------------------------------------------------------------------------
-
-#[test]
-fn test_extract_all() {
-    let path = test_psarc_paths().into_iter().next().unwrap();
-    let mut psarc = Psarc::open(&path).unwrap();
-
-    let tmp = tempfile::tempdir().unwrap();
-    psarc
-        .extract_all(tmp.path())
-        .unwrap_or_else(|e| panic!("{}: extract_all failed: {}", path.display(), e));
-
-    // At least one file should have been extracted.
-    let mut found = false;
-    for entry in walkdir(tmp.path()) {
-        if entry.is_file() {
-            found = true;
-            break;
-        }
-    }
-    assert!(found, "extract_all produced no files");
-}
 
 // ---------------------------------------------------------------------------
 // Round-trip write → read tests
@@ -268,21 +99,140 @@ fn test_round_trip_empty_entries_list() {
     assert!(psarc.toc().is_empty());
 }
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
+#[test]
+fn test_inflate_file_not_found_returns_error() {
+    let entries = vec![NamedEntry {
+        name: "existing.bin".to_string(),
+        data: b"data".to_vec(),
+    }];
+    let mut buf = Vec::new();
+    Psarc::create(&mut buf, false, entries).unwrap();
 
-fn walkdir(dir: &std::path::Path) -> Vec<std::path::PathBuf> {
-    let mut out = Vec::new();
-    if let Ok(rd) = std::fs::read_dir(dir) {
-        for entry in rd.flatten() {
-            let path = entry.path();
-            if path.is_dir() {
-                out.extend(walkdir(&path));
-            } else {
-                out.push(path);
-            }
-        }
-    }
-    out
+    let mut psarc = Psarc::read(Cursor::new(&buf)).unwrap();
+    let result = psarc.inflate_file("this_file_does_not_exist.xyz");
+    assert!(
+        matches!(result, Err(PsarcError::FileNotFound(_))),
+        "expected FileNotFound, got {:?}",
+        result
+    );
 }
+
+#[test]
+fn test_has_zlib_header() {
+    // Entries written into a new PSARC (non-.sng) should be zlib-compressed,
+    // and inflating them should produce the original data unchanged.
+    let data: Vec<u8> = b"Hello, Rocksmith!".to_vec();
+    let entries = vec![NamedEntry {
+        name: "readme.txt".to_string(),
+        data: data.clone(),
+    }];
+    let mut buf = Vec::new();
+    Psarc::create(&mut buf, false, entries).unwrap();
+
+    let mut psarc = Psarc::read(Cursor::new(&buf)).unwrap();
+    let inflated = psarc.inflate_file("readme.txt").unwrap();
+    assert_eq!(inflated, data);
+}
+
+#[test]
+fn test_plain_sng_file_not_compressed() {
+    // Entries whose name ends in ".sng" must be stored uncompressed inside
+    // the PSARC (block-size entry == 0 means raw / uncompressed).
+    let sng: Vec<u8> = vec![0x4A; 128];
+    let entries = vec![NamedEntry {
+        name: "songs/bin/generic/test.sng".to_string(),
+        data: sng.clone(),
+    }];
+    let mut buf = Vec::new();
+    Psarc::create(&mut buf, false, entries).unwrap();
+
+    let mut psarc = Psarc::read(Cursor::new(&buf)).unwrap();
+    let inflated = psarc.inflate_file("songs/bin/generic/test.sng").unwrap();
+    assert_eq!(inflated, sng);
+}
+
+#[test]
+fn test_inflate_entry() {
+    let original = b"entry data payload".to_vec();
+    let entries = vec![NamedEntry {
+        name: "payload.bin".to_string(),
+        data: original.clone(),
+    }];
+    let mut buf = Vec::new();
+    Psarc::create(&mut buf, false, entries).unwrap();
+
+    let mut psarc = Psarc::read(Cursor::new(&buf)).unwrap();
+    let entry = psarc.toc()[0].clone();
+    let data = psarc.inflate_entry(&entry).unwrap();
+    assert_eq!(data, original);
+}
+
+#[test]
+fn test_multiple_files() {
+    let names = ["a.txt", "b.txt", "c.txt", "d.txt"];
+    let entries: Vec<NamedEntry> = names
+        .iter()
+        .map(|n| NamedEntry {
+            name: n.to_string(),
+            data: n.as_bytes().to_vec(),
+        })
+        .collect();
+
+    let mut buf = Vec::new();
+    Psarc::create(&mut buf, true, entries).unwrap();
+
+    let mut psarc = Psarc::read(Cursor::new(&buf)).unwrap();
+    assert_eq!(psarc.manifest().len(), 4);
+
+    for name in &names {
+        let data = psarc.inflate_file(name).unwrap();
+        assert_eq!(data, name.as_bytes());
+    }
+}
+
+#[test]
+fn test_single_text_file_unencrypted() {
+    let text = b"Hello, world!".to_vec();
+    let entries = vec![NamedEntry {
+        name: "hello.txt".to_string(),
+        data: text.clone(),
+    }];
+    let mut buf = Vec::new();
+    Psarc::create(&mut buf, false, entries).unwrap();
+
+    let mut psarc = Psarc::read(Cursor::new(&buf)).unwrap();
+    let data = psarc.inflate_file("hello.txt").unwrap();
+    assert_eq!(data, text);
+}
+
+#[test]
+fn test_single_text_file_encrypted() {
+    let text = b"Hello, encrypted world!".to_vec();
+    let entries = vec![NamedEntry {
+        name: "hello.txt".to_string(),
+        data: text.clone(),
+    }];
+    let mut buf = Vec::new();
+    Psarc::create(&mut buf, true, entries).unwrap();
+
+    let mut psarc = Psarc::read(Cursor::new(&buf)).unwrap();
+    let data = psarc.inflate_file("hello.txt").unwrap();
+    assert_eq!(data, text);
+}
+
+#[test]
+fn test_empty_archive_unencrypted() {
+    let mut buf = Vec::new();
+    Psarc::create(&mut buf, false, vec![]).unwrap();
+    let psarc = Psarc::read(Cursor::new(&buf)).unwrap();
+    assert!(psarc.manifest().is_empty());
+}
+
+#[test]
+fn test_empty_archive_encrypted() {
+    let mut buf = Vec::new();
+    Psarc::create(&mut buf, true, vec![]).unwrap();
+    let psarc = Psarc::read(Cursor::new(&buf)).unwrap();
+    assert!(psarc.manifest().is_empty());
+}
+
