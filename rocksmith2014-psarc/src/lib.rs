@@ -19,7 +19,7 @@
 //! To decode them you must use `rocksmith2014_sng::Sng::from_encrypted`, **not**
 //! `Sng::read` (which expects raw, unencrypted binary):
 //!
-//! ```no_run
+//! ```ignore
 //! // rocksmith2014_sng = "0.1"  must be in your Cargo.toml
 //! use rocksmith2014_psarc::Psarc;
 //! use rocksmith2014_sng::{Sng, Platform};
