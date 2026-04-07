@@ -2,3 +2,5 @@
 name = "rocksmith2014-audio"
 version = "0.1.0"
 edition = "2021"
+description = "Audio utilities for Rocksmith 2014 (LUFS loudness measurement, preview audio, volume helpers)"
+license = "MIT"

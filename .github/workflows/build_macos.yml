@@ -1,0 +1,76 @@
+name: Build macOS
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  test:
+    name: Run tests
+    runs-on: macos-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Cargo registry and build artefacts
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Run all tests
+        run: cargo test --workspace
+
+  build:
+    name: Build release (macOS)
+    needs: test
+    runs-on: macos-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Cargo registry and build artefacts
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-release-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Build release
+        run: cargo build --workspace --release
+
+      - name: Package artefacts
+        run: |
+          mkdir -p dist/macos
+          find target/release -maxdepth 1 \( -name "*.rlib" -o -name "*.a" -o -name "*.dylib" \) -exec cp {} dist/macos/ \;
+          tar -czf rocksmith2014-rs-macos.tar.gz -C dist macos
+
+      - name: Upload release artefact
+        uses: actions/upload-artifact@v4
+        with:
+          name: rocksmith2014-rs-macos
+          path: rocksmith2014-rs-macos.tar.gz
+
+      - name: Attach to GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: rocksmith2014-rs-macos.tar.gz
