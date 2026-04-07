@@ -1,0 +1,14 @@
+[package]
+name = "rocksmith2014-dlcproject"
+version = "0.1.0"
+edition = "2021"
+description = "Rust implementation of the Rocksmith 2014 DLC Project domain"
+license = "MIT"
+
+[dependencies]
+rocksmith2014-common = { path = "../rocksmith2014-common" }
+rocksmith2014-xml = { path = "../rocksmith2014-xml" }
+rocksmith2014-sng = { path = "../rocksmith2014-sng" }
+uuid = { version = "1", features = ["v4"] }
+unicode-normalization = "0.1"
+quick-xml = { version = "0.37" }
