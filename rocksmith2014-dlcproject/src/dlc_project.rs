@@ -71,25 +71,20 @@ fn needs_conversion(convert_if_newer_than: Duration, path: &str) -> bool {
 
     // Convert if the source file is newer than the existing wem by more than
     // `convert_if_newer_than`.
-    let source_modified = std::fs::metadata(path)
-        .and_then(|m| m.modified())
-        .ok();
-    let wem_modified = std::fs::metadata(&wem_path)
-        .and_then(|m| m.modified())
-        .ok();
+    let source_modified = std::fs::metadata(path).and_then(|m| m.modified()).ok();
+    let wem_modified = std::fs::metadata(&wem_path).and_then(|m| m.modified()).ok();
 
     match (source_modified, wem_modified) {
-        (Some(src), Some(wem)) => {
-            src.duration_since(wem)
-                .map(|diff| diff >= convert_if_newer_than)
-                .unwrap_or(false)
-        }
+        (Some(src), Some(wem)) => src
+            .duration_since(wem)
+            .map(|diff| diff >= convert_if_newer_than)
+            .unwrap_or(false),
         _ => false,
     }
 }
 
 /// Returns the paths of all audio files in the project.
-fn audio_file_paths<'a>(project: &'a DlcProject) -> impl Iterator<Item = &'a str> {
+fn audio_file_paths(project: &DlcProject) -> impl Iterator<Item = &str> {
     let main = std::iter::once(project.audio_file.path.as_str())
         .chain(std::iter::once(project.audio_preview_file.path.as_str()));
 
@@ -105,7 +100,7 @@ fn audio_file_paths<'a>(project: &'a DlcProject) -> impl Iterator<Item = &'a str
         })
         .collect();
 
-    main.chain(custom.into_iter())
+    main.chain(custom)
 }
 
 /// Returns the paths to all audio files that need converting to `.wem`.

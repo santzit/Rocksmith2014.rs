@@ -21,23 +21,23 @@ fn usable_chars() -> &'static HashSet<char> {
             // Latin Extended-B: ƒ (florin)
             "ƒ",
             // General Punctuation / Currency / Letterlike
-            "\u{2013}\u{2014}",  // en dash, em dash
-            "\u{2018}\u{2019}",  // left/right single quotation marks
-            "\u{201A}",          // single low-9 quotation mark
-            "\u{201C}\u{201D}",  // left/right double quotation marks
-            "\u{201E}",          // double low-9 quotation mark
-            "\u{2020}\u{2021}",  // dagger, double dagger
-            "\u{2022}",          // bullet
-            "\u{2026}",          // horizontal ellipsis
-            "\u{2030}",          // per mille sign
-            "\u{2039}\u{203A}",  // single guillemets
-            "\u{2044}",          // fraction slash
-            "\u{20AC}",          // euro sign
-            "\u{2117}",          // sound recording copyright
-            "\u{2122}",          // trade mark sign
+            "\u{2013}\u{2014}", // en dash, em dash
+            "\u{2018}\u{2019}", // left/right single quotation marks
+            "\u{201A}",         // single low-9 quotation mark
+            "\u{201C}\u{201D}", // left/right double quotation marks
+            "\u{201E}",         // double low-9 quotation mark
+            "\u{2020}\u{2021}", // dagger, double dagger
+            "\u{2022}",         // bullet
+            "\u{2026}",         // horizontal ellipsis
+            "\u{2030}",         // per mille sign
+            "\u{2039}\u{203A}", // single guillemets
+            "\u{2044}",         // fraction slash
+            "\u{20AC}",         // euro sign
+            "\u{2117}",         // sound recording copyright
+            "\u{2122}",         // trade mark sign
             // Geometric shapes / music symbols
-            "\u{25A1}\u{25B3}\u{25CB}",  // white square, triangle, circle
-            "\u{266D}\u{266F}",          // music flat/sharp
+            "\u{25A1}\u{25B3}\u{25CB}", // white square, triangle, circle
+            "\u{266D}\u{266F}",         // music flat/sharp
         );
         let mut set: HashSet<char> = base.chars().collect();
 
@@ -63,7 +63,10 @@ fn usable_chars() -> &'static HashSet<char> {
 
 /// Validates a DLC key: only alphanumeric characters allowed.
 pub fn dlc_key(input: &str) -> String {
-    input.chars().filter(|c| c.is_ascii_alphanumeric()).collect()
+    input
+        .chars()
+        .filter(|c| c.is_ascii_alphanumeric())
+        .collect()
 }
 
 /// Validates a DLC project field (artist, title, album):

@@ -165,9 +165,8 @@ where
         return Err(ArrangementLoadError::EofExtVocalsFile(path.to_string()));
     }
 
-    let root = read_root_element(path).map_err(|e| {
-        ArrangementLoadError::FailedWithException(path.to_string(), e)
-    })?;
+    let root = read_root_element(path)
+        .map_err(|e| ArrangementLoadError::FailedWithException(path.to_string(), e))?;
 
     match root.as_str() {
         "song" => load_instrumental(create_base_tone_name, path),

@@ -15,10 +15,7 @@ fn phrase_name(raw: &[u8; 32]) -> String {
 /// Returns the arrangement IDs whose phrase levels have regressed compared to
 /// the stored levels (i.e. the current SNG has fewer levels for a phrase than
 /// the stored count).
-pub fn compare_levels(
-    stored: &ProjectLevels,
-    arrangements: &[(Arrangement, Sng)],
-) -> Vec<Uuid> {
+pub fn compare_levels(stored: &ProjectLevels, arrangements: &[(Arrangement, Sng)]) -> Vec<Uuid> {
     arrangements
         .iter()
         .filter_map(|(arr, sng)| {

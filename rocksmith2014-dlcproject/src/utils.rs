@@ -9,11 +9,14 @@ pub fn cents_to_tuning_pitch(cents: f64) -> f64 {
     (raw * 100.0).round() / 100.0
 }
 
-const ROOTS: [&str; 12] = ["E", "F", "F#", "G", "Ab", "A", "Bb", "B", "C", "C#", "D", "Eb"];
+const ROOTS: [&str; 12] = [
+    "E", "F", "F#", "G", "Ab", "A", "Bb", "B", "C", "C#", "D", "Eb",
+];
 const STANDARD_TUNING_OFFSETS: [i32; 6] = [0, 5, 10, 3, 7, 0];
 
 fn get_string_note_name(use_flats: bool, string_index: usize, string_tuning: i16) -> &'static str {
-    let m = ((string_tuning as i32 + STANDARD_TUNING_OFFSETS[string_index]).rem_euclid(12)) as usize;
+    let m =
+        ((string_tuning as i32 + STANDARD_TUNING_OFFSETS[string_index]).rem_euclid(12)) as usize;
     let n = ROOTS[m];
     if use_flats {
         match n {
