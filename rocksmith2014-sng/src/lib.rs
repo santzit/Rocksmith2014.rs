@@ -38,13 +38,16 @@
 //! assert_eq!(parsed.levels.len(), 0);
 //! ```
 
-use std::io::{self, Read, Write};
+use aes::Aes256;
+use ctr::{
+    cipher::{KeyIvInit, StreamCipher},
+    Ctr128BE,
+};
 use flate2::read::ZlibDecoder;
 use flate2::write::ZlibEncoder;
 use flate2::Compression;
-use aes::Aes256;
-use ctr::{Ctr128BE, cipher::{KeyIvInit, StreamCipher}};
 use rand::RngCore;
+use std::io::{self, Read, Write};
 
 type AesCtr = Ctr128BE<Aes256>;
 
@@ -315,7 +318,7 @@ impl SngWrite for Beat {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct Phrase {
     pub solo: i8,
     pub disparity: i8,
@@ -323,19 +326,6 @@ pub struct Phrase {
     pub max_difficulty: i32,
     pub iteration_count: i32,
     pub name: [u8; 32],
-}
-
-impl Default for Phrase {
-    fn default() -> Self {
-        Phrase {
-            solo: 0,
-            disparity: 0,
-            ignore: 0,
-            max_difficulty: 0,
-            iteration_count: 0,
-            name: [0u8; 32],
-        }
-    }
 }
 
 impl SngRead for Phrase {
@@ -348,7 +338,14 @@ impl SngRead for Phrase {
         let iteration_count = read_i32(r)?;
         let mut name = [0u8; 32];
         r.read_exact(&mut name)?;
-        Ok(Phrase { solo, disparity, ignore, max_difficulty, iteration_count, name })
+        Ok(Phrase {
+            solo,
+            disparity,
+            ignore,
+            max_difficulty,
+            iteration_count,
+            name,
+        })
     }
 }
 
@@ -382,7 +379,13 @@ impl SngRead for PhraseExtraInfo {
         let level_jump = read_i8(r)?;
         let redundant = read_i16(r)?;
         let _ = read_u8(r)?; // padding
-        Ok(PhraseExtraInfo { phrase_id, difficulty, empty, level_jump, redundant })
+        Ok(PhraseExtraInfo {
+            phrase_id,
+            difficulty,
+            empty,
+            level_jump,
+            redundant,
+        })
     }
 }
 
@@ -412,7 +415,12 @@ impl SngRead for PhraseIteration {
         let start_time = read_f32(r)?;
         let end_time = read_f32(r)?;
         let difficulty = [read_i32(r)?, read_i32(r)?, read_i32(r)?];
-        Ok(PhraseIteration { phrase_id, start_time, end_time, difficulty })
+        Ok(PhraseIteration {
+            phrase_id,
+            start_time,
+            end_time,
+            difficulty,
+        })
     }
 }
 
@@ -493,25 +501,13 @@ impl SngWrite for Section {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct Chord {
     pub mask: ChordMask,
     pub frets: [i8; 6],
     pub fingers: [i8; 6],
     pub notes: [i32; 6],
     pub name: [u8; 32],
-}
-
-impl Default for Chord {
-    fn default() -> Self {
-        Chord {
-            mask: ChordMask::empty(),
-            frets: [0i8; 6],
-            fingers: [0i8; 6],
-            notes: [0i32; 6],
-            name: [0u8; 32],
-        }
-    }
 }
 
 impl Default for ChordMask {
@@ -537,7 +533,13 @@ impl SngRead for Chord {
         }
         let mut name = [0u8; 32];
         r.read_exact(&mut name)?;
-        Ok(Chord { mask, frets, fingers, notes, name })
+        Ok(Chord {
+            mask,
+            frets,
+            fingers,
+            notes,
+            name,
+        })
     }
 }
 
@@ -605,7 +607,10 @@ impl SngRead for BendData32 {
             *v = BendValue::sng_read(r)?;
         }
         let used_count = read_i32(r)?;
-        Ok(BendData32 { bend_values, used_count })
+        Ok(BendData32 {
+            bend_values,
+            used_count,
+        })
     }
 }
 
@@ -662,7 +667,13 @@ impl SngRead for ChordNotes {
         for v in vibrato.iter_mut() {
             *v = read_i16(r)?;
         }
-        Ok(ChordNotes { mask, bend_data, slide_to, slide_unpitch_to, vibrato })
+        Ok(ChordNotes {
+            mask,
+            bend_data,
+            slide_to,
+            slide_unpitch_to,
+            vibrato,
+        })
     }
 }
 
@@ -697,7 +708,12 @@ pub struct Vocal {
 
 impl Default for Vocal {
     fn default() -> Self {
-        Vocal { time: 0.0, note: 0, length: 0.0, lyric: [0u8; 48] }
+        Vocal {
+            time: 0.0,
+            note: 0,
+            length: 0.0,
+            lyric: [0u8; 48],
+        }
     }
 }
 
@@ -708,7 +724,12 @@ impl SngRead for Vocal {
         let length = read_f32(r)?;
         let mut lyric = [0u8; 48];
         r.read_exact(&mut lyric)?;
-        Ok(Vocal { time, note, length, lyric })
+        Ok(Vocal {
+            time,
+            note,
+            length,
+            lyric,
+        })
     }
 }
 
@@ -773,7 +794,12 @@ pub struct SymbolsTexture {
 
 impl Default for SymbolsTexture {
     fn default() -> Self {
-        SymbolsTexture { font: [0u8; 128], font_path_length: 0, width: 0, height: 0 }
+        SymbolsTexture {
+            font: [0u8; 128],
+            font_path_length: 0,
+            width: 0,
+            height: 0,
+        }
     }
 }
 
@@ -785,7 +811,12 @@ impl SngRead for SymbolsTexture {
         let _ = read_i32(r)?; // unknown, written as 0
         let width = read_i32(r)?;
         let height = read_i32(r)?;
-        Ok(SymbolsTexture { font, font_path_length, width, height })
+        Ok(SymbolsTexture {
+            font,
+            font_path_length,
+            width,
+            height,
+        })
     }
 }
 
@@ -810,7 +841,12 @@ pub struct Rect {
 
 impl SngRead for Rect {
     fn sng_read<R: Read>(r: &mut R) -> Result<Self> {
-        Ok(Rect { ymin: read_f32(r)?, xmin: read_f32(r)?, ymax: read_f32(r)?, xmax: read_f32(r)? })
+        Ok(Rect {
+            ymin: read_f32(r)?,
+            xmin: read_f32(r)?,
+            ymax: read_f32(r)?,
+            xmax: read_f32(r)?,
+        })
     }
 }
 
@@ -824,17 +860,11 @@ impl SngWrite for Rect {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct SymbolDefinition {
     pub symbol: [u8; 12],
     pub outer: Rect,
     pub inner: Rect,
-}
-
-impl Default for SymbolDefinition {
-    fn default() -> Self {
-        SymbolDefinition { symbol: [0u8; 12], outer: Rect::default(), inner: Rect::default() }
-    }
 }
 
 impl SngRead for SymbolDefinition {
@@ -843,7 +873,11 @@ impl SngRead for SymbolDefinition {
         r.read_exact(&mut symbol)?;
         let outer = Rect::sng_read(r)?;
         let inner = Rect::sng_read(r)?;
-        Ok(SymbolDefinition { symbol, outer, inner })
+        Ok(SymbolDefinition {
+            symbol,
+            outer,
+            inner,
+        })
     }
 }
 
@@ -866,7 +900,10 @@ impl SngRead for NewLinkedDifficulty {
     fn sng_read<R: Read>(r: &mut R) -> Result<Self> {
         let level_break = read_i32(r)?;
         let nld_phrases = read_vec_i32(r)?;
-        Ok(NewLinkedDifficulty { level_break, nld_phrases })
+        Ok(NewLinkedDifficulty {
+            level_break,
+            nld_phrases,
+        })
     }
 }
 
@@ -886,7 +923,10 @@ pub struct Action {
 
 impl Default for Action {
     fn default() -> Self {
-        Action { time: 0.0, action_name: [0u8; 256] }
+        Action {
+            time: 0.0,
+            action_name: [0u8; 256],
+        }
     }
 }
 
@@ -915,7 +955,10 @@ pub struct Event {
 
 impl Default for Event {
     fn default() -> Self {
-        Event { time: 0.0, name: [0u8; 256] }
+        Event {
+            time: 0.0,
+            name: [0u8; 256],
+        }
     }
 }
 
@@ -944,7 +987,10 @@ pub struct Tone {
 
 impl SngRead for Tone {
     fn sng_read<R: Read>(r: &mut R) -> Result<Self> {
-        Ok(Tone { time: read_f32(r)?, tone_id: read_i32(r)? })
+        Ok(Tone {
+            time: read_f32(r)?,
+            tone_id: read_i32(r)?,
+        })
     }
 }
 
@@ -964,7 +1010,10 @@ pub struct DNA {
 
 impl SngRead for DNA {
     fn sng_read<R: Read>(r: &mut R) -> Result<Self> {
-        Ok(DNA { time: read_f32(r)?, dna_id: read_i32(r)? })
+        Ok(DNA {
+            time: read_f32(r)?,
+            dna_id: read_i32(r)?,
+        })
     }
 }
 
@@ -998,7 +1047,15 @@ impl SngRead for Anchor {
         r.read_exact(&mut pad)?;
         let width = read_i32(r)?;
         let phrase_iteration_id = read_i32(r)?;
-        Ok(Anchor { start_time, end_time, first_note_time, last_note_time, fret_id, width, phrase_iteration_id })
+        Ok(Anchor {
+            start_time,
+            end_time,
+            first_note_time,
+            last_note_time,
+            fret_id,
+            width,
+            phrase_iteration_id,
+        })
     }
 }
 
@@ -1473,7 +1530,7 @@ impl Sng {
 }
 
 pub fn decrypt_sng(input: &[u8], platform: Platform) -> Result<Vec<u8>> {
-    if input.len() < 24 || &input[0..4] != &[0x4A, 0, 0, 0] {
+    if input.len() < 24 || input[0..4] != [0x4A, 0, 0, 0] {
         return Err(Error::InvalidHeader);
     }
     let iv = &input[8..24];
@@ -1530,7 +1587,11 @@ mod tests {
 
     #[test]
     fn test_bend_value_roundtrip() {
-        let bv = BendValue { time: 1.5, step: 0.5, unused: 0 };
+        let bv = BendValue {
+            time: 1.5,
+            step: 0.5,
+            unused: 0,
+        };
         let mut buf = Vec::new();
         bv.sng_write(&mut buf).unwrap();
         assert_eq!(buf.len(), 12);

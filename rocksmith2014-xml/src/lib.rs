@@ -68,10 +68,10 @@
 //! assert!(roundtripped.contains("<title>Test</title>"));
 //! ```
 
+use quick_xml::events::{BytesDecl, BytesEnd, BytesStart, BytesText, Event as XmlEvent};
+use quick_xml::{Reader, Writer};
 use std::fs;
 use std::path::Path;
-use quick_xml::{Reader, Writer};
-use quick_xml::events::{BytesDecl, BytesEnd, BytesStart, BytesText, Event as XmlEvent};
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
@@ -143,32 +143,74 @@ fn flag_from_attr(e: &BytesStart, name: &[u8]) -> bool {
 
 fn parse_note_mask(e: &BytesStart) -> NoteMask {
     let mut mask = NoteMask::empty();
-    if flag_from_attr(e, b"linkNext")      { mask |= NoteMask::LINK_NEXT; }
-    if flag_from_attr(e, b"accent")        { mask |= NoteMask::ACCENT; }
-    if flag_from_attr(e, b"hammerOn")      { mask |= NoteMask::HAMMER_ON; }
-    if flag_from_attr(e, b"harmonic")      { mask |= NoteMask::HARMONIC; }
-    if flag_from_attr(e, b"ignore")        { mask |= NoteMask::IGNORE; }
-    if flag_from_attr(e, b"fretHandMute")  { mask |= NoteMask::FRET_HAND_MUTE; }
-    if flag_from_attr(e, b"palmMute")      { mask |= NoteMask::PALM_MUTE; }
-    if flag_from_attr(e, b"pullOff")       { mask |= NoteMask::PULL_OFF; }
-    if flag_from_attr(e, b"tremolo")       { mask |= NoteMask::TREMOLO; }
-    if flag_from_attr(e, b"pinchHarmonic") { mask |= NoteMask::PINCH_HARMONIC; }
-    if flag_from_attr(e, b"pickDirection") { mask |= NoteMask::PICK_DIRECTION; }
-    if flag_from_attr(e, b"slap")          { mask |= NoteMask::SLAP; }
-    if flag_from_attr(e, b"pluck")         { mask |= NoteMask::PLUCK; }
-    if flag_from_attr(e, b"rightHand")     { mask |= NoteMask::RIGHT_HAND; }
+    if flag_from_attr(e, b"linkNext") {
+        mask |= NoteMask::LINK_NEXT;
+    }
+    if flag_from_attr(e, b"accent") {
+        mask |= NoteMask::ACCENT;
+    }
+    if flag_from_attr(e, b"hammerOn") {
+        mask |= NoteMask::HAMMER_ON;
+    }
+    if flag_from_attr(e, b"harmonic") {
+        mask |= NoteMask::HARMONIC;
+    }
+    if flag_from_attr(e, b"ignore") {
+        mask |= NoteMask::IGNORE;
+    }
+    if flag_from_attr(e, b"fretHandMute") {
+        mask |= NoteMask::FRET_HAND_MUTE;
+    }
+    if flag_from_attr(e, b"palmMute") {
+        mask |= NoteMask::PALM_MUTE;
+    }
+    if flag_from_attr(e, b"pullOff") {
+        mask |= NoteMask::PULL_OFF;
+    }
+    if flag_from_attr(e, b"tremolo") {
+        mask |= NoteMask::TREMOLO;
+    }
+    if flag_from_attr(e, b"pinchHarmonic") {
+        mask |= NoteMask::PINCH_HARMONIC;
+    }
+    if flag_from_attr(e, b"pickDirection") {
+        mask |= NoteMask::PICK_DIRECTION;
+    }
+    if flag_from_attr(e, b"slap") {
+        mask |= NoteMask::SLAP;
+    }
+    if flag_from_attr(e, b"pluck") {
+        mask |= NoteMask::PLUCK;
+    }
+    if flag_from_attr(e, b"rightHand") {
+        mask |= NoteMask::RIGHT_HAND;
+    }
     mask
 }
 
 fn parse_chord_mask(e: &BytesStart) -> ChordMask {
     let mut mask = ChordMask::empty();
-    if flag_from_attr(e, b"fretHandMute") { mask |= ChordMask::FRET_HAND_MUTE; }
-    if flag_from_attr(e, b"highDensity")  { mask |= ChordMask::HIGH_DENSITY; }
-    if flag_from_attr(e, b"hopo")         { mask |= ChordMask::HOPO; }
-    if flag_from_attr(e, b"ignore")       { mask |= ChordMask::IGNORE; }
-    if flag_from_attr(e, b"linkNext")     { mask |= ChordMask::LINK_NEXT; }
-    if flag_from_attr(e, b"palmMute")     { mask |= ChordMask::PALM_MUTE; }
-    if flag_from_attr(e, b"accent")       { mask |= ChordMask::ACCENT; }
+    if flag_from_attr(e, b"fretHandMute") {
+        mask |= ChordMask::FRET_HAND_MUTE;
+    }
+    if flag_from_attr(e, b"highDensity") {
+        mask |= ChordMask::HIGH_DENSITY;
+    }
+    if flag_from_attr(e, b"hopo") {
+        mask |= ChordMask::HOPO;
+    }
+    if flag_from_attr(e, b"ignore") {
+        mask |= ChordMask::IGNORE;
+    }
+    if flag_from_attr(e, b"linkNext") {
+        mask |= ChordMask::LINK_NEXT;
+    }
+    if flag_from_attr(e, b"palmMute") {
+        mask |= ChordMask::PALM_MUTE;
+    }
+    if flag_from_attr(e, b"accent") {
+        mask |= ChordMask::ACCENT;
+    }
     mask
 }
 
@@ -439,14 +481,30 @@ fn parse_bend_values(reader: &mut Reader<&[u8]>) -> Result<Vec<BendValue>> {
     loop {
         match reader.read_event()? {
             XmlEvent::Empty(e) if e.name().as_ref() == b"bendValue" => {
-                let time = get_attr(&e, b"time").map(|s| time_from_str(&s)).unwrap_or(0);
-                let step = get_attr(&e, b"step").and_then(|s| s.parse().ok()).unwrap_or(0.0);
-                values.push(BendValue { time, step, unk5: 0 });
+                let time = get_attr(&e, b"time")
+                    .map(|s| time_from_str(&s))
+                    .unwrap_or(0);
+                let step = get_attr(&e, b"step")
+                    .and_then(|s| s.parse().ok())
+                    .unwrap_or(0.0);
+                values.push(BendValue {
+                    time,
+                    step,
+                    unk5: 0,
+                });
             }
             XmlEvent::Start(e) if e.name().as_ref() == b"bendValue" => {
-                let time = get_attr(&e, b"time").map(|s| time_from_str(&s)).unwrap_or(0);
-                let step = get_attr(&e, b"step").and_then(|s| s.parse().ok()).unwrap_or(0.0);
-                values.push(BendValue { time, step, unk5: 0 });
+                let time = get_attr(&e, b"time")
+                    .map(|s| time_from_str(&s))
+                    .unwrap_or(0);
+                let step = get_attr(&e, b"step")
+                    .and_then(|s| s.parse().ok())
+                    .unwrap_or(0.0);
+                values.push(BendValue {
+                    time,
+                    step,
+                    unk5: 0,
+                });
                 let end = e.to_end().into_owned();
                 reader.read_to_end(end.name())?;
             }
@@ -460,18 +518,42 @@ fn parse_bend_values(reader: &mut Reader<&[u8]>) -> Result<Vec<BendValue>> {
 
 fn parse_note(reader: &mut Reader<&[u8]>, e: &BytesStart, is_start: bool) -> Result<Note> {
     let time = get_attr(e, b"time").map(|s| time_from_str(&s)).unwrap_or(0);
-    let string = get_attr(e, b"string").and_then(|s| s.parse().ok()).unwrap_or(0);
-    let fret = get_attr(e, b"fret").and_then(|s| s.parse().ok()).unwrap_or(0);
-    let sustain = get_attr(e, b"sustain").map(|s| time_from_str(&s)).unwrap_or(0);
-    let vibrato = get_attr(e, b"vibrato").and_then(|s| s.parse().ok()).unwrap_or(0);
-    let slide_to = get_attr(e, b"slideTo").and_then(|s| s.parse().ok()).unwrap_or(-1);
-    let slide_unpitch_to = get_attr(e, b"slideUnpitchTo").and_then(|s| s.parse().ok()).unwrap_or(-1);
-    let left_hand = get_attr(e, b"leftHand").and_then(|s| s.parse().ok()).unwrap_or(-1);
-    let tap = get_attr(e, b"tap").and_then(|s| s.parse().ok()).unwrap_or(0);
-    let pick_direction = get_attr(e, b"pickDirection").and_then(|s| s.parse().ok()).unwrap_or(0);
-    let slap = get_attr(e, b"slap").and_then(|s| s.parse().ok()).unwrap_or(-1);
-    let pluck = get_attr(e, b"pluck").and_then(|s| s.parse().ok()).unwrap_or(-1);
-    let max_bend = get_attr(e, b"maxBend").and_then(|s| s.parse().ok()).unwrap_or(0.0);
+    let string = get_attr(e, b"string")
+        .and_then(|s| s.parse().ok())
+        .unwrap_or(0);
+    let fret = get_attr(e, b"fret")
+        .and_then(|s| s.parse().ok())
+        .unwrap_or(0);
+    let sustain = get_attr(e, b"sustain")
+        .map(|s| time_from_str(&s))
+        .unwrap_or(0);
+    let vibrato = get_attr(e, b"vibrato")
+        .and_then(|s| s.parse().ok())
+        .unwrap_or(0);
+    let slide_to = get_attr(e, b"slideTo")
+        .and_then(|s| s.parse().ok())
+        .unwrap_or(-1);
+    let slide_unpitch_to = get_attr(e, b"slideUnpitchTo")
+        .and_then(|s| s.parse().ok())
+        .unwrap_or(-1);
+    let left_hand = get_attr(e, b"leftHand")
+        .and_then(|s| s.parse().ok())
+        .unwrap_or(-1);
+    let tap = get_attr(e, b"tap")
+        .and_then(|s| s.parse().ok())
+        .unwrap_or(0);
+    let pick_direction = get_attr(e, b"pickDirection")
+        .and_then(|s| s.parse().ok())
+        .unwrap_or(0);
+    let slap = get_attr(e, b"slap")
+        .and_then(|s| s.parse().ok())
+        .unwrap_or(-1);
+    let pluck = get_attr(e, b"pluck")
+        .and_then(|s| s.parse().ok())
+        .unwrap_or(-1);
+    let max_bend = get_attr(e, b"maxBend")
+        .and_then(|s| s.parse().ok())
+        .unwrap_or(0.0);
     let mask = parse_note_mask(e);
 
     let mut bend_values = vec![];
@@ -511,14 +593,32 @@ fn parse_note(reader: &mut Reader<&[u8]>, e: &BytesStart, is_start: bool) -> Res
     })
 }
 
-fn parse_chord_note(reader: &mut Reader<&[u8]>, e: &BytesStart, is_start: bool) -> Result<ChordNote> {
-    let string = get_attr(e, b"string").and_then(|s| s.parse().ok()).unwrap_or(0);
-    let fret = get_attr(e, b"fret").and_then(|s| s.parse().ok()).unwrap_or(0);
-    let sustain = get_attr(e, b"sustain").map(|s| time_from_str(&s)).unwrap_or(0);
-    let vibrato = get_attr(e, b"vibrato").and_then(|s| s.parse().ok()).unwrap_or(0);
-    let slide_to = get_attr(e, b"slideTo").and_then(|s| s.parse().ok()).unwrap_or(-1);
-    let slide_unpitch_to = get_attr(e, b"slideUnpitchTo").and_then(|s| s.parse().ok()).unwrap_or(-1);
-    let left_hand = get_attr(e, b"leftHand").and_then(|s| s.parse().ok()).unwrap_or(-1);
+fn parse_chord_note(
+    reader: &mut Reader<&[u8]>,
+    e: &BytesStart,
+    is_start: bool,
+) -> Result<ChordNote> {
+    let string = get_attr(e, b"string")
+        .and_then(|s| s.parse().ok())
+        .unwrap_or(0);
+    let fret = get_attr(e, b"fret")
+        .and_then(|s| s.parse().ok())
+        .unwrap_or(0);
+    let sustain = get_attr(e, b"sustain")
+        .map(|s| time_from_str(&s))
+        .unwrap_or(0);
+    let vibrato = get_attr(e, b"vibrato")
+        .and_then(|s| s.parse().ok())
+        .unwrap_or(0);
+    let slide_to = get_attr(e, b"slideTo")
+        .and_then(|s| s.parse().ok())
+        .unwrap_or(-1);
+    let slide_unpitch_to = get_attr(e, b"slideUnpitchTo")
+        .and_then(|s| s.parse().ok())
+        .unwrap_or(-1);
+    let left_hand = get_attr(e, b"leftHand")
+        .and_then(|s| s.parse().ok())
+        .unwrap_or(-1);
     let mask = parse_note_mask(e);
 
     let mut bend_values = vec![];
@@ -537,7 +637,17 @@ fn parse_chord_note(reader: &mut Reader<&[u8]>, e: &BytesStart, is_start: bool) 
         }
     }
 
-    Ok(ChordNote { string, fret, sustain, vibrato, slide_to, slide_unpitch_to, left_hand, bend_values, mask })
+    Ok(ChordNote {
+        string,
+        fret,
+        sustain,
+        vibrato,
+        slide_to,
+        slide_unpitch_to,
+        left_hand,
+        bend_values,
+        mask,
+    })
 }
 
 fn parse_chord_notes_list(reader: &mut Reader<&[u8]>) -> Result<Vec<ChordNote>> {
@@ -560,8 +670,12 @@ fn parse_chord_notes_list(reader: &mut Reader<&[u8]>) -> Result<Vec<ChordNote>> 
 
 fn parse_chord(reader: &mut Reader<&[u8]>, e: &BytesStart, is_start: bool) -> Result<Chord> {
     let time = get_attr(e, b"time").map(|s| time_from_str(&s)).unwrap_or(0);
-    let chord_id = get_attr(e, b"chordId").and_then(|s| s.parse().ok()).unwrap_or(0);
-    let sustain = get_attr(e, b"sustain").map(|s| time_from_str(&s)).unwrap_or(0);
+    let chord_id = get_attr(e, b"chordId")
+        .and_then(|s| s.parse().ok())
+        .unwrap_or(0);
+    let sustain = get_attr(e, b"sustain")
+        .map(|s| time_from_str(&s))
+        .unwrap_or(0);
     let mask = parse_chord_mask(e);
 
     let mut chord_notes = vec![];
@@ -580,7 +694,13 @@ fn parse_chord(reader: &mut Reader<&[u8]>, e: &BytesStart, is_start: bool) -> Re
         }
     }
 
-    Ok(Chord { time, chord_id, sustain, mask, chord_notes })
+    Ok(Chord {
+        time,
+        chord_id,
+        sustain,
+        mask,
+        chord_notes,
+    })
 }
 
 fn parse_notes(reader: &mut Reader<&[u8]>) -> Result<Vec<Note>> {
@@ -624,18 +744,44 @@ fn parse_anchors(reader: &mut Reader<&[u8]>) -> Result<Vec<Anchor>> {
     loop {
         match reader.read_event()? {
             XmlEvent::Empty(e) if e.name().as_ref() == b"anchor" => {
-                let time = get_attr(&e, b"time").map(|s| time_from_str(&s)).unwrap_or(0);
-                let end_time = get_attr(&e, b"endTime").map(|s| time_from_str(&s)).unwrap_or(0);
-                let fret = get_attr(&e, b"fret").and_then(|s| s.parse().ok()).unwrap_or(0);
-                let width = get_attr(&e, b"width").and_then(|s| s.parse().ok()).unwrap_or(4);
-                anchors.push(Anchor { time, end_time, fret, width });
+                let time = get_attr(&e, b"time")
+                    .map(|s| time_from_str(&s))
+                    .unwrap_or(0);
+                let end_time = get_attr(&e, b"endTime")
+                    .map(|s| time_from_str(&s))
+                    .unwrap_or(0);
+                let fret = get_attr(&e, b"fret")
+                    .and_then(|s| s.parse().ok())
+                    .unwrap_or(0);
+                let width = get_attr(&e, b"width")
+                    .and_then(|s| s.parse().ok())
+                    .unwrap_or(4);
+                anchors.push(Anchor {
+                    time,
+                    end_time,
+                    fret,
+                    width,
+                });
             }
             XmlEvent::Start(e) if e.name().as_ref() == b"anchor" => {
-                let time = get_attr(&e, b"time").map(|s| time_from_str(&s)).unwrap_or(0);
-                let end_time = get_attr(&e, b"endTime").map(|s| time_from_str(&s)).unwrap_or(0);
-                let fret = get_attr(&e, b"fret").and_then(|s| s.parse().ok()).unwrap_or(0);
-                let width = get_attr(&e, b"width").and_then(|s| s.parse().ok()).unwrap_or(4);
-                anchors.push(Anchor { time, end_time, fret, width });
+                let time = get_attr(&e, b"time")
+                    .map(|s| time_from_str(&s))
+                    .unwrap_or(0);
+                let end_time = get_attr(&e, b"endTime")
+                    .map(|s| time_from_str(&s))
+                    .unwrap_or(0);
+                let fret = get_attr(&e, b"fret")
+                    .and_then(|s| s.parse().ok())
+                    .unwrap_or(0);
+                let width = get_attr(&e, b"width")
+                    .and_then(|s| s.parse().ok())
+                    .unwrap_or(4);
+                anchors.push(Anchor {
+                    time,
+                    end_time,
+                    fret,
+                    width,
+                });
                 let end = e.to_end().into_owned();
                 reader.read_to_end(end.name())?;
             }
@@ -652,16 +798,36 @@ fn parse_hand_shapes(reader: &mut Reader<&[u8]>) -> Result<Vec<HandShape>> {
     loop {
         match reader.read_event()? {
             XmlEvent::Empty(e) if e.name().as_ref() == b"handShape" => {
-                let chord_id = get_attr(&e, b"chordId").and_then(|s| s.parse().ok()).unwrap_or(0);
-                let start_time = get_attr(&e, b"startTime").map(|s| time_from_str(&s)).unwrap_or(0);
-                let end_time = get_attr(&e, b"endTime").map(|s| time_from_str(&s)).unwrap_or(0);
-                shapes.push(HandShape { chord_id, start_time, end_time });
+                let chord_id = get_attr(&e, b"chordId")
+                    .and_then(|s| s.parse().ok())
+                    .unwrap_or(0);
+                let start_time = get_attr(&e, b"startTime")
+                    .map(|s| time_from_str(&s))
+                    .unwrap_or(0);
+                let end_time = get_attr(&e, b"endTime")
+                    .map(|s| time_from_str(&s))
+                    .unwrap_or(0);
+                shapes.push(HandShape {
+                    chord_id,
+                    start_time,
+                    end_time,
+                });
             }
             XmlEvent::Start(e) if e.name().as_ref() == b"handShape" => {
-                let chord_id = get_attr(&e, b"chordId").and_then(|s| s.parse().ok()).unwrap_or(0);
-                let start_time = get_attr(&e, b"startTime").map(|s| time_from_str(&s)).unwrap_or(0);
-                let end_time = get_attr(&e, b"endTime").map(|s| time_from_str(&s)).unwrap_or(0);
-                shapes.push(HandShape { chord_id, start_time, end_time });
+                let chord_id = get_attr(&e, b"chordId")
+                    .and_then(|s| s.parse().ok())
+                    .unwrap_or(0);
+                let start_time = get_attr(&e, b"startTime")
+                    .map(|s| time_from_str(&s))
+                    .unwrap_or(0);
+                let end_time = get_attr(&e, b"endTime")
+                    .map(|s| time_from_str(&s))
+                    .unwrap_or(0);
+                shapes.push(HandShape {
+                    chord_id,
+                    start_time,
+                    end_time,
+                });
                 let end = e.to_end().into_owned();
                 reader.read_to_end(end.name())?;
             }
@@ -674,7 +840,9 @@ fn parse_hand_shapes(reader: &mut Reader<&[u8]>) -> Result<Vec<HandShape>> {
 }
 
 fn parse_level(reader: &mut Reader<&[u8]>, e: &BytesStart) -> Result<Level> {
-    let difficulty = get_attr(e, b"difficulty").and_then(|s| s.parse().ok()).unwrap_or(0);
+    let difficulty = get_attr(e, b"difficulty")
+        .and_then(|s| s.parse().ok())
+        .unwrap_or(0);
     let mut anchors = vec![];
     let mut hand_shapes = vec![];
     let mut notes = vec![];
@@ -682,34 +850,44 @@ fn parse_level(reader: &mut Reader<&[u8]>, e: &BytesStart) -> Result<Level> {
 
     loop {
         match reader.read_event()? {
-            XmlEvent::Start(ce) => {
-                match ce.name().as_ref() {
-                    b"anchors" => { anchors = parse_anchors(reader)?; }
-                    b"handShapes" => { hand_shapes = parse_hand_shapes(reader)?; }
-                    b"notes" => { notes = parse_notes(reader)?; }
-                    b"chords" => { chords = parse_chords(reader)?; }
-                    _ => {
-                        let end = ce.to_end().into_owned();
-                        reader.read_to_end(end.name())?;
-                    }
+            XmlEvent::Start(ce) => match ce.name().as_ref() {
+                b"anchors" => {
+                    anchors = parse_anchors(reader)?;
                 }
-            }
-            XmlEvent::Empty(ce) => {
-                match ce.name().as_ref() {
-                    b"anchors" => {}
-                    b"handShapes" => {}
-                    b"notes" => {}
-                    b"chords" => {}
-                    _ => {}
+                b"handShapes" => {
+                    hand_shapes = parse_hand_shapes(reader)?;
                 }
-            }
+                b"notes" => {
+                    notes = parse_notes(reader)?;
+                }
+                b"chords" => {
+                    chords = parse_chords(reader)?;
+                }
+                _ => {
+                    let end = ce.to_end().into_owned();
+                    reader.read_to_end(end.name())?;
+                }
+            },
+            XmlEvent::Empty(ce) => match ce.name().as_ref() {
+                b"anchors" => {}
+                b"handShapes" => {}
+                b"notes" => {}
+                b"chords" => {}
+                _ => {}
+            },
             XmlEvent::End(ce) if ce.name().as_ref() == b"level" => break,
             XmlEvent::Eof => break,
             _ => {}
         }
     }
 
-    Ok(Level { difficulty, anchors, hand_shapes, notes, chords })
+    Ok(Level {
+        difficulty,
+        anchors,
+        hand_shapes,
+        notes,
+        chords,
+    })
 }
 
 fn parse_levels(reader: &mut Reader<&[u8]>) -> Result<Vec<Level>> {
@@ -732,13 +910,21 @@ fn parse_ebeats(reader: &mut Reader<&[u8]>) -> Result<Vec<Ebeat>> {
     loop {
         match reader.read_event()? {
             XmlEvent::Empty(e) if e.name().as_ref() == b"ebeat" => {
-                let time = get_attr(&e, b"time").map(|s| time_from_str(&s)).unwrap_or(0);
-                let measure = get_attr(&e, b"measure").and_then(|s| s.parse().ok()).unwrap_or(-1);
+                let time = get_attr(&e, b"time")
+                    .map(|s| time_from_str(&s))
+                    .unwrap_or(0);
+                let measure = get_attr(&e, b"measure")
+                    .and_then(|s| s.parse().ok())
+                    .unwrap_or(-1);
                 beats.push(Ebeat { time, measure });
             }
             XmlEvent::Start(e) if e.name().as_ref() == b"ebeat" => {
-                let time = get_attr(&e, b"time").map(|s| time_from_str(&s)).unwrap_or(0);
-                let measure = get_attr(&e, b"measure").and_then(|s| s.parse().ok()).unwrap_or(-1);
+                let time = get_attr(&e, b"time")
+                    .map(|s| time_from_str(&s))
+                    .unwrap_or(0);
+                let measure = get_attr(&e, b"measure")
+                    .and_then(|s| s.parse().ok())
+                    .unwrap_or(-1);
                 beats.push(Ebeat { time, measure });
                 let end = e.to_end().into_owned();
                 reader.read_to_end(end.name())?;
@@ -756,20 +942,48 @@ fn parse_phrases(reader: &mut Reader<&[u8]>) -> Result<Vec<Phrase>> {
     loop {
         match reader.read_event()? {
             XmlEvent::Empty(e) if e.name().as_ref() == b"phrase" => {
-                let max_difficulty = get_attr(&e, b"maxDifficulty").and_then(|s| s.parse().ok()).unwrap_or(0);
+                let max_difficulty = get_attr(&e, b"maxDifficulty")
+                    .and_then(|s| s.parse().ok())
+                    .unwrap_or(0);
                 let name = get_attr(&e, b"name").unwrap_or_default();
-                let disparity = get_attr(&e, b"disparity").and_then(|s| s.parse().ok()).unwrap_or(0);
-                let ignore = get_attr(&e, b"ignore").and_then(|s| s.parse().ok()).unwrap_or(0);
-                let solo = get_attr(&e, b"solo").and_then(|s| s.parse().ok()).unwrap_or(0);
-                phrases.push(Phrase { max_difficulty, name, disparity, ignore, solo });
+                let disparity = get_attr(&e, b"disparity")
+                    .and_then(|s| s.parse().ok())
+                    .unwrap_or(0);
+                let ignore = get_attr(&e, b"ignore")
+                    .and_then(|s| s.parse().ok())
+                    .unwrap_or(0);
+                let solo = get_attr(&e, b"solo")
+                    .and_then(|s| s.parse().ok())
+                    .unwrap_or(0);
+                phrases.push(Phrase {
+                    max_difficulty,
+                    name,
+                    disparity,
+                    ignore,
+                    solo,
+                });
             }
             XmlEvent::Start(e) if e.name().as_ref() == b"phrase" => {
-                let max_difficulty = get_attr(&e, b"maxDifficulty").and_then(|s| s.parse().ok()).unwrap_or(0);
+                let max_difficulty = get_attr(&e, b"maxDifficulty")
+                    .and_then(|s| s.parse().ok())
+                    .unwrap_or(0);
                 let name = get_attr(&e, b"name").unwrap_or_default();
-                let disparity = get_attr(&e, b"disparity").and_then(|s| s.parse().ok()).unwrap_or(0);
-                let ignore = get_attr(&e, b"ignore").and_then(|s| s.parse().ok()).unwrap_or(0);
-                let solo = get_attr(&e, b"solo").and_then(|s| s.parse().ok()).unwrap_or(0);
-                phrases.push(Phrase { max_difficulty, name, disparity, ignore, solo });
+                let disparity = get_attr(&e, b"disparity")
+                    .and_then(|s| s.parse().ok())
+                    .unwrap_or(0);
+                let ignore = get_attr(&e, b"ignore")
+                    .and_then(|s| s.parse().ok())
+                    .unwrap_or(0);
+                let solo = get_attr(&e, b"solo")
+                    .and_then(|s| s.parse().ok())
+                    .unwrap_or(0);
+                phrases.push(Phrase {
+                    max_difficulty,
+                    name,
+                    disparity,
+                    ignore,
+                    solo,
+                });
                 let end = e.to_end().into_owned();
                 reader.read_to_end(end.name())?;
             }
@@ -786,13 +1000,21 @@ fn parse_hero_levels(reader: &mut Reader<&[u8]>) -> Result<Vec<HeroLevel>> {
     loop {
         match reader.read_event()? {
             XmlEvent::Empty(e) if e.name().as_ref() == b"heroLevel" => {
-                let hero = get_attr(&e, b"hero").and_then(|s| s.parse().ok()).unwrap_or(0);
-                let difficulty = get_attr(&e, b"difficulty").and_then(|s| s.parse().ok()).unwrap_or(0);
+                let hero = get_attr(&e, b"hero")
+                    .and_then(|s| s.parse().ok())
+                    .unwrap_or(0);
+                let difficulty = get_attr(&e, b"difficulty")
+                    .and_then(|s| s.parse().ok())
+                    .unwrap_or(0);
                 hero_levels.push(HeroLevel { hero, difficulty });
             }
             XmlEvent::Start(e) if e.name().as_ref() == b"heroLevel" => {
-                let hero = get_attr(&e, b"hero").and_then(|s| s.parse().ok()).unwrap_or(0);
-                let difficulty = get_attr(&e, b"difficulty").and_then(|s| s.parse().ok()).unwrap_or(0);
+                let hero = get_attr(&e, b"hero")
+                    .and_then(|s| s.parse().ok())
+                    .unwrap_or(0);
+                let difficulty = get_attr(&e, b"difficulty")
+                    .and_then(|s| s.parse().ok())
+                    .unwrap_or(0);
                 hero_levels.push(HeroLevel { hero, difficulty });
                 let end = e.to_end().into_owned();
                 reader.read_to_end(end.name())?;
@@ -810,15 +1032,32 @@ fn parse_phrase_iterations(reader: &mut Reader<&[u8]>) -> Result<Vec<PhraseItera
     loop {
         match reader.read_event()? {
             XmlEvent::Empty(e) if e.name().as_ref() == b"phraseIteration" => {
-                let time = get_attr(&e, b"time").map(|s| time_from_str(&s)).unwrap_or(0);
-                let end_time = get_attr(&e, b"endTime").map(|s| time_from_str(&s)).unwrap_or(0);
-                let phrase_id = get_attr(&e, b"phraseId").and_then(|s| s.parse().ok()).unwrap_or(0);
-                iterations.push(PhraseIteration { time, end_time, phrase_id, hero_levels: None });
+                let time = get_attr(&e, b"time")
+                    .map(|s| time_from_str(&s))
+                    .unwrap_or(0);
+                let end_time = get_attr(&e, b"endTime")
+                    .map(|s| time_from_str(&s))
+                    .unwrap_or(0);
+                let phrase_id = get_attr(&e, b"phraseId")
+                    .and_then(|s| s.parse().ok())
+                    .unwrap_or(0);
+                iterations.push(PhraseIteration {
+                    time,
+                    end_time,
+                    phrase_id,
+                    hero_levels: None,
+                });
             }
             XmlEvent::Start(e) if e.name().as_ref() == b"phraseIteration" => {
-                let time = get_attr(&e, b"time").map(|s| time_from_str(&s)).unwrap_or(0);
-                let end_time = get_attr(&e, b"endTime").map(|s| time_from_str(&s)).unwrap_or(0);
-                let phrase_id = get_attr(&e, b"phraseId").and_then(|s| s.parse().ok()).unwrap_or(0);
+                let time = get_attr(&e, b"time")
+                    .map(|s| time_from_str(&s))
+                    .unwrap_or(0);
+                let end_time = get_attr(&e, b"endTime")
+                    .map(|s| time_from_str(&s))
+                    .unwrap_or(0);
+                let phrase_id = get_attr(&e, b"phraseId")
+                    .and_then(|s| s.parse().ok())
+                    .unwrap_or(0);
                 let mut hero_levels = None;
                 loop {
                     match reader.read_event()? {
@@ -831,7 +1070,12 @@ fn parse_phrase_iterations(reader: &mut Reader<&[u8]>) -> Result<Vec<PhraseItera
                         _ => {}
                     }
                 }
-                iterations.push(PhraseIteration { time, end_time, phrase_id, hero_levels });
+                iterations.push(PhraseIteration {
+                    time,
+                    end_time,
+                    phrase_id,
+                    hero_levels,
+                });
             }
             XmlEvent::End(e) if e.name().as_ref() == b"phraseIterations" => break,
             XmlEvent::Eof => break,
@@ -866,20 +1110,44 @@ fn parse_chord_template_from_elem(e: &BytesStart) -> ChordTemplate {
         chord_name: get_attr(e, b"chordName").unwrap_or_default(),
         display_name: get_attr(e, b"displayName").unwrap_or_default(),
         fingers: [
-            get_attr(e, b"finger0").and_then(|s| s.parse().ok()).unwrap_or(-1),
-            get_attr(e, b"finger1").and_then(|s| s.parse().ok()).unwrap_or(-1),
-            get_attr(e, b"finger2").and_then(|s| s.parse().ok()).unwrap_or(-1),
-            get_attr(e, b"finger3").and_then(|s| s.parse().ok()).unwrap_or(-1),
-            get_attr(e, b"finger4").and_then(|s| s.parse().ok()).unwrap_or(-1),
-            get_attr(e, b"finger5").and_then(|s| s.parse().ok()).unwrap_or(-1),
+            get_attr(e, b"finger0")
+                .and_then(|s| s.parse().ok())
+                .unwrap_or(-1),
+            get_attr(e, b"finger1")
+                .and_then(|s| s.parse().ok())
+                .unwrap_or(-1),
+            get_attr(e, b"finger2")
+                .and_then(|s| s.parse().ok())
+                .unwrap_or(-1),
+            get_attr(e, b"finger3")
+                .and_then(|s| s.parse().ok())
+                .unwrap_or(-1),
+            get_attr(e, b"finger4")
+                .and_then(|s| s.parse().ok())
+                .unwrap_or(-1),
+            get_attr(e, b"finger5")
+                .and_then(|s| s.parse().ok())
+                .unwrap_or(-1),
         ],
         frets: [
-            get_attr(e, b"fret0").and_then(|s| s.parse().ok()).unwrap_or(-1),
-            get_attr(e, b"fret1").and_then(|s| s.parse().ok()).unwrap_or(-1),
-            get_attr(e, b"fret2").and_then(|s| s.parse().ok()).unwrap_or(-1),
-            get_attr(e, b"fret3").and_then(|s| s.parse().ok()).unwrap_or(-1),
-            get_attr(e, b"fret4").and_then(|s| s.parse().ok()).unwrap_or(-1),
-            get_attr(e, b"fret5").and_then(|s| s.parse().ok()).unwrap_or(-1),
+            get_attr(e, b"fret0")
+                .and_then(|s| s.parse().ok())
+                .unwrap_or(-1),
+            get_attr(e, b"fret1")
+                .and_then(|s| s.parse().ok())
+                .unwrap_or(-1),
+            get_attr(e, b"fret2")
+                .and_then(|s| s.parse().ok())
+                .unwrap_or(-1),
+            get_attr(e, b"fret3")
+                .and_then(|s| s.parse().ok())
+                .unwrap_or(-1),
+            get_attr(e, b"fret4")
+                .and_then(|s| s.parse().ok())
+                .unwrap_or(-1),
+            get_attr(e, b"fret5")
+                .and_then(|s| s.parse().ok())
+                .unwrap_or(-1),
         ],
     }
 }
@@ -889,12 +1157,16 @@ fn parse_events(reader: &mut Reader<&[u8]>) -> Result<Vec<ArrangementEvent>> {
     loop {
         match reader.read_event()? {
             XmlEvent::Empty(e) if e.name().as_ref() == b"event" => {
-                let time = get_attr(&e, b"time").map(|s| time_from_str(&s)).unwrap_or(0);
+                let time = get_attr(&e, b"time")
+                    .map(|s| time_from_str(&s))
+                    .unwrap_or(0);
                 let code = get_attr(&e, b"code").unwrap_or_default();
                 events.push(ArrangementEvent { time, code });
             }
             XmlEvent::Start(e) if e.name().as_ref() == b"event" => {
-                let time = get_attr(&e, b"time").map(|s| time_from_str(&s)).unwrap_or(0);
+                let time = get_attr(&e, b"time")
+                    .map(|s| time_from_str(&s))
+                    .unwrap_or(0);
                 let code = get_attr(&e, b"code").unwrap_or_default();
                 events.push(ArrangementEvent { time, code });
                 let end = e.to_end().into_owned();
@@ -914,17 +1186,39 @@ fn parse_sections(reader: &mut Reader<&[u8]>) -> Result<Vec<Section>> {
         match reader.read_event()? {
             XmlEvent::Empty(e) if e.name().as_ref() == b"section" => {
                 let name = get_attr(&e, b"name").unwrap_or_default();
-                let number = get_attr(&e, b"number").and_then(|s| s.parse().ok()).unwrap_or(0);
-                let start_time = get_attr(&e, b"startTime").map(|s| time_from_str(&s)).unwrap_or(0);
-                let end_time = get_attr(&e, b"endTime").map(|s| time_from_str(&s)).unwrap_or(0);
-                sections.push(Section { name, number, start_time, end_time });
+                let number = get_attr(&e, b"number")
+                    .and_then(|s| s.parse().ok())
+                    .unwrap_or(0);
+                let start_time = get_attr(&e, b"startTime")
+                    .map(|s| time_from_str(&s))
+                    .unwrap_or(0);
+                let end_time = get_attr(&e, b"endTime")
+                    .map(|s| time_from_str(&s))
+                    .unwrap_or(0);
+                sections.push(Section {
+                    name,
+                    number,
+                    start_time,
+                    end_time,
+                });
             }
             XmlEvent::Start(e) if e.name().as_ref() == b"section" => {
                 let name = get_attr(&e, b"name").unwrap_or_default();
-                let number = get_attr(&e, b"number").and_then(|s| s.parse().ok()).unwrap_or(0);
-                let start_time = get_attr(&e, b"startTime").map(|s| time_from_str(&s)).unwrap_or(0);
-                let end_time = get_attr(&e, b"endTime").map(|s| time_from_str(&s)).unwrap_or(0);
-                sections.push(Section { name, number, start_time, end_time });
+                let number = get_attr(&e, b"number")
+                    .and_then(|s| s.parse().ok())
+                    .unwrap_or(0);
+                let start_time = get_attr(&e, b"startTime")
+                    .map(|s| time_from_str(&s))
+                    .unwrap_or(0);
+                let end_time = get_attr(&e, b"endTime")
+                    .map(|s| time_from_str(&s))
+                    .unwrap_or(0);
+                sections.push(Section {
+                    name,
+                    number,
+                    start_time,
+                    end_time,
+                });
                 let end = e.to_end().into_owned();
                 reader.read_to_end(end.name())?;
             }
@@ -941,15 +1235,23 @@ fn parse_tones(reader: &mut Reader<&[u8]>) -> Result<Vec<ToneChange>> {
     loop {
         match reader.read_event()? {
             XmlEvent::Empty(e) if e.name().as_ref() == b"tone" => {
-                let time = get_attr(&e, b"time").map(|s| time_from_str(&s)).unwrap_or(0);
+                let time = get_attr(&e, b"time")
+                    .map(|s| time_from_str(&s))
+                    .unwrap_or(0);
                 let name = get_attr(&e, b"name").unwrap_or_default();
-                let id = get_attr(&e, b"id").and_then(|s| s.parse().ok()).unwrap_or(0);
+                let id = get_attr(&e, b"id")
+                    .and_then(|s| s.parse().ok())
+                    .unwrap_or(0);
                 tones.push(ToneChange { time, name, id });
             }
             XmlEvent::Start(e) if e.name().as_ref() == b"tone" => {
-                let time = get_attr(&e, b"time").map(|s| time_from_str(&s)).unwrap_or(0);
+                let time = get_attr(&e, b"time")
+                    .map(|s| time_from_str(&s))
+                    .unwrap_or(0);
                 let name = get_attr(&e, b"name").unwrap_or_default();
-                let id = get_attr(&e, b"id").and_then(|s| s.parse().ok()).unwrap_or(0);
+                let id = get_attr(&e, b"id")
+                    .and_then(|s| s.parse().ok())
+                    .unwrap_or(0);
                 tones.push(ToneChange { time, name, id });
                 let end = e.to_end().into_owned();
                 reader.read_to_end(end.name())?;
@@ -967,14 +1269,28 @@ fn parse_linked_diffs(reader: &mut Reader<&[u8]>) -> Result<Vec<LinkedDiff>> {
     loop {
         match reader.read_event()? {
             XmlEvent::Empty(e) if e.name().as_ref() == b"linkedDiff" => {
-                let parent_id = get_attr(&e, b"parentId").and_then(|s| s.parse().ok()).unwrap_or(0);
-                let child_id = get_attr(&e, b"childId").and_then(|s| s.parse().ok()).unwrap_or(0);
-                diffs.push(LinkedDiff { parent_id, child_id });
+                let parent_id = get_attr(&e, b"parentId")
+                    .and_then(|s| s.parse().ok())
+                    .unwrap_or(0);
+                let child_id = get_attr(&e, b"childId")
+                    .and_then(|s| s.parse().ok())
+                    .unwrap_or(0);
+                diffs.push(LinkedDiff {
+                    parent_id,
+                    child_id,
+                });
             }
             XmlEvent::Start(e) if e.name().as_ref() == b"linkedDiff" => {
-                let parent_id = get_attr(&e, b"parentId").and_then(|s| s.parse().ok()).unwrap_or(0);
-                let child_id = get_attr(&e, b"childId").and_then(|s| s.parse().ok()).unwrap_or(0);
-                diffs.push(LinkedDiff { parent_id, child_id });
+                let parent_id = get_attr(&e, b"parentId")
+                    .and_then(|s| s.parse().ok())
+                    .unwrap_or(0);
+                let child_id = get_attr(&e, b"childId")
+                    .and_then(|s| s.parse().ok())
+                    .unwrap_or(0);
+                diffs.push(LinkedDiff {
+                    parent_id,
+                    child_id,
+                });
                 let end = e.to_end().into_owned();
                 reader.read_to_end(end.name())?;
             }
@@ -991,20 +1307,52 @@ fn parse_phrase_properties(reader: &mut Reader<&[u8]>) -> Result<Vec<PhrasePrope
     loop {
         match reader.read_event()? {
             XmlEvent::Empty(e) if e.name().as_ref() == b"phraseProperty" => {
-                let phrase_id = get_attr(&e, b"phraseId").and_then(|s| s.parse().ok()).unwrap_or(0);
-                let redundant = get_attr(&e, b"redundant").and_then(|s| s.parse().ok()).unwrap_or(0);
-                let level_jump = get_attr(&e, b"levelJump").and_then(|s| s.parse().ok()).unwrap_or(0);
-                let empty = get_attr(&e, b"empty").and_then(|s| s.parse().ok()).unwrap_or(0);
-                let difficulty = get_attr(&e, b"difficulty").and_then(|s| s.parse().ok()).unwrap_or(0);
-                props.push(PhraseProperty { phrase_id, redundant, level_jump, empty, difficulty });
+                let phrase_id = get_attr(&e, b"phraseId")
+                    .and_then(|s| s.parse().ok())
+                    .unwrap_or(0);
+                let redundant = get_attr(&e, b"redundant")
+                    .and_then(|s| s.parse().ok())
+                    .unwrap_or(0);
+                let level_jump = get_attr(&e, b"levelJump")
+                    .and_then(|s| s.parse().ok())
+                    .unwrap_or(0);
+                let empty = get_attr(&e, b"empty")
+                    .and_then(|s| s.parse().ok())
+                    .unwrap_or(0);
+                let difficulty = get_attr(&e, b"difficulty")
+                    .and_then(|s| s.parse().ok())
+                    .unwrap_or(0);
+                props.push(PhraseProperty {
+                    phrase_id,
+                    redundant,
+                    level_jump,
+                    empty,
+                    difficulty,
+                });
             }
             XmlEvent::Start(e) if e.name().as_ref() == b"phraseProperty" => {
-                let phrase_id = get_attr(&e, b"phraseId").and_then(|s| s.parse().ok()).unwrap_or(0);
-                let redundant = get_attr(&e, b"redundant").and_then(|s| s.parse().ok()).unwrap_or(0);
-                let level_jump = get_attr(&e, b"levelJump").and_then(|s| s.parse().ok()).unwrap_or(0);
-                let empty = get_attr(&e, b"empty").and_then(|s| s.parse().ok()).unwrap_or(0);
-                let difficulty = get_attr(&e, b"difficulty").and_then(|s| s.parse().ok()).unwrap_or(0);
-                props.push(PhraseProperty { phrase_id, redundant, level_jump, empty, difficulty });
+                let phrase_id = get_attr(&e, b"phraseId")
+                    .and_then(|s| s.parse().ok())
+                    .unwrap_or(0);
+                let redundant = get_attr(&e, b"redundant")
+                    .and_then(|s| s.parse().ok())
+                    .unwrap_or(0);
+                let level_jump = get_attr(&e, b"levelJump")
+                    .and_then(|s| s.parse().ok())
+                    .unwrap_or(0);
+                let empty = get_attr(&e, b"empty")
+                    .and_then(|s| s.parse().ok())
+                    .unwrap_or(0);
+                let difficulty = get_attr(&e, b"difficulty")
+                    .and_then(|s| s.parse().ok())
+                    .unwrap_or(0);
+                props.push(PhraseProperty {
+                    phrase_id,
+                    redundant,
+                    level_jump,
+                    empty,
+                    difficulty,
+                });
                 let end = e.to_end().into_owned();
                 reader.read_to_end(end.name())?;
             }
@@ -1018,56 +1366,144 @@ fn parse_phrase_properties(reader: &mut Reader<&[u8]>) -> Result<Vec<PhrasePrope
 
 fn parse_arrangement_properties(e: &BytesStart) -> ArrangementProperties {
     ArrangementProperties {
-        represent: get_attr(e, b"represent").and_then(|s| s.parse().ok()).unwrap_or(0),
-        bonus_arr: get_attr(e, b"bonusArr").and_then(|s| s.parse().ok()).unwrap_or(0),
-        standard_tuning: get_attr(e, b"standardTuning").and_then(|s| s.parse().ok()).unwrap_or(1),
-        non_standard_chords: get_attr(e, b"nonStandardChords").and_then(|s| s.parse().ok()).unwrap_or(0),
-        barr_chords: get_attr(e, b"barrChords").and_then(|s| s.parse().ok()).unwrap_or(0),
-        power_chords: get_attr(e, b"powerChords").and_then(|s| s.parse().ok()).unwrap_or(0),
-        drop_d_power: get_attr(e, b"dropDPower").and_then(|s| s.parse().ok()).unwrap_or(0),
-        open_chords: get_attr(e, b"openChords").and_then(|s| s.parse().ok()).unwrap_or(0),
-        finger_picking: get_attr(e, b"fingerPicking").and_then(|s| s.parse().ok()).unwrap_or(0),
-        pick_direction: get_attr(e, b"pickDirection").and_then(|s| s.parse().ok()).unwrap_or(0),
-        double_stops: get_attr(e, b"doubleStops").and_then(|s| s.parse().ok()).unwrap_or(0),
-        palm_mutes: get_attr(e, b"palmMutes").and_then(|s| s.parse().ok()).unwrap_or(0),
-        harmonics: get_attr(e, b"harmonics").and_then(|s| s.parse().ok()).unwrap_or(0),
-        pinch_harmonics: get_attr(e, b"pinchHarmonics").and_then(|s| s.parse().ok()).unwrap_or(0),
-        hopo: get_attr(e, b"hopo").and_then(|s| s.parse().ok()).unwrap_or(0),
-        tremolo: get_attr(e, b"tremolo").and_then(|s| s.parse().ok()).unwrap_or(0),
-        slides: get_attr(e, b"slides").and_then(|s| s.parse().ok()).unwrap_or(0),
-        unpitched_slides: get_attr(e, b"unpitchedSlides").and_then(|s| s.parse().ok()).unwrap_or(0),
-        bends: get_attr(e, b"bends").and_then(|s| s.parse().ok()).unwrap_or(0),
-        tapping: get_attr(e, b"tapping").and_then(|s| s.parse().ok()).unwrap_or(0),
-        vibrato: get_attr(e, b"vibrato").and_then(|s| s.parse().ok()).unwrap_or(0),
-        fret_hand_mutes: get_attr(e, b"fretHandMutes").and_then(|s| s.parse().ok()).unwrap_or(0),
-        slap_pop: get_attr(e, b"slapPop").and_then(|s| s.parse().ok()).unwrap_or(0),
-        two_finger_picking: get_attr(e, b"twoFingerPicking").and_then(|s| s.parse().ok()).unwrap_or(0),
-        five_fret_chords: get_attr(e, b"fiveFretChords").and_then(|s| s.parse().ok()).unwrap_or(0),
-        chord_notes: get_attr(e, b"chordNotes").and_then(|s| s.parse().ok()).unwrap_or(0),
-        octaves: get_attr(e, b"octaves").and_then(|s| s.parse().ok()).unwrap_or(0),
-        sus_chords: get_attr(e, b"susChords").and_then(|s| s.parse().ok()).unwrap_or(0),
-        three_finger_chords: get_attr(e, b"threeFingerChords").and_then(|s| s.parse().ok()).unwrap_or(0),
-        rhythm_side: get_attr(e, b"rhythmSide").and_then(|s| s.parse().ok()).unwrap_or(0),
-        solo: get_attr(e, b"solo").and_then(|s| s.parse().ok()).unwrap_or(0),
-        path_lead: get_attr(e, b"pathLead").and_then(|s| s.parse().ok()).unwrap_or(0),
-        path_rhythm: get_attr(e, b"pathRhythm").and_then(|s| s.parse().ok()).unwrap_or(0),
-        path_bass: get_attr(e, b"pathBass").and_then(|s| s.parse().ok()).unwrap_or(0),
-        routing_rules: get_attr(e, b"routingRules").and_then(|s| s.parse().ok()).unwrap_or(0),
-        bass_pick: get_attr(e, b"bassPick").and_then(|s| s.parse().ok()).unwrap_or(0),
-        synth_lead: get_attr(e, b"synthLead").and_then(|s| s.parse().ok()).unwrap_or(0),
-        synth_bass: get_attr(e, b"synthBass").and_then(|s| s.parse().ok()).unwrap_or(0),
+        represent: get_attr(e, b"represent")
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(0),
+        bonus_arr: get_attr(e, b"bonusArr")
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(0),
+        standard_tuning: get_attr(e, b"standardTuning")
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(1),
+        non_standard_chords: get_attr(e, b"nonStandardChords")
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(0),
+        barr_chords: get_attr(e, b"barrChords")
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(0),
+        power_chords: get_attr(e, b"powerChords")
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(0),
+        drop_d_power: get_attr(e, b"dropDPower")
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(0),
+        open_chords: get_attr(e, b"openChords")
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(0),
+        finger_picking: get_attr(e, b"fingerPicking")
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(0),
+        pick_direction: get_attr(e, b"pickDirection")
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(0),
+        double_stops: get_attr(e, b"doubleStops")
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(0),
+        palm_mutes: get_attr(e, b"palmMutes")
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(0),
+        harmonics: get_attr(e, b"harmonics")
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(0),
+        pinch_harmonics: get_attr(e, b"pinchHarmonics")
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(0),
+        hopo: get_attr(e, b"hopo")
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(0),
+        tremolo: get_attr(e, b"tremolo")
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(0),
+        slides: get_attr(e, b"slides")
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(0),
+        unpitched_slides: get_attr(e, b"unpitchedSlides")
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(0),
+        bends: get_attr(e, b"bends")
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(0),
+        tapping: get_attr(e, b"tapping")
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(0),
+        vibrato: get_attr(e, b"vibrato")
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(0),
+        fret_hand_mutes: get_attr(e, b"fretHandMutes")
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(0),
+        slap_pop: get_attr(e, b"slapPop")
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(0),
+        two_finger_picking: get_attr(e, b"twoFingerPicking")
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(0),
+        five_fret_chords: get_attr(e, b"fiveFretChords")
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(0),
+        chord_notes: get_attr(e, b"chordNotes")
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(0),
+        octaves: get_attr(e, b"octaves")
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(0),
+        sus_chords: get_attr(e, b"susChords")
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(0),
+        three_finger_chords: get_attr(e, b"threeFingerChords")
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(0),
+        rhythm_side: get_attr(e, b"rhythmSide")
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(0),
+        solo: get_attr(e, b"solo")
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(0),
+        path_lead: get_attr(e, b"pathLead")
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(0),
+        path_rhythm: get_attr(e, b"pathRhythm")
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(0),
+        path_bass: get_attr(e, b"pathBass")
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(0),
+        routing_rules: get_attr(e, b"routingRules")
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(0),
+        bass_pick: get_attr(e, b"bassPick")
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(0),
+        synth_lead: get_attr(e, b"synthLead")
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(0),
+        synth_bass: get_attr(e, b"synthBass")
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(0),
     }
 }
 
 fn parse_tuning(e: &BytesStart) -> Tuning {
     Tuning {
         strings: [
-            get_attr(e, b"string0").and_then(|s| s.parse().ok()).unwrap_or(0),
-            get_attr(e, b"string1").and_then(|s| s.parse().ok()).unwrap_or(0),
-            get_attr(e, b"string2").and_then(|s| s.parse().ok()).unwrap_or(0),
-            get_attr(e, b"string3").and_then(|s| s.parse().ok()).unwrap_or(0),
-            get_attr(e, b"string4").and_then(|s| s.parse().ok()).unwrap_or(0),
-            get_attr(e, b"string5").and_then(|s| s.parse().ok()).unwrap_or(0),
+            get_attr(e, b"string0")
+                .and_then(|s| s.parse().ok())
+                .unwrap_or(0),
+            get_attr(e, b"string1")
+                .and_then(|s| s.parse().ok())
+                .unwrap_or(0),
+            get_attr(e, b"string2")
+                .and_then(|s| s.parse().ok())
+                .unwrap_or(0),
+            get_attr(e, b"string3")
+                .and_then(|s| s.parse().ok())
+                .unwrap_or(0),
+            get_attr(e, b"string4")
+                .and_then(|s| s.parse().ok())
+                .unwrap_or(0),
+            get_attr(e, b"string5")
+                .and_then(|s| s.parse().ok())
+                .unwrap_or(0),
         ],
     }
 }
@@ -1176,7 +1612,8 @@ fn parse_song(reader: &mut Reader<&[u8]>) -> Result<InstrumentalArrangement> {
                         arr.chord_templates = parse_chord_templates(reader, b"chordTemplates")?;
                     }
                     b"fretHandMuteTemplates" => {
-                        arr.fret_hand_mute_templates = parse_chord_templates(reader, b"fretHandMuteTemplates")?;
+                        arr.fret_hand_mute_templates =
+                            parse_chord_templates(reader, b"fretHandMuteTemplates")?;
                     }
                     b"events" => {
                         arr.events = parse_events(reader)?;
@@ -1199,35 +1636,37 @@ fn parse_song(reader: &mut Reader<&[u8]>) -> Result<InstrumentalArrangement> {
                     }
                 }
             }
-            XmlEvent::Empty(e) => {
-                match e.name().as_ref() {
-                    b"songLength" => {
-                        arr.meta.song_length = get_attr(&e, b"time").map(|s| time_from_str(&s)).unwrap_or(0);
-                    }
-                    b"averageTempo" => {
-                        arr.meta.average_tempo = get_attr(&e, b"bpm").and_then(|s| s.parse().ok()).unwrap_or(120.0);
-                    }
-                    b"tuning" => {
-                        arr.meta.tuning = parse_tuning(&e);
-                    }
-                    b"arrangementProperties" => {
-                        arr.meta.arrangement_properties = parse_arrangement_properties(&e);
-                    }
-                    b"ebeats" => {}
-                    b"phrases" => {}
-                    b"phraseIterations" => {}
-                    b"linkedDiffs" => {}
-                    b"phraseProperties" => {}
-                    b"chordTemplates" => {}
-                    b"fretHandMuteTemplates" => {}
-                    b"events" => {}
-                    b"sections" => {}
-                    b"levels" => {}
-                    b"tones" => {}
-                    b"controls" => {}
-                    _ => {}
+            XmlEvent::Empty(e) => match e.name().as_ref() {
+                b"songLength" => {
+                    arr.meta.song_length = get_attr(&e, b"time")
+                        .map(|s| time_from_str(&s))
+                        .unwrap_or(0);
                 }
-            }
+                b"averageTempo" => {
+                    arr.meta.average_tempo = get_attr(&e, b"bpm")
+                        .and_then(|s| s.parse().ok())
+                        .unwrap_or(120.0);
+                }
+                b"tuning" => {
+                    arr.meta.tuning = parse_tuning(&e);
+                }
+                b"arrangementProperties" => {
+                    arr.meta.arrangement_properties = parse_arrangement_properties(&e);
+                }
+                b"ebeats" => {}
+                b"phrases" => {}
+                b"phraseIterations" => {}
+                b"linkedDiffs" => {}
+                b"phraseProperties" => {}
+                b"chordTemplates" => {}
+                b"fretHandMuteTemplates" => {}
+                b"events" => {}
+                b"sections" => {}
+                b"levels" => {}
+                b"tones" => {}
+                b"controls" => {}
+                _ => {}
+            },
             XmlEvent::End(e) if e.name().as_ref() == b"song" => break,
             XmlEvent::Eof => break,
             _ => {}
@@ -1258,17 +1697,45 @@ fn write_note(writer: &mut Writer<Vec<u8>>, note: &Note) -> Result<()> {
     elem.push_attribute(("pluck", note.pluck.to_string().as_str()));
     elem.push_attribute(("vibrato", note.vibrato.to_string().as_str()));
     elem.push_attribute(("maxBend", note.max_bend.to_string().as_str()));
-    write_flag(&mut elem, "linkNext",      note.mask.contains(NoteMask::LINK_NEXT));
-    write_flag(&mut elem, "accent",        note.mask.contains(NoteMask::ACCENT));
-    write_flag(&mut elem, "hammerOn",      note.mask.contains(NoteMask::HAMMER_ON));
-    write_flag(&mut elem, "harmonic",      note.mask.contains(NoteMask::HARMONIC));
-    write_flag(&mut elem, "ignore",        note.mask.contains(NoteMask::IGNORE));
-    write_flag(&mut elem, "fretHandMute",  note.mask.contains(NoteMask::FRET_HAND_MUTE));
-    write_flag(&mut elem, "palmMute",      note.mask.contains(NoteMask::PALM_MUTE));
-    write_flag(&mut elem, "pullOff",       note.mask.contains(NoteMask::PULL_OFF));
-    write_flag(&mut elem, "tremolo",       note.mask.contains(NoteMask::TREMOLO));
-    write_flag(&mut elem, "pinchHarmonic", note.mask.contains(NoteMask::PINCH_HARMONIC));
-    write_flag(&mut elem, "rightHand",     note.mask.contains(NoteMask::RIGHT_HAND));
+    write_flag(
+        &mut elem,
+        "linkNext",
+        note.mask.contains(NoteMask::LINK_NEXT),
+    );
+    write_flag(&mut elem, "accent", note.mask.contains(NoteMask::ACCENT));
+    write_flag(
+        &mut elem,
+        "hammerOn",
+        note.mask.contains(NoteMask::HAMMER_ON),
+    );
+    write_flag(
+        &mut elem,
+        "harmonic",
+        note.mask.contains(NoteMask::HARMONIC),
+    );
+    write_flag(&mut elem, "ignore", note.mask.contains(NoteMask::IGNORE));
+    write_flag(
+        &mut elem,
+        "fretHandMute",
+        note.mask.contains(NoteMask::FRET_HAND_MUTE),
+    );
+    write_flag(
+        &mut elem,
+        "palmMute",
+        note.mask.contains(NoteMask::PALM_MUTE),
+    );
+    write_flag(&mut elem, "pullOff", note.mask.contains(NoteMask::PULL_OFF));
+    write_flag(&mut elem, "tremolo", note.mask.contains(NoteMask::TREMOLO));
+    write_flag(
+        &mut elem,
+        "pinchHarmonic",
+        note.mask.contains(NoteMask::PINCH_HARMONIC),
+    );
+    write_flag(
+        &mut elem,
+        "rightHand",
+        note.mask.contains(NoteMask::RIGHT_HAND),
+    );
 
     if note.bend_values.is_empty() {
         writer.write_event(XmlEvent::Empty(elem))?;
@@ -1298,17 +1765,29 @@ fn write_chord_note(writer: &mut Writer<Vec<u8>>, cn: &ChordNote) -> Result<()> 
     elem.push_attribute(("slideTo", cn.slide_to.to_string().as_str()));
     elem.push_attribute(("slideUnpitchTo", cn.slide_unpitch_to.to_string().as_str()));
     elem.push_attribute(("leftHand", cn.left_hand.to_string().as_str()));
-    write_flag(&mut elem, "linkNext",      cn.mask.contains(NoteMask::LINK_NEXT));
-    write_flag(&mut elem, "accent",        cn.mask.contains(NoteMask::ACCENT));
-    write_flag(&mut elem, "hammerOn",      cn.mask.contains(NoteMask::HAMMER_ON));
-    write_flag(&mut elem, "harmonic",      cn.mask.contains(NoteMask::HARMONIC));
-    write_flag(&mut elem, "ignore",        cn.mask.contains(NoteMask::IGNORE));
-    write_flag(&mut elem, "fretHandMute",  cn.mask.contains(NoteMask::FRET_HAND_MUTE));
-    write_flag(&mut elem, "palmMute",      cn.mask.contains(NoteMask::PALM_MUTE));
-    write_flag(&mut elem, "pullOff",       cn.mask.contains(NoteMask::PULL_OFF));
-    write_flag(&mut elem, "tremolo",       cn.mask.contains(NoteMask::TREMOLO));
-    write_flag(&mut elem, "pinchHarmonic", cn.mask.contains(NoteMask::PINCH_HARMONIC));
-    write_flag(&mut elem, "rightHand",     cn.mask.contains(NoteMask::RIGHT_HAND));
+    write_flag(&mut elem, "linkNext", cn.mask.contains(NoteMask::LINK_NEXT));
+    write_flag(&mut elem, "accent", cn.mask.contains(NoteMask::ACCENT));
+    write_flag(&mut elem, "hammerOn", cn.mask.contains(NoteMask::HAMMER_ON));
+    write_flag(&mut elem, "harmonic", cn.mask.contains(NoteMask::HARMONIC));
+    write_flag(&mut elem, "ignore", cn.mask.contains(NoteMask::IGNORE));
+    write_flag(
+        &mut elem,
+        "fretHandMute",
+        cn.mask.contains(NoteMask::FRET_HAND_MUTE),
+    );
+    write_flag(&mut elem, "palmMute", cn.mask.contains(NoteMask::PALM_MUTE));
+    write_flag(&mut elem, "pullOff", cn.mask.contains(NoteMask::PULL_OFF));
+    write_flag(&mut elem, "tremolo", cn.mask.contains(NoteMask::TREMOLO));
+    write_flag(
+        &mut elem,
+        "pinchHarmonic",
+        cn.mask.contains(NoteMask::PINCH_HARMONIC),
+    );
+    write_flag(
+        &mut elem,
+        "rightHand",
+        cn.mask.contains(NoteMask::RIGHT_HAND),
+    );
 
     if cn.bend_values.is_empty() {
         writer.write_event(XmlEvent::Empty(elem))?;
@@ -1336,13 +1815,29 @@ fn write_chord(writer: &mut Writer<Vec<u8>>, chord: &Chord) -> Result<()> {
     if chord.sustain > 0 {
         elem.push_attribute(("sustain", time_to_str(chord.sustain).as_str()));
     }
-    write_flag(&mut elem, "fretHandMute", chord.mask.contains(ChordMask::FRET_HAND_MUTE));
-    write_flag(&mut elem, "highDensity",  chord.mask.contains(ChordMask::HIGH_DENSITY));
-    write_flag(&mut elem, "hopo",         chord.mask.contains(ChordMask::HOPO));
-    write_flag(&mut elem, "ignore",       chord.mask.contains(ChordMask::IGNORE));
-    write_flag(&mut elem, "linkNext",     chord.mask.contains(ChordMask::LINK_NEXT));
-    write_flag(&mut elem, "palmMute",     chord.mask.contains(ChordMask::PALM_MUTE));
-    write_flag(&mut elem, "accent",       chord.mask.contains(ChordMask::ACCENT));
+    write_flag(
+        &mut elem,
+        "fretHandMute",
+        chord.mask.contains(ChordMask::FRET_HAND_MUTE),
+    );
+    write_flag(
+        &mut elem,
+        "highDensity",
+        chord.mask.contains(ChordMask::HIGH_DENSITY),
+    );
+    write_flag(&mut elem, "hopo", chord.mask.contains(ChordMask::HOPO));
+    write_flag(&mut elem, "ignore", chord.mask.contains(ChordMask::IGNORE));
+    write_flag(
+        &mut elem,
+        "linkNext",
+        chord.mask.contains(ChordMask::LINK_NEXT),
+    );
+    write_flag(
+        &mut elem,
+        "palmMute",
+        chord.mask.contains(ChordMask::PALM_MUTE),
+    );
+    write_flag(&mut elem, "accent", chord.mask.contains(ChordMask::ACCENT));
 
     if chord.chord_notes.is_empty() {
         writer.write_event(XmlEvent::Empty(elem))?;
@@ -1396,14 +1891,26 @@ impl InstrumentalArrangement {
         write_text_element(&mut writer, "title", &self.meta.song_name)?;
         write_text_element(&mut writer, "arrangement", &self.meta.arrangement)?;
         write_text_element(&mut writer, "part", &self.meta.part.to_string())?;
-        write_text_element(&mut writer, "offset", &format!("{:.3}", self.meta.offset as f64 / 1000.0))?;
-        write_text_element(&mut writer, "centOffset", &self.meta.cent_offset.to_string())?;
+        write_text_element(
+            &mut writer,
+            "offset",
+            &format!("{:.3}", self.meta.offset as f64 / 1000.0),
+        )?;
+        write_text_element(
+            &mut writer,
+            "centOffset",
+            &self.meta.cent_offset.to_string(),
+        )?;
 
         let mut song_length_elem = BytesStart::new("songLength");
         song_length_elem.push_attribute(("time", time_to_str(self.meta.song_length).as_str()));
         writer.write_event(XmlEvent::Empty(song_length_elem))?;
 
-        write_text_element(&mut writer, "lastConversionDateTime", &self.meta.last_conversion_date_time)?;
+        write_text_element(
+            &mut writer,
+            "lastConversionDateTime",
+            &self.meta.last_conversion_date_time,
+        )?;
         write_text_element(&mut writer, "startBeat", &time_to_str(self.meta.start_beat))?;
 
         let mut avg_tempo_elem = BytesStart::new("averageTempo");
@@ -1425,7 +1932,11 @@ impl InstrumentalArrangement {
         write_text_element(&mut writer, "albumName", &self.meta.album_name)?;
         write_text_element(&mut writer, "albumNameSort", &self.meta.album_name_sort)?;
         write_text_element(&mut writer, "albumYear", &self.meta.album_year.to_string())?;
-        write_text_element(&mut writer, "crowdSpeed", &self.meta.crowd_speed.to_string())?;
+        write_text_element(
+            &mut writer,
+            "crowdSpeed",
+            &self.meta.crowd_speed.to_string(),
+        )?;
 
         // arrangementProperties
         let ap = &self.meta.arrangement_properties;
@@ -1433,7 +1944,10 @@ impl InstrumentalArrangement {
         ap_elem.push_attribute(("represent", ap.represent.to_string().as_str()));
         ap_elem.push_attribute(("bonusArr", ap.bonus_arr.to_string().as_str()));
         ap_elem.push_attribute(("standardTuning", ap.standard_tuning.to_string().as_str()));
-        ap_elem.push_attribute(("nonStandardChords", ap.non_standard_chords.to_string().as_str()));
+        ap_elem.push_attribute((
+            "nonStandardChords",
+            ap.non_standard_chords.to_string().as_str(),
+        ));
         ap_elem.push_attribute(("barrChords", ap.barr_chords.to_string().as_str()));
         ap_elem.push_attribute(("powerChords", ap.power_chords.to_string().as_str()));
         ap_elem.push_attribute(("dropDPower", ap.drop_d_power.to_string().as_str()));
@@ -1453,12 +1967,18 @@ impl InstrumentalArrangement {
         ap_elem.push_attribute(("vibrato", ap.vibrato.to_string().as_str()));
         ap_elem.push_attribute(("fretHandMutes", ap.fret_hand_mutes.to_string().as_str()));
         ap_elem.push_attribute(("slapPop", ap.slap_pop.to_string().as_str()));
-        ap_elem.push_attribute(("twoFingerPicking", ap.two_finger_picking.to_string().as_str()));
+        ap_elem.push_attribute((
+            "twoFingerPicking",
+            ap.two_finger_picking.to_string().as_str(),
+        ));
         ap_elem.push_attribute(("fiveFretChords", ap.five_fret_chords.to_string().as_str()));
         ap_elem.push_attribute(("chordNotes", ap.chord_notes.to_string().as_str()));
         ap_elem.push_attribute(("octaves", ap.octaves.to_string().as_str()));
         ap_elem.push_attribute(("susChords", ap.sus_chords.to_string().as_str()));
-        ap_elem.push_attribute(("threeFingerChords", ap.three_finger_chords.to_string().as_str()));
+        ap_elem.push_attribute((
+            "threeFingerChords",
+            ap.three_finger_chords.to_string().as_str(),
+        ));
         ap_elem.push_attribute(("rhythmSide", ap.rhythm_side.to_string().as_str()));
         ap_elem.push_attribute(("solo", ap.solo.to_string().as_str()));
         ap_elem.push_attribute(("pathLead", ap.path_lead.to_string().as_str()));
@@ -1537,8 +2057,8 @@ impl InstrumentalArrangement {
                 pie.push_attribute(("time", time_to_str(pi.time).as_str()));
                 pie.push_attribute(("endTime", time_to_str(pi.end_time).as_str()));
                 pie.push_attribute(("phraseId", pi.phrase_id.to_string().as_str()));
-                pie.push_attribute(("variation", ""));  // variation field removed from struct; write empty for XML compatibility
-                let hero_levels_nonempty = pi.hero_levels.as_ref().map_or(false, |v| !v.is_empty());
+                pie.push_attribute(("variation", "")); // variation field removed from struct; write empty for XML compatibility
+                let hero_levels_nonempty = pi.hero_levels.as_ref().is_some_and(|v| !v.is_empty());
                 if !hero_levels_nonempty {
                     writer.write_event(XmlEvent::Empty(pie))?;
                 } else {
@@ -1600,7 +2120,10 @@ impl InstrumentalArrangement {
 
         // fretHandMuteTemplates
         let mut fhmt_elem = BytesStart::new("fretHandMuteTemplates");
-        fhmt_elem.push_attribute(("count", self.fret_hand_mute_templates.len().to_string().as_str()));
+        fhmt_elem.push_attribute((
+            "count",
+            self.fret_hand_mute_templates.len().to_string().as_str(),
+        ));
         writer.write_event(XmlEvent::Empty(fhmt_elem))?;
 
         // controls
@@ -1862,7 +2385,10 @@ mod tests {
         assert_eq!(arr.ebeats.len(), arr2.ebeats.len());
         assert_eq!(arr.levels[0].notes.len(), arr2.levels[0].notes.len());
         assert_eq!(arr.levels[0].notes[0].fret, arr2.levels[0].notes[0].fret);
-        assert_eq!(arr.levels[0].notes[1].bend_values.len(), arr2.levels[0].notes[1].bend_values.len());
+        assert_eq!(
+            arr.levels[0].notes[1].bend_values.len(),
+            arr2.levels[0].notes[1].bend_values.len()
+        );
     }
 
     #[test]

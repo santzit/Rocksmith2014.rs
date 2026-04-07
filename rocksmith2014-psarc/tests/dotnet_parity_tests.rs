@@ -172,7 +172,10 @@ fn test_can_remove_files() {
     let old_count = psarc.manifest().len();
 
     let edited = apply_edit(&mut psarc, true, |entries| {
-        entries.into_iter().filter(|e| !e.name.ends_with(".wem")).collect()
+        entries
+            .into_iter()
+            .filter(|e| !e.name.ends_with(".wem"))
+            .collect()
     });
 
     assert_eq!(
@@ -213,7 +216,8 @@ fn test_can_add_file() {
         "Manifest should have 1 more entry after adding a file"
     );
     assert_eq!(
-        edited.manifest()[0], new_name,
+        edited.manifest()[0],
+        new_name,
         "New file name should be first in manifest"
     );
 }
@@ -276,7 +280,8 @@ fn test_can_rename_files() {
         "Manifest size should be unchanged after renaming"
     );
     assert_eq!(
-        edited.manifest()[0], "new name",
+        edited.manifest()[0],
+        "new name",
         "First file name should be changed to 'new name'"
     );
 }

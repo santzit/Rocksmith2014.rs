@@ -235,4 +235,3 @@ fn test_empty_archive_encrypted() {
     let psarc = Psarc::read(Cursor::new(&buf)).unwrap();
     assert!(psarc.manifest().is_empty());
 }
-

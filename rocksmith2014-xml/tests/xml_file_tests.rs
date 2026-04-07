@@ -45,11 +45,7 @@ fn test_instrumental_xml_roundtrip() {
     let arr2 = InstrumentalArrangement::from_xml(&xml_str).expect("from_xml round-trip");
 
     assert_eq!(arr.levels.len(), arr2.levels.len(), "level count preserved");
-    assert_eq!(
-        arr.ebeats.len(),
-        arr2.ebeats.len(),
-        "ebeat count preserved"
-    );
+    assert_eq!(arr.ebeats.len(), arr2.ebeats.len(), "ebeat count preserved");
     assert_eq!(
         arr.chord_templates.len(),
         arr2.chord_templates.len(),

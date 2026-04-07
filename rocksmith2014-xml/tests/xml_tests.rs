@@ -69,7 +69,10 @@ fn test_note_mask_roundtrip() {
 
     let xml = arr.to_xml().unwrap();
     let arr2 = InstrumentalArrangement::from_xml(&xml).unwrap();
-    assert_eq!(arr2.levels[0].notes[0].mask & NoteMask::HAMMER_ON, NoteMask::HAMMER_ON);
+    assert_eq!(
+        arr2.levels[0].notes[0].mask & NoteMask::HAMMER_ON,
+        NoteMask::HAMMER_ON
+    );
 }
 
 #[test]
@@ -82,14 +85,33 @@ fn test_roundtrip_with_notes() {
     arr.meta.song_length = 120000;
     arr.meta.average_tempo = 120.0;
 
-    arr.phrases.push(Phrase { name: "phrase1".to_string(), max_difficulty: 5, ..Default::default() });
-    arr.phrase_iterations.push(PhraseIteration { time: 0, end_time: 5000, phrase_id: 0, hero_levels: None });
-    arr.ebeats.push(Ebeat { time: 0, measure: 1 });
-    arr.ebeats.push(Ebeat { time: 500, measure: -1 });
+    arr.phrases.push(Phrase {
+        name: "phrase1".to_string(),
+        max_difficulty: 5,
+        ..Default::default()
+    });
+    arr.phrase_iterations.push(PhraseIteration {
+        time: 0,
+        end_time: 5000,
+        phrase_id: 0,
+        hero_levels: None,
+    });
+    arr.ebeats.push(Ebeat {
+        time: 0,
+        measure: 1,
+    });
+    arr.ebeats.push(Ebeat {
+        time: 500,
+        measure: -1,
+    });
 
     let note = Note {
-        time: 1000, fret: 7, string: 3,
-        left_hand: -1, slide_to: -1, slide_unpitch_to: -1,
+        time: 1000,
+        fret: 7,
+        string: 3,
+        left_hand: -1,
+        slide_to: -1,
+        slide_unpitch_to: -1,
         mask: NoteMask::HAMMER_ON,
         ..Default::default()
     };
@@ -108,7 +130,10 @@ fn test_roundtrip_with_notes() {
     assert_eq!(arr2.ebeats[0].time, 0);
     assert_eq!(arr2.ebeats[1].measure, -1);
     assert_eq!(arr2.levels[0].notes[0].fret, 7);
-    assert_eq!(arr2.levels[0].notes[0].mask & NoteMask::HAMMER_ON, NoteMask::HAMMER_ON);
+    assert_eq!(
+        arr2.levels[0].notes[0].mask & NoteMask::HAMMER_ON,
+        NoteMask::HAMMER_ON
+    );
 }
 
 #[test]

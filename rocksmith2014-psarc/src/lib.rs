@@ -320,13 +320,7 @@ impl Psarc<()> {
         // Convert block sizes: full blocks (== block_size_alloc) become 0.
         let stored_block_sizes: Vec<u32> = raw_block_sizes
             .iter()
-            .map(|&s| {
-                if s == header.block_size_alloc {
-                    0
-                } else {
-                    s
-                }
-            })
+            .map(|&s| if s == header.block_size_alloc { 0 } else { s })
             .collect();
 
         // Calculate header fields.
@@ -353,8 +347,7 @@ impl Psarc<()> {
             .collect();
 
         // Serialize TOC.
-        let mut toc_buf: Vec<u8> =
-            Vec::with_capacity(toc_entries_size + block_table_size);
+        let mut toc_buf: Vec<u8> = Vec::with_capacity(toc_entries_size + block_table_size);
         for entry in &entries_with_offset {
             entry.write(&mut toc_buf)?;
         }
