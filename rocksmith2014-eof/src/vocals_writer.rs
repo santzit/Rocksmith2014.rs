@@ -1,7 +1,7 @@
-use std::io::{self, Write};
+use crate::eof_project_writer::{ImportedVocals, Vocal};
 use crate::types::EofSection;
 use crate::write_utils::*;
-use crate::eof_project_writer::{ImportedVocals, Vocal};
+use std::io::{self, Write};
 
 fn write_vocal(writer: &mut impl Write, vocal: &Vocal) -> io::Result<()> {
     let lyric = if vocal.lyric.ends_with('+') {
@@ -33,7 +33,10 @@ fn get_section_times(vocals: &[Vocal]) -> Vec<(i32, i32)> {
     result
 }
 
-pub fn write_vocals_track(writer: &mut impl Write, vocals_data: Option<&ImportedVocals>) -> io::Result<()> {
+pub fn write_vocals_track(
+    writer: &mut impl Write,
+    vocals_data: Option<&ImportedVocals>,
+) -> io::Result<()> {
     let vocals: Vec<&Vocal> = vocals_data
         .map(|x| x.vocals.iter().collect())
         .unwrap_or_default();
@@ -43,11 +46,11 @@ pub fn write_vocals_track(writer: &mut impl Write, vocals_data: Option<&Imported
         _ => (4278190080u32, ""),
     };
 
-    let sections: Vec<EofSection> = get_section_times(
-        &vocals.iter().map(|v| (*v).clone()).collect::<Vec<_>>()
-    ).into_iter()
-        .map(|(start, end)| EofSection::create(0, start as u32, end as u32, 0))
-        .collect();
+    let sections: Vec<EofSection> =
+        get_section_times(&vocals.iter().map(|v| (*v).clone()).collect::<Vec<_>>())
+            .into_iter()
+            .map(|(start, end)| EofSection::create(0, start as u32, end as u32, 0))
+            .collect();
 
     // Header
     write_eof_string(writer, "PART VOCALS")?;

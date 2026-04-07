@@ -1,5 +1,5 @@
-use rocksmith2014_xml::{ArrangementEvent, Ebeat};
 use crate::types::TimeSignature;
+use rocksmith2014_xml::{ArrangementEvent, Ebeat};
 
 pub fn get_closest_beat(beats: &[Ebeat], time: i32) -> usize {
     let index = beats.iter().rposition(|b| b.time <= time);
@@ -24,11 +24,16 @@ pub fn try_parse_time_signature(text: &str) -> Option<(u32, u32)> {
     let (n, d) = s.split_once('/')?;
     let n: u32 = n.parse().ok()?;
     let d: u32 = d.parse().ok()?;
-    if n != 0 && d != 0 { Some((n, d)) } else { None }
+    if n != 0 && d != 0 {
+        Some((n, d))
+    } else {
+        None
+    }
 }
 
 pub fn get_time_signatures(events: &[ArrangementEvent]) -> Vec<(i32, TimeSignature)> {
-    events.iter()
+    events
+        .iter()
         .filter_map(|e| {
             try_parse_time_signature(&e.code).map(|(n, d)| {
                 let ts = match (n, d) {
@@ -53,7 +58,10 @@ pub fn get_beat_count_changes(beats: &[Ebeat]) -> Vec<(i32, usize)> {
         if beat.measure < 0 {
             counter += 1;
         } else {
-            let same_as_prev = beat_counts.last().map(|(_, c)| *c == counter).unwrap_or(false);
+            let same_as_prev = beat_counts
+                .last()
+                .map(|(_, c)| *c == counter)
+                .unwrap_or(false);
             if same_as_prev {
                 beat_counts.pop();
             }
@@ -85,7 +93,9 @@ pub fn infer_time_signatures(beats: &[Ebeat]) -> Vec<(i32, TimeSignature)> {
 }
 
 pub fn is_drop_tuning(tuning: &[i16]) -> bool {
-    if tuning.len() < 2 { return false; }
+    if tuning.len() < 2 {
+        return false;
+    }
     let first = tuning[0];
     let expected = tuning[1];
     first == expected - 2 && tuning[1..].iter().all(|&s| s == expected)

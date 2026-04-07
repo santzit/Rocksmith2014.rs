@@ -1,8 +1,8 @@
-use std::io::{self, Write};
-use std::collections::HashSet;
-use rocksmith2014_xml::InstrumentalArrangement;
 use crate::types::{EofEvent, TimeSignature};
 use crate::write_utils::*;
+use rocksmith2014_xml::InstrumentalArrangement;
+use std::collections::HashSet;
+use std::io::{self, Write};
 
 pub fn write_beats(
     writer: &mut impl Write,
@@ -13,7 +13,8 @@ pub fn write_beats(
     let event_beats: HashSet<i32> = events.iter().map(|e| e.beat_number).collect();
 
     use std::collections::HashMap;
-    let ts_map: HashMap<i32, &TimeSignature> = time_signatures.iter().map(|(t, ts)| (*t, ts)).collect();
+    let ts_map: HashMap<i32, &TimeSignature> =
+        time_signatures.iter().map(|(t, ts)| (*t, ts)).collect();
 
     write_i32_le(writer, inst.ebeats.len() as i32)?;
 
@@ -24,7 +25,11 @@ pub fn write_beats(
         let next_beat = inst.ebeats.get(index + 1);
         let next_beat_time = next_beat.map(|b| b.time).unwrap_or(inst.meta.song_length);
 
-        let event_flag = if event_beats.contains(&(index as i32)) { 2u32 } else { 0u32 };
+        let event_flag = if event_beats.contains(&(index as i32)) {
+            2u32
+        } else {
+            0u32
+        };
 
         let (ts_flag, den) = if next_beat.is_some() {
             match ts_map.get(&beat.time) {

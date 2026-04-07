@@ -1,13 +1,13 @@
-use std::io::{self, Write};
-use rocksmith2014_xml::InstrumentalArrangement;
-use crate::types::{EofNote, EofSection, EofTrackFlag, HsResult, SustainAdjustment};
-use crate::write_utils::*;
+use crate::eof_project_writer::ImportedArrangement;
+use crate::hand_shapes::convert_hand_shapes;
+use crate::helpers::is_drop_tuning;
 use crate::note_converter::convert_notes;
 use crate::tech_notes::{combine_tech_notes, get_tech_note_data};
 use crate::tremolo::create_tremolo_sections;
-use crate::hand_shapes::convert_hand_shapes;
-use crate::helpers::is_drop_tuning;
-use crate::eof_project_writer::ImportedArrangement;
+use crate::types::{EofNote, EofSection, EofTrackFlag, HsResult, SustainAdjustment};
+use crate::write_utils::*;
+use rocksmith2014_xml::InstrumentalArrangement;
+use std::io::{self, Write};
 
 pub fn write_empty_pro_guitar_track(writer: &mut impl Write, name: &str) -> io::Result<()> {
     write_eof_string(writer, name)?;
@@ -42,20 +42,28 @@ fn convert_anchors(capo_fret: i8, inst: &InstrumentalArrangement) -> Vec<EofSect
             } else {
                 anchor.fret
             };
-            result.push(EofSection::create(diff as u8, anchor.time as u32, fret as u32, 0));
+            result.push(EofSection::create(
+                diff as u8,
+                anchor.time as u32,
+                fret as u32,
+                0,
+            ));
         }
     }
     result
 }
 
 fn convert_tones(inst: &InstrumentalArrangement) -> Vec<EofSection> {
-    inst.tones.iter().map(|t| {
-        let end_time = if t.name == inst.meta.tone_base { 1 } else { 0 };
-        EofSection {
-            name: t.name.clone(),
-            ..EofSection::create(255, t.time as u32, end_time, 0)
-        }
-    }).collect()
+    inst.tones
+        .iter()
+        .map(|t| {
+            let end_time = if t.name == inst.meta.tone_base { 1 } else { 0 };
+            EofSection {
+                name: t.name.clone(),
+                ..EofSection::create(255, t.time as u32, end_time, 0)
+            }
+        })
+        .collect()
 }
 
 fn get_arrangement_type(inst: &InstrumentalArrangement) -> u8 {
@@ -74,9 +82,13 @@ fn prepare_notes(
     mut notes: Vec<EofNote>,
 ) -> Vec<EofNote> {
     use std::collections::HashMap;
-    let updates: HashMap<(u8, u32), u32> = hand_shape_result.iter()
+    let updates: HashMap<(u8, u32), u32> = hand_shape_result
+        .iter()
         .flat_map(|r| match r {
-            HsResult::AdjustSustains(s) => s.iter().map(|x: &SustainAdjustment| ((x.difficulty, x.time), x.new_sustain)).collect::<Vec<_>>(),
+            HsResult::AdjustSustains(s) => s
+                .iter()
+                .map(|x: &SustainAdjustment| ((x.difficulty, x.time), x.new_sustain))
+                .collect::<Vec<_>>(),
             _ => vec![],
         })
         .collect();
@@ -92,7 +104,11 @@ fn prepare_notes(
     if inst.meta.capo > 0 {
         let capo = inst.meta.capo as u8;
         for n in &mut notes {
-            let new_frets: Vec<u8> = n.frets.iter().map(|&f| if f == 0 { 0 } else { f - capo }).collect();
+            let new_frets: Vec<u8> = n
+                .frets
+                .iter()
+                .map(|&f| if f == 0 { 0 } else { f - capo })
+                .collect();
             n.frets = new_frets;
             n.slide_end_fret = n.slide_end_fret.map(|f| f - capo);
             n.unpitched_slide_end_fret = n.unpitched_slide_end_fret.map(|f| f - capo);
@@ -102,14 +118,19 @@ fn prepare_notes(
     notes
 }
 
-pub fn write_pro_track(writer: &mut impl Write, name: &str, imported: &ImportedArrangement) -> io::Result<()> {
+pub fn write_pro_track(
+    writer: &mut impl Write,
+    name: &str,
+    imported: &ImportedArrangement,
+) -> io::Result<()> {
     let inst = &imported.data;
     let (notes, fingering_data, tech_notes_vecs) = convert_notes(inst);
     let tones = convert_tones(inst);
     let anchors = convert_anchors(inst.meta.capo, inst);
     let hand_shape_result = convert_hand_shapes(inst, &notes);
     let notes = prepare_notes(&hand_shape_result, inst, notes);
-    let hand_shapes: Vec<EofSection> = hand_shape_result.iter()
+    let hand_shapes: Vec<EofSection> = hand_shape_result
+        .iter()
         .filter_map(|r| match r {
             HsResult::SectionCreated(s) => Some(s.clone()),
             _ => None,
@@ -122,14 +143,21 @@ pub fn write_pro_track(writer: &mut impl Write, name: &str, imported: &ImportedA
     let tech_notes_data = get_tech_note_data(&tech_notes);
     let tremolo_sections = create_tremolo_sections(&notes);
 
-    let section_count: u16 = [&hand_shapes[..], &tremolo_sections[..], &anchors[..], &tones[..]]
-        .iter()
-        .filter(|s| !s.is_empty())
-        .count() as u16;
+    let section_count: u16 = [
+        &hand_shapes[..],
+        &tremolo_sections[..],
+        &anchors[..],
+        &tones[..],
+    ]
+    .iter()
+    .filter(|s| !s.is_empty())
+    .count() as u16;
 
     let ap = &inst.meta.arrangement_properties;
     let mut track_flag = EofTrackFlag::UNLIMITED_DIFFS | EofTrackFlag::ALT_NAME;
-    if ap.bass_pick != 0 { track_flag |= EofTrackFlag::RS_PICKED_BASS; }
+    if ap.bass_pick != 0 {
+        track_flag |= EofTrackFlag::RS_PICKED_BASS;
+    }
     if ap.bonus_arr != 0 {
         track_flag |= EofTrackFlag::RS_BONUS_ARR;
     } else if ap.represent == 0 {
@@ -137,15 +165,22 @@ pub fn write_pro_track(writer: &mut impl Write, name: &str, imported: &ImportedA
     }
 
     let string_count: u8 = if ap.path_bass != 0 {
-        let more_than_four = inst.levels.iter()
+        let more_than_four = inst
+            .levels
+            .iter()
             .flat_map(|l| l.notes.iter())
             .any(|n| n.string > 3);
-        if more_than_four { 6 } else { 4 }
+        if more_than_four {
+            6
+        } else {
+            4
+        }
     } else {
         6
     };
 
-    let tuning: Vec<u8> = inst.meta.tuning.strings[..string_count as usize].iter()
+    let tuning: Vec<u8> = inst.meta.tuning.strings[..string_count as usize]
+        .iter()
         .map(|&s| s as u8)
         .collect();
 
@@ -157,7 +192,11 @@ pub fn write_pro_track(writer: &mut impl Write, name: &str, imported: &ImportedA
         9
     };
 
-    let tuning_not_honored: u8 = if is_drop_tuning(&inst.meta.tuning.strings) { 0 } else { 1 };
+    let tuning_not_honored: u8 = if is_drop_tuning(&inst.meta.tuning.strings) {
+        0
+    } else {
+        1
+    };
 
     let custom_data_count: u32 = 2
         + if !fingering_data.is_empty() { 1 } else { 0 }

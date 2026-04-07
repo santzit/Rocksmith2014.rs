@@ -1,4 +1,4 @@
-use crate::types::{EofNote, EofNoteFlag, EofExtendedNoteFlag};
+use crate::types::{EofExtendedNoteFlag, EofNote, EofNoteFlag};
 
 fn can_move(tn: &EofNote) -> bool {
     !tn.flags.contains(EofNoteFlag::BEND)
@@ -47,56 +47,66 @@ pub fn combine_tech_notes(tech_notes: Vec<EofNote>) -> Vec<EofNote> {
     sorted.sort_by_key(|x| (x.position, x.difficulty));
 
     // Reverse fold: combine notes at same position with different bit_flags
-    let combined: Vec<EofNote> = sorted.into_iter().rev().fold(Vec::<EofNote>::new(), |mut acc, current| {
-        if let Some(prev) = acc.last() {
-            if is_combinable(&current, prev) {
-                let prev = acc.pop().unwrap();
-                acc.push(combine(current, &prev));
-                return acc;
-            }
-        }
-        acc.push(current);
-        acc
-    });
+    let combined: Vec<EofNote> =
+        sorted
+            .into_iter()
+            .rev()
+            .fold(Vec::<EofNote>::new(), |mut acc, current| {
+                if let Some(prev) = acc.last() {
+                    if is_combinable(&current, prev) {
+                        let prev = acc.pop().unwrap();
+                        acc.push(combine(current, &prev));
+                        return acc;
+                    }
+                }
+                acc.push(current);
+                acc
+            });
     let combined: Vec<EofNote> = combined.into_iter().rev().collect();
 
     // Reverse fold: separate notes at same position that can't be at same time
-    let separated: Vec<EofNote> = combined.into_iter().rev().fold(Vec::<EofNote>::new(), |mut acc, a| {
-        if let Some(b) = acc.last() {
-            if a.position == b.position && a.difficulty == b.difficulty {
-                let b = acc.pop().unwrap();
-                if can_move(&b) {
-                    acc.push(a);
-                    acc.push(move_position(b));
-                } else if can_move(&a) {
-                    acc.push(b);
-                    acc.push(move_position(a));
-                } else {
-                    // Neither can move - try pre-bend conversion
-                    if a.position == a.actual_note_position && b.position == b.actual_note_position {
-                        if a.flags.contains(EofNoteFlag::BEND) {
-                            let a2 = convert_to_pre_bend(move_position(a));
-                            acc.push(b);
-                            acc.push(a2);
-                        } else if b.flags.contains(EofNoteFlag::BEND) {
-                            let b2 = convert_to_pre_bend(move_position(b));
+    let separated: Vec<EofNote> =
+        combined
+            .into_iter()
+            .rev()
+            .fold(Vec::<EofNote>::new(), |mut acc, a| {
+                if let Some(b) = acc.last() {
+                    if a.position == b.position && a.difficulty == b.difficulty {
+                        let b = acc.pop().unwrap();
+                        if can_move(&b) {
                             acc.push(a);
-                            acc.push(b2);
+                            acc.push(move_position(b));
+                        } else if can_move(&a) {
+                            acc.push(b);
+                            acc.push(move_position(a));
                         } else {
-                            acc.push(b);
-                            acc.push(a);
+                            // Neither can move - try pre-bend conversion
+                            if a.position == a.actual_note_position
+                                && b.position == b.actual_note_position
+                            {
+                                if a.flags.contains(EofNoteFlag::BEND) {
+                                    let a2 = convert_to_pre_bend(move_position(a));
+                                    acc.push(b);
+                                    acc.push(a2);
+                                } else if b.flags.contains(EofNoteFlag::BEND) {
+                                    let b2 = convert_to_pre_bend(move_position(b));
+                                    acc.push(a);
+                                    acc.push(b2);
+                                } else {
+                                    acc.push(b);
+                                    acc.push(a);
+                                }
+                            } else {
+                                acc.push(b);
+                                acc.push(a);
+                            }
                         }
-                    } else {
-                        acc.push(b);
-                        acc.push(a);
+                        return acc;
                     }
                 }
-                return acc;
-            }
-        }
-        acc.push(a);
-        acc
-    });
+                acc.push(a);
+                acc
+            });
     separated.into_iter().rev().collect()
 }
 

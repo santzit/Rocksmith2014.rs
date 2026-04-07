@@ -1,6 +1,6 @@
-use rocksmith2014_xml::InstrumentalArrangement;
-use crate::types::{EofEvent, EofEventFlag};
 use crate::helpers::get_closest_beat;
+use crate::types::{EofEvent, EofEventFlag};
+use rocksmith2014_xml::InstrumentalArrangement;
 
 pub fn create_eof_events(
     get_track_number: &dyn Fn(&InstrumentalArrangement) -> usize,
@@ -16,21 +16,29 @@ pub fn create_eof_events(
         flag,
     };
 
-    let other_events: Vec<EofEvent> = inst.events.iter()
+    let other_events: Vec<EofEvent> = inst
+        .events
+        .iter()
         .filter(|e| !e.code.starts_with("TS"))
         .map(|e| create(e.code.clone(), e.time, EofEventFlag::RS_EVENT))
         .collect();
 
-    let section_events: Vec<EofEvent> = inst.sections.iter()
+    let section_events: Vec<EofEvent> = inst
+        .sections
+        .iter()
         .map(|s| create(s.name.clone(), s.start_time, EofEventFlag::RS_SECTION))
         .collect();
 
-    let phrase_events: Vec<EofEvent> = inst.phrase_iterations.iter()
+    let phrase_events: Vec<EofEvent> = inst
+        .phrase_iterations
+        .iter()
         .map(|p| {
             let phrase = &inst.phrases[p.phrase_id as usize];
             let mut e = create(phrase.name.clone(), p.time, EofEventFlag::RS_PHRASE);
             let is_solo = e.text.to_lowercase().starts_with("solo")
-                || section_events.iter().any(|s| s.beat_number == e.beat_number && s.text.to_lowercase().starts_with("solo"));
+                || section_events.iter().any(|s| {
+                    s.beat_number == e.beat_number && s.text.to_lowercase().starts_with("solo")
+                });
             if is_solo {
                 e.flag |= EofEventFlag::RS_SOLO_PHRASE;
             }
@@ -49,7 +57,10 @@ pub fn unify_events(track_count: usize, events: Vec<EofEvent>) -> Vec<EofEvent> 
     use std::collections::HashMap;
     let mut groups: HashMap<(String, i32, u16), Vec<usize>> = HashMap::new();
     for (i, e) in events.iter().enumerate() {
-        groups.entry((e.text.clone(), e.beat_number, e.flag.bits())).or_default().push(i);
+        groups
+            .entry((e.text.clone(), e.beat_number, e.flag.bits()))
+            .or_default()
+            .push(i);
     }
 
     let mut result: Vec<EofEvent> = events;
@@ -67,6 +78,10 @@ pub fn unify_events(track_count: usize, events: Vec<EofEvent>) -> Vec<EofEvent> 
     }
 
     let mut i = 0;
-    result.retain(|_| { let keep = !to_remove[i]; i += 1; keep });
+    result.retain(|_| {
+        let keep = !to_remove[i];
+        i += 1;
+        keep
+    });
     result
 }

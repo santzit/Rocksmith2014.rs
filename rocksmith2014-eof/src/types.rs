@@ -78,7 +78,13 @@ pub struct EofSection {
 
 impl EofSection {
     pub fn create(ty: u8, start_time: u32, end_time: u32, flags: u32) -> Self {
-        EofSection { name: String::new(), ty, start_time, end_time, flags }
+        EofSection {
+            name: String::new(),
+            ty,
+            start_time,
+            end_time,
+            flags,
+        }
     }
 }
 

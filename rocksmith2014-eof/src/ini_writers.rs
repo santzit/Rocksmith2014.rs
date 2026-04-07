@@ -1,6 +1,6 @@
-use std::io::{self, Write};
 use crate::types::IniString;
 use crate::write_utils::*;
+use std::io::{self, Write};
 
 pub fn write_ini_strings(writer: &mut impl Write, strings: &[IniString]) -> io::Result<()> {
     write_u16_le(writer, strings.len() as u16)?;
