@@ -116,7 +116,8 @@ pub fn xml_to_sng(arr: &InstrumentalArrangement) -> Sng {
     let tones = arr.tones.iter().map(convert_tone).collect();
     let dnas = create_dnas(arr);
 
-    let sections: Vec<_> = arr
+    // Compute initial sections (discarded after levels update string masks)
+    let _sections_initial: Vec<_> = arr
         .sections
         .iter()
         .enumerate()
@@ -149,7 +150,7 @@ pub fn xml_to_sng(arr: &InstrumentalArrangement) -> Sng {
 
     let metadata = create_meta_data(&accu, first_note_time, arr);
 
-    let mut sng = Sng {
+    let sng = Sng {
         beats,
         phrases,
         chords: chord_templates,

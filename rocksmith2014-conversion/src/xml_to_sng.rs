@@ -1,20 +1,17 @@
 use rocksmith2014_sng::{
-    Anchor as SngAnchor, AnchorExtension, Beat as SngBeat, BeatMask, BendValue as SngBendValue,
-    Chord as SngChord, ChordMask as SngChordMask, ChordNotes, Event as SngEvent, FingerPrint,
-    MetaData as SngMetaData, Note as SngNote, NoteMask as SngNoteMask, Phrase as SngPhrase,
-    PhraseExtraInfo, PhraseIteration as SngPhraseIteration, Section as SngSection, Sng,
-    Tone as SngTone, DNA,
+    Anchor as SngAnchor, Beat as SngBeat, BeatMask, BendValue as SngBendValue,
+    Chord as SngChord, ChordMask as SngChordMask, Event as SngEvent, FingerPrint,
+    MetaData as SngMetaData, Phrase as SngPhrase, PhraseExtraInfo,
+    PhraseIteration as SngPhraseIteration, Section as SngSection, Tone as SngTone, DNA,
 };
 use rocksmith2014_xml::{
-    Anchor as XmlAnchor, ArrangementEvent, BendValue as XmlBendValue, ChordMask as XmlChordMask,
-    ChordTemplate, Ebeat, HandShape, InstrumentalArrangement, Level as XmlLevel, Note as XmlNote,
-    NoteMask as XmlNoteMask, Phrase as XmlPhrase, PhraseIteration as XmlPhraseIteration,
-    PhraseProperty, Section as XmlSection, ToneChange,
+    Anchor as XmlAnchor, ArrangementEvent, BendValue as XmlBendValue, ChordTemplate, Ebeat,
+    HandShape, InstrumentalArrangement, Level as XmlLevel, Note as XmlNote,
+    Phrase as XmlPhrase, PhraseIteration as XmlPhraseIteration, Section as XmlSection, ToneChange,
 };
 
 use crate::utils::{
-    bytes_to_string, find_beat_phrase_iteration_id, find_phrase_iteration_id, ms_to_sec, sec_to_ms,
-    string_to_bytes,
+    find_beat_phrase_iteration_id, find_phrase_iteration_id, ms_to_sec, string_to_bytes,
 };
 
 /// Midi base notes for standard tuning (strings 0-5: E2 A2 D3 G3 B3 E4).
@@ -56,7 +53,7 @@ pub fn create_phrase_iteration_times_array(arr: &InstrumentalArrangement) -> Vec
 /// Converts an XML Ebeat to an SNG Beat.
 /// Returns a closure (stateful) that tracks the current measure number and beat counter.
 pub fn make_beat_converter(arr: &InstrumentalArrangement) -> impl FnMut(&Ebeat) -> SngBeat + '_ {
-    let pi_count = arr.phrase_iterations.len();
+    let _pi_count = arr.phrase_iterations.len();
     let phrase_iterations = &arr.phrase_iterations;
 
     let mut current_measure: i16 = -1;

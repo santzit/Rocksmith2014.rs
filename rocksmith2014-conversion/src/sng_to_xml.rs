@@ -1,8 +1,8 @@
 use rocksmith2014_sng::{
     Anchor as SngAnchor, Beat as SngBeat, BendData32, BendValue as SngBendValue, Chord as SngChord,
-    ChordNotes, Event as SngEvent, FingerPrint as SngFingerPrint, Level as SngLevel,
-    Note as SngNote, NoteMask as SngNoteMask, PhraseExtraInfo,
-    PhraseIteration as SngPhraseIteration, Section as SngSection, Sng, Tone as SngTone,
+    Event as SngEvent, FingerPrint as SngFingerPrint, Level as SngLevel, Note as SngNote,
+    NoteMask as SngNoteMask, PhraseExtraInfo, PhraseIteration as SngPhraseIteration,
+    Section as SngSection, Sng, Tone as SngTone,
 };
 use rocksmith2014_xml::{
     Anchor as XmlAnchor, ArrangementEvent, BendValue as XmlBendValue, ChordNote, ChordTemplate,

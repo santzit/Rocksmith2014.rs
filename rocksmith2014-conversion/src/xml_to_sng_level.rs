@@ -5,7 +5,7 @@ use crate::{
     accu_data::AccuData,
     utils::ms_to_sec,
     xml_to_sng::{convert_anchor, convert_handshape, create_entity_array, XmlEntity},
-    xml_to_sng_note::{flag_on_anchor_change, FlagFn, NoteConverter},
+    xml_to_sng_note::{flag_on_anchor_change, NoteConverter},
 };
 
 /// Converts an XML Level to an SNG Level.
