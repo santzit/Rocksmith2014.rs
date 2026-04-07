@@ -89,7 +89,7 @@ pub struct Showlights {
 }
 
 /// An arrangement of any type.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Arrangement {
     Instrumental(Instrumental),
     Vocals(Vocals),
