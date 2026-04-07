@@ -369,6 +369,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "rocksmith2014-conversion"
+version = "0.1.0"
+dependencies = [
+ "rocksmith2014-sng",
+ "rocksmith2014-xml",
+]
+
+[[package]]
+name = "rocksmith2014-conversion-tests"
+version = "0.1.0"
+dependencies = [
+ "rocksmith2014-conversion",
+ "rocksmith2014-sng",
+ "rocksmith2014-xml",
+]
+
+[[package]]
 name = "rocksmith2014-psarc"
 version = "0.1.0"
 dependencies = [

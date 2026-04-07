@@ -1,0 +1,10 @@
+[package]
+name = "rocksmith2014-conversion-tests"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dev-dependencies]
+rocksmith2014-conversion = { path = "../../rocksmith2014-conversion" }
+rocksmith2014-sng = { path = "../../rocksmith2014-sng" }
+rocksmith2014-xml = { path = "../../rocksmith2014-xml" }
