@@ -2,6 +2,8 @@
 name = "rocksmith2014-xml-extension"
 version = "0.1.0"
 edition = "2021"
+description = "XML entity extension types for Rocksmith 2014 arrangements"
+license = "MIT"
 
 [dependencies]
 rocksmith2014-xml = { path = "../rocksmith2014-xml" }

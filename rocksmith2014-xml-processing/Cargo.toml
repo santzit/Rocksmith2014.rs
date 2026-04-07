@@ -2,6 +2,8 @@
 name = "rocksmith2014-xml-processing"
 version = "0.1.0"
 edition = "2021"
+description = "Checking and improving Rocksmith 2014 XML arrangements"
+license = "MIT"
 
 [dependencies]
 rocksmith2014-xml = { path = "../rocksmith2014-xml" }

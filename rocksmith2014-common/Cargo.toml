@@ -2,6 +2,8 @@
 name = "rocksmith2014-common"
 version = "0.1.0"
 edition = "2021"
+description = "Common types and utilities shared across Rocksmith 2014 crates"
+license = "MIT"
 
 [dependencies]
 flate2 = "1"

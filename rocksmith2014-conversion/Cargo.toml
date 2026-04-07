@@ -2,6 +2,8 @@
 name = "rocksmith2014-conversion"
 version = "0.1.0"
 edition = "2021"
+description = "Conversion between Rocksmith 2014 XML arrangement format and SNG binary format"
+license = "MIT"
 
 [dependencies]
 rocksmith2014-sng = { path = "../rocksmith2014-sng" }

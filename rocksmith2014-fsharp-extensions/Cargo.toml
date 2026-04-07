@@ -2,3 +2,5 @@
 name = "rocksmith2014-fsharp-extensions"
 version = "0.1.0"
 edition = "2021"
+description = "Ergonomic array, string, Vec, Option and file utilities for Rocksmith 2014 crates"
+license = "MIT"
