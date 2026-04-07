@@ -1,4 +1,19 @@
 //! XML entity extension types for Rocksmith 2014.
+//!
+//! # Creating a sorted entity array
+//!
+//! ```rust
+//! use rocksmith2014_xml_extension::{create_xml_entity_array_from_lists, XmlEntity};
+//! use rocksmith2014_xml::{Note, Chord};
+//!
+//! let note = Note { time: 100, ..Default::default() };
+//! let chord = Chord { time: 50, ..Default::default() };
+//! let entities = create_xml_entity_array_from_lists(&[note], &[chord]);
+//! assert_eq!(entities.len(), 2);
+//! // sorted by time: chord at 50 comes before note at 100
+//! assert_eq!(entities[0].time_code(), 50);
+//! assert_eq!(entities[1].time_code(), 100);
+//! ```
 
 use rocksmith2014_xml::{Chord, HandShape, Level, Note};
 
