@@ -457,6 +457,21 @@ name = "rocksmith2014-dlcproject-tests"
 version = "0.1.0"
 
 [[package]]
+name = "rocksmith2014-eof"
+version = "0.1.0"
+dependencies = [
+ "bitflags",
+ "rocksmith2014-xml",
+]
+
+[[package]]
+name = "rocksmith2014-eof-tests"
+version = "0.1.0"
+dependencies = [
+ "rocksmith2014-eof",
+]
+
+[[package]]
 name = "rocksmith2014-fsharp-extensions"
 version = "0.1.0"
 
