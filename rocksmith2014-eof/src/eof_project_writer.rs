@@ -42,7 +42,7 @@ impl EofProTracks {
     pub fn get_any_instrumental(&self) -> &ImportedArrangement {
         self.part_guitar.first()
             .or_else(|| self.part_bass.first())
-            .or_else(|| self.part_bonus.as_ref())
+            .or(self.part_bonus.as_ref())
             .expect("One instrumental arrangement needed for EOF export.")
     }
 

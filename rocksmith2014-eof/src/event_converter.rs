@@ -55,7 +55,7 @@ pub fn unify_events(track_count: usize, events: Vec<EofEvent>) -> Vec<EofEvent> 
     let mut result: Vec<EofEvent> = events;
     let mut to_remove = vec![false; result.len()];
 
-    for (_, indices) in &groups {
+    for indices in groups.values() {
         if indices.len() == track_count {
             if let Some(&first) = indices.first() {
                 result[first].track_number = 0;

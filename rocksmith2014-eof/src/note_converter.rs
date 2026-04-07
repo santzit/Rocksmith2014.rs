@@ -357,17 +357,17 @@ pub fn convert_notes(inst: &InstrumentalArrangement) -> (Vec<EofNote>, Vec<Vec<u
             tech_notes_list.push(vec![]);
         } else {
             // Determine crazy flag
-            let crazy_flag = chord_opt.as_ref().and_then(|c| {
+            let crazy_flag = chord_opt.as_ref().map(|c| {
                 let prev = if index > 0 { note_groups.get(index - 1) } else { None };
                 let prev_chord = prev.and_then(|x| x.chord.as_ref());
                 match prev_chord {
                     Some(prev_data) => {
-                        let crazy = prev_data.chord_id == c.chord_id
-                            && prev_data.handshape_id != c.handshape_id;
-                        Some(crazy)
+                        
+                        prev_data.chord_id == c.chord_id
+                            && prev_data.handshape_id != c.handshape_id
                     }
                     None => {
-                        Some(c.is_full_panel && !c.is_first_in_hand_shape)
+                        c.is_full_panel && !c.is_first_in_hand_shape
                     }
                 }
             }).unwrap_or(false);
