@@ -3,8 +3,8 @@ use rocksmith2014_sng::{
     Note as SngNote, NoteMask as SngNoteMask,
 };
 use rocksmith2014_xml::{
-    ChordMask as XmlChordMask, InstrumentalArrangement, Level as XmlLevel,
-    Note as XmlNote, NoteMask as XmlNoteMask,
+    ChordMask as XmlChordMask, InstrumentalArrangement, Level as XmlLevel, Note as XmlNote,
+    NoteMask as XmlNoteMask,
 };
 
 use crate::{
@@ -88,7 +88,12 @@ impl<'a> NoteConverter<'a> {
         let stime = ms_to_sec(time);
 
         let pi_id = find_phrase_iteration_id(time, &self.arr.phrase_iterations);
-        let phrase_id = self.arr.phrase_iterations.get(pi_id).map(|pi| pi.phrase_id).unwrap_or(0) as i32;
+        let phrase_id = self
+            .arr
+            .phrase_iterations
+            .get(pi_id)
+            .map(|pi| pi.phrase_id)
+            .unwrap_or(0) as i32;
 
         let anchor = find_anchor(time, &self.arr.levels[self.difficulty].anchors);
         let anchor_fret = anchor.fret;
@@ -174,12 +179,13 @@ impl<'a> NoteConverter<'a> {
 
         // Check if this note is a child of a pending link-next
         let string_idx = note.string as usize;
-        let parent_prev_note = if let (Some(_pending), parent_idx) = &self.pending_link_nexts[string_idx] {
-            sng_mask |= SngNoteMask::CHILD;
-            *parent_idx
-        } else {
-            -1i16
-        };
+        let parent_prev_note =
+            if let (Some(_pending), parent_idx) = &self.pending_link_nexts[string_idx] {
+                sng_mask |= SngNoteMask::CHILD;
+                *parent_idx
+            } else {
+                -1i16
+            };
 
         // Next/prev note indices
         let prev_idx = if index > 0 { index as i16 - 1 } else { -1i16 };
@@ -190,12 +196,25 @@ impl<'a> NoteConverter<'a> {
         };
 
         // Determine max bend
-        let max_bend = note.bend_values.iter().map(|bv| bv.step as f32).fold(0.0f32, f32::max);
+        let max_bend = note
+            .bend_values
+            .iter()
+            .map(|bv| bv.step as f32)
+            .fold(0.0f32, f32::max);
 
-        let bend_data: Vec<SngBendValue> = note.bend_values.iter().map(convert_bend_value).collect();
+        let bend_data: Vec<SngBendValue> =
+            note.bend_values.iter().map(convert_bend_value).collect();
 
-        let slap = if sng_mask.contains(SngNoteMask::SLAP) { 1i8 } else { -1i8 };
-        let pluck = if sng_mask.contains(SngNoteMask::PLUCK) { 1i8 } else { -1i8 };
+        let slap = if sng_mask.contains(SngNoteMask::SLAP) {
+            1i8
+        } else {
+            -1i8
+        };
+        let pluck = if sng_mask.contains(SngNoteMask::PLUCK) {
+            1i8
+        } else {
+            -1i8
+        };
 
         let mut sng_note = SngNote {
             mask: sng_mask,
@@ -244,12 +263,14 @@ impl<'a> NoteConverter<'a> {
         // Track note counts
         let is_ignored = sng_mask.contains(SngNoteMask::IGNORE);
         if let Some(pi) = self.arr.phrase_iterations.get(pi_id) {
-            self.accu_data.add_note(pi_id, self.difficulty, pi, is_ignored);
+            self.accu_data
+                .add_note(pi_id, self.difficulty, pi, is_ignored);
         }
 
         // Track string mask
         let section_id = crate::utils::find_section_id(time, &self.arr.sections);
-        self.accu_data.update_string_mask(section_id, self.difficulty, note.string as usize);
+        self.accu_data
+            .update_string_mask(section_id, self.difficulty, note.string as usize);
 
         // Update pending link-next
         if is_link_next {
@@ -267,7 +288,12 @@ impl<'a> NoteConverter<'a> {
         let stime = ms_to_sec(time);
 
         let pi_id = find_phrase_iteration_id(time, &self.arr.phrase_iterations);
-        let phrase_id = self.arr.phrase_iterations.get(pi_id).map(|pi| pi.phrase_id).unwrap_or(0) as i32;
+        let phrase_id = self
+            .arr
+            .phrase_iterations
+            .get(pi_id)
+            .map(|pi| pi.phrase_id)
+            .unwrap_or(0) as i32;
 
         let anchor = find_anchor(time, &self.arr.levels[self.difficulty].anchors);
         let anchor_fret = anchor.fret;
@@ -413,13 +439,15 @@ impl<'a> NoteConverter<'a> {
         // Track note counts
         let is_ignored = sng_mask.contains(SngNoteMask::IGNORE);
         if let Some(pi) = self.arr.phrase_iterations.get(pi_id) {
-            self.accu_data.add_note(pi_id, self.difficulty, pi, is_ignored);
+            self.accu_data
+                .add_note(pi_id, self.difficulty, pi, is_ignored);
         }
 
         // Track string mask for each played string
         let section_id = crate::utils::find_section_id(time, &self.arr.sections);
         for cn in &chord.chord_notes {
-            self.accu_data.update_string_mask(section_id, self.difficulty, cn.string as usize);
+            self.accu_data
+                .update_string_mask(section_id, self.difficulty, cn.string as usize);
         }
 
         // Update pending link-next for chord notes that have link-next
@@ -493,7 +521,11 @@ fn build_sng_chord_notes(
         result.mask[s] = sng_m;
 
         result.slide_to[s] = if cn.slide_to >= 0 { cn.slide_to } else { -1 };
-        result.slide_unpitch_to[s] = if cn.slide_unpitch_to >= 0 { cn.slide_unpitch_to } else { -1 };
+        result.slide_unpitch_to[s] = if cn.slide_unpitch_to >= 0 {
+            cn.slide_unpitch_to
+        } else {
+            -1
+        };
         result.vibrato[s] = cn.vibrato as i16;
 
         // Bend data

@@ -1,5 +1,7 @@
-use rocksmith2014_xml::{Anchor as XmlAnchor, PhraseIteration as XmlPhraseIteration, Section as XmlSection};
 use rocksmith2014_sng::FingerPrint as SngFingerPrint;
+use rocksmith2014_xml::{
+    Anchor as XmlAnchor, PhraseIteration as XmlPhraseIteration, Section as XmlSection,
+};
 
 /// Converts seconds (f32) to milliseconds (i32), rounding.
 pub fn sec_to_ms(s: f32) -> i32 {
@@ -93,10 +95,16 @@ pub fn find_first_and_last_time(
     // Optimization: start searching from mid-point if possible
     let start_hint = {
         let mid = note_times.len() / 2;
-        if note_times[mid] < start_time { mid } else { 0 }
+        if note_times[mid] < start_time {
+            mid
+        } else {
+            0
+        }
     };
 
-    let first = note_times[start_hint..].iter().position(|&t| t >= start_time)?;
+    let first = note_times[start_hint..]
+        .iter()
+        .position(|&t| t >= start_time)?;
     let first = first + start_hint;
 
     if note_times[first] >= end_time {

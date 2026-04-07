@@ -1,9 +1,8 @@
 use rocksmith2014_sng::{
-    Anchor as SngAnchor, Beat as SngBeat, BendData32, BendValue as SngBendValue,
-    Chord as SngChord, ChordNotes, Event as SngEvent, FingerPrint as SngFingerPrint,
-    Level as SngLevel, Note as SngNote, NoteMask as SngNoteMask,
-    PhraseExtraInfo, PhraseIteration as SngPhraseIteration, Section as SngSection,
-    Sng, Tone as SngTone,
+    Anchor as SngAnchor, Beat as SngBeat, BendData32, BendValue as SngBendValue, Chord as SngChord,
+    ChordNotes, Event as SngEvent, FingerPrint as SngFingerPrint, Level as SngLevel,
+    Note as SngNote, NoteMask as SngNoteMask, PhraseExtraInfo,
+    PhraseIteration as SngPhraseIteration, Section as SngSection, Sng, Tone as SngTone,
 };
 use rocksmith2014_xml::{
     Anchor as XmlAnchor, ArrangementEvent, BendValue as XmlBendValue, ChordNote, ChordTemplate,
@@ -16,7 +15,9 @@ use crate::utils::{bytes_to_string, sec_to_ms};
 
 /// Converts an SNG Beat to an XML Ebeat.
 pub fn convert_beat(beat: &SngBeat) -> Ebeat {
-    let is_measure = beat.mask.contains(rocksmith2014_sng::BeatMask::FIRST_BEAT_OF_MEASURE);
+    let is_measure = beat
+        .mask
+        .contains(rocksmith2014_sng::BeatMask::FIRST_BEAT_OF_MEASURE);
     Ebeat {
         time: sec_to_ms(beat.time),
         measure: if is_measure { beat.measure } else { -1 },
@@ -77,9 +78,18 @@ pub fn convert_phrase_iteration(pi: &SngPhraseIteration) -> XmlPhraseIteration {
         end_time: sec_to_ms(pi.end_time),
         phrase_id: pi.phrase_id as u32,
         hero_levels: Some(vec![
-            HeroLevel { hero: 1, difficulty: pi.difficulty[0] },
-            HeroLevel { hero: 2, difficulty: pi.difficulty[1] },
-            HeroLevel { hero: 3, difficulty: pi.difficulty[2] },
+            HeroLevel {
+                hero: 1,
+                difficulty: pi.difficulty[0],
+            },
+            HeroLevel {
+                hero: 2,
+                difficulty: pi.difficulty[1],
+            },
+            HeroLevel {
+                hero: 3,
+                difficulty: pi.difficulty[2],
+            },
         ]),
     }
 }
@@ -106,7 +116,11 @@ pub fn convert_event(event: &SngEvent) -> ArrangementEvent {
 /// Converts an SNG Tone to an XML ToneChange.
 /// `tone_names` should index by tone_id (0-3 → Tone_A..D).
 pub fn convert_tone(tone: &SngTone, tone_names: &[&str]) -> ToneChange {
-    let name = tone_names.get(tone.tone_id as usize).copied().unwrap_or("").to_string();
+    let name = tone_names
+        .get(tone.tone_id as usize)
+        .copied()
+        .unwrap_or("")
+        .to_string();
     ToneChange {
         time: sec_to_ms(tone.time),
         name,
@@ -242,18 +256,24 @@ fn create_xml_chord_notes(sng: &Sng, chord_note: &SngNote) -> Vec<ChordNote> {
         if template.frets[i] == -1 {
             continue;
         }
-        let (cn_mask, slide_to, slide_unpitch_to, vibrato, bend_values) =
-            if let Some(cn) = cn_data {
-                let m = rocksmith2014_sng::NoteMask::from_bits_truncate(cn.mask[i]);
-                let bv = if cn.bend_data[i].used_count > 0 {
-                    convert_bend_data32(&cn.bend_data[i])
-                } else {
-                    vec![]
-                };
-                (sng_note_mask_to_xml(m), cn.slide_to[i], cn.slide_unpitch_to[i], cn.vibrato[i] as i8, bv)
+        let (cn_mask, slide_to, slide_unpitch_to, vibrato, bend_values) = if let Some(cn) = cn_data
+        {
+            let m = rocksmith2014_sng::NoteMask::from_bits_truncate(cn.mask[i]);
+            let bv = if cn.bend_data[i].used_count > 0 {
+                convert_bend_data32(&cn.bend_data[i])
             } else {
-                (XmlNoteMask::empty(), -1, -1, 0, vec![])
+                vec![]
             };
+            (
+                sng_note_mask_to_xml(m),
+                cn.slide_to[i],
+                cn.slide_unpitch_to[i],
+                cn.vibrato[i] as i8,
+                bv,
+            )
+        } else {
+            (XmlNoteMask::empty(), -1, -1, 0, vec![])
+        };
 
         result.push(ChordNote {
             string: i as i8,
@@ -348,17 +368,21 @@ pub fn convert_level(sng: &Sng, level: &SngLevel) -> XmlLevel {
 pub fn sng_to_xml(sng: &Sng) -> InstrumentalArrangement {
     let ebeats = sng.beats.iter().map(convert_beat).collect();
     let phrases = sng.phrases.iter().map(convert_phrase).collect();
-    let phrase_iterations = sng.phrase_iterations.iter().map(convert_phrase_iteration).collect();
-    let phrase_properties = sng.phrase_extra_info.iter().map(convert_phrase_extra_info).collect();
+    let phrase_iterations = sng
+        .phrase_iterations
+        .iter()
+        .map(convert_phrase_iteration)
+        .collect();
+    let phrase_properties = sng
+        .phrase_extra_info
+        .iter()
+        .map(convert_phrase_extra_info)
+        .collect();
     let chord_templates = sng.chords.iter().map(convert_chord_template).collect();
     let events = sng.events.iter().map(convert_event).collect();
     let sections = sng.sections.iter().map(convert_section).collect();
     let levels = sng.levels.iter().map(|l| convert_level(sng, l)).collect();
-    let tones = sng
-        .tones
-        .iter()
-        .map(|t| convert_tone(t, &[]))
-        .collect();
+    let tones = sng.tones.iter().map(|t| convert_tone(t, &[])).collect();
 
     let mut meta = rocksmith2014_xml::MetaData::default();
     meta.song_length = sec_to_ms(sng.metadata.song_length);

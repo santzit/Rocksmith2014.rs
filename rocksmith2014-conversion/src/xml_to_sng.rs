@@ -1,21 +1,20 @@
 use rocksmith2014_sng::{
     Anchor as SngAnchor, AnchorExtension, Beat as SngBeat, BeatMask, BendValue as SngBendValue,
-    Chord as SngChord, ChordMask as SngChordMask, ChordNotes, DNA, Event as SngEvent,
-    FingerPrint, MetaData as SngMetaData, Note as SngNote,
-    NoteMask as SngNoteMask, Phrase as SngPhrase, PhraseExtraInfo, PhraseIteration as SngPhraseIteration,
-    Section as SngSection, Sng, Tone as SngTone,
+    Chord as SngChord, ChordMask as SngChordMask, ChordNotes, Event as SngEvent, FingerPrint,
+    MetaData as SngMetaData, Note as SngNote, NoteMask as SngNoteMask, Phrase as SngPhrase,
+    PhraseExtraInfo, PhraseIteration as SngPhraseIteration, Section as SngSection, Sng,
+    Tone as SngTone, DNA,
 };
 use rocksmith2014_xml::{
     Anchor as XmlAnchor, ArrangementEvent, BendValue as XmlBendValue, ChordMask as XmlChordMask,
-    ChordTemplate, Ebeat, HandShape, InstrumentalArrangement, Level as XmlLevel,
-    Note as XmlNote, NoteMask as XmlNoteMask, Phrase as XmlPhrase,
-    PhraseIteration as XmlPhraseIteration, PhraseProperty, Section as XmlSection,
-    ToneChange,
+    ChordTemplate, Ebeat, HandShape, InstrumentalArrangement, Level as XmlLevel, Note as XmlNote,
+    NoteMask as XmlNoteMask, Phrase as XmlPhrase, PhraseIteration as XmlPhraseIteration,
+    PhraseProperty, Section as XmlSection, ToneChange,
 };
 
 use crate::utils::{
-    bytes_to_string, find_beat_phrase_iteration_id, find_phrase_iteration_id, ms_to_sec,
-    sec_to_ms, string_to_bytes,
+    bytes_to_string, find_beat_phrase_iteration_id, find_phrase_iteration_id, ms_to_sec, sec_to_ms,
+    string_to_bytes,
 };
 
 /// Midi base notes for standard tuning (strings 0-5: E2 A2 D3 G3 B3 E4).
@@ -23,18 +22,17 @@ const STANDARD_TUNING_MIDI: [i32; 6] = [40, 45, 50, 55, 59, 64];
 
 /// Computes a MIDI note value for a given string/fret with tuning offsets.
 pub fn to_midi_note(string: usize, fret: i8, tuning: &[i16; 6], capo: i8, is_bass: bool) -> i32 {
-    let fret = if capo > 0 && fret == 0 { capo as i32 } else { fret as i32 };
+    let fret = if capo > 0 && fret == 0 {
+        capo as i32
+    } else {
+        fret as i32
+    };
     let offset = if is_bass { -12 } else { 0 };
     STANDARD_TUNING_MIDI[string] + tuning[string] as i32 + fret + offset
 }
 
 /// Maps frets to MIDI notes.
-pub fn map_to_midi_notes(
-    frets: &[i8; 6],
-    tuning: &[i16; 6],
-    capo: i8,
-    is_bass: bool,
-) -> [i32; 6] {
+pub fn map_to_midi_notes(frets: &[i8; 6], tuning: &[i16; 6], capo: i8, is_bass: bool) -> [i32; 6] {
     std::array::from_fn(|s| {
         if frets[s] == -1 {
             -1
@@ -97,7 +95,11 @@ pub fn make_beat_converter(arr: &InstrumentalArrangement) -> impl FnMut(&Ebeat) 
 }
 
 /// Converts an XML Phrase to an SNG Phrase.
-pub fn convert_phrase(arr: &InstrumentalArrangement, phrase_id: usize, phrase: &XmlPhrase) -> SngPhrase {
+pub fn convert_phrase(
+    arr: &InstrumentalArrangement,
+    phrase_id: usize,
+    phrase: &XmlPhrase,
+) -> SngPhrase {
     // Count phrase iterations that reference this phrase
     let iteration_count = arr
         .phrase_iterations
@@ -355,7 +357,11 @@ pub fn create_meta_data(
     let hard = accu.note_counts.hard as f64;
     let ignored = accu.note_counts.ignored as f64;
 
-    let points_per_note = if hard > 0.0 { max_score / hard } else { max_score };
+    let points_per_note = if hard > 0.0 {
+        max_score / hard
+    } else {
+        max_score
+    };
 
     let first_beat_length = if arr.ebeats.len() >= 2 {
         ms_to_sec(arr.ebeats[1].time - arr.ebeats[0].time)
@@ -363,7 +369,11 @@ pub fn create_meta_data(
         0.0
     };
 
-    let capo_fret_id = if arr.meta.capo <= 0 { -1i8 } else { arr.meta.capo };
+    let capo_fret_id = if arr.meta.capo <= 0 {
+        -1i8
+    } else {
+        arr.meta.capo
+    };
 
     let start_time = ms_to_sec(arr.meta.start_beat);
 

@@ -39,16 +39,16 @@ pub use sng_to_xml::{
     convert_hand_shape as sng_convert_hand_shape, convert_level as sng_convert_level,
     convert_note as sng_convert_note, convert_phrase as sng_convert_phrase,
     convert_phrase_extra_info as sng_convert_phrase_extra_info,
-    convert_phrase_iteration as sng_convert_phrase_iteration, convert_section as sng_convert_section,
-    convert_tone as sng_convert_tone, sng_to_xml,
+    convert_phrase_iteration as sng_convert_phrase_iteration,
+    convert_section as sng_convert_section, convert_tone as sng_convert_tone, sng_to_xml,
 };
 pub use xml_to_sng::{
     convert_anchor as xml_convert_anchor, convert_bend_value as xml_convert_bend_value,
     convert_chord_template as xml_convert_chord_template, convert_event as xml_convert_event,
-    convert_handshape as xml_convert_handshape,
-    convert_phrase as xml_convert_phrase, convert_phrase_iteration as xml_convert_phrase_iteration,
-    convert_section as xml_convert_section, convert_tone as xml_convert_tone,
-    make_beat_converter, map_to_midi_notes, to_midi_note, XmlEntity,
+    convert_handshape as xml_convert_handshape, convert_phrase as xml_convert_phrase,
+    convert_phrase_iteration as xml_convert_phrase_iteration,
+    convert_section as xml_convert_section, convert_tone as xml_convert_tone, make_beat_converter,
+    map_to_midi_notes, to_midi_note, XmlEntity,
 };
 pub use xml_to_sng_level::convert_level as xml_convert_level;
 pub use xml_to_sng_note::{flag_never, flag_on_anchor_change, FlagFn, NoteConverter};
@@ -62,8 +62,8 @@ pub fn sng_to_xml_full(sng: &Sng) -> InstrumentalArrangement {
 pub fn xml_to_sng(arr: &InstrumentalArrangement) -> Sng {
     use xml_to_sng::{
         convert_chord_template, convert_event, convert_phrase, convert_phrase_iteration,
-        convert_section, convert_tone, create_dnas, create_phrase_iteration_times_array,
-        create_meta_data, make_beat_converter,
+        convert_section, convert_tone, create_dnas, create_meta_data,
+        create_phrase_iteration_times_array, make_beat_converter,
     };
 
     let mut accu = AccuData::init(arr);
@@ -141,7 +141,11 @@ pub fn xml_to_sng(arr: &InstrumentalArrangement) -> Sng {
         .iter()
         .filter_map(|l| l.notes.first().map(|n| n.time))
         .fold(f32::MAX, f32::min);
-    let first_note_time = if first_note_time == f32::MAX { 0.0 } else { first_note_time };
+    let first_note_time = if first_note_time == f32::MAX {
+        0.0
+    } else {
+        first_note_time
+    };
 
     let metadata = create_meta_data(&accu, first_note_time, arr);
 

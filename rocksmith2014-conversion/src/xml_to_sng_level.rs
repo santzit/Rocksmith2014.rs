@@ -32,8 +32,7 @@ pub fn convert_level(
         .collect();
 
     // Convert hand shapes and arpeggios
-    let (hand_shapes, arpeggios) =
-        build_finger_prints(&entities, &note_times, level, arr);
+    let (hand_shapes, arpeggios) = build_finger_prints(&entities, &note_times, level, arr);
 
     // Convert notes with stateful converter
     let mut converter = NoteConverter::new(
@@ -63,11 +62,8 @@ pub fn convert_level(
         vec![0; pi_count]
     };
 
-    let average_notes_per_iteration = compute_average_notes_per_phrase(
-        arr,
-        &notes_per_pi,
-        phrase_count,
-    );
+    let average_notes_per_iteration =
+        compute_average_notes_per_phrase(arr, &notes_per_pi, phrase_count);
 
     let notes_excl = if difficulty < accu.notes_in_phrase_iterations_excl_ignored.len() {
         accu.notes_in_phrase_iterations_excl_ignored[difficulty].clone()

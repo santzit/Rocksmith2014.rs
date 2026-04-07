@@ -74,7 +74,8 @@ impl AccuData {
 
     /// Updates the string mask for a section/difficulty.
     pub fn update_string_mask(&mut self, section_id: usize, difficulty: usize, note_string: usize) {
-        if section_id < self.string_masks.len() && difficulty < self.string_masks[section_id].len() {
+        if section_id < self.string_masks.len() && difficulty < self.string_masks[section_id].len()
+        {
             self.string_masks[section_id][difficulty] |= 1i8 << note_string;
         }
     }
@@ -86,9 +87,21 @@ pub fn get_hero_levels(pi: &XmlPhraseIteration) -> (i32, i32, i32) {
         None => (0, 0, 0),
         Some(hl) if hl.is_empty() => (0, 0, 0),
         Some(hl) => {
-            let easy = hl.iter().find(|h| h.hero == 1).map(|h| h.difficulty).unwrap_or(0);
-            let medium = hl.iter().find(|h| h.hero == 2).map(|h| h.difficulty).unwrap_or(0);
-            let hard = hl.iter().find(|h| h.hero == 3).map(|h| h.difficulty).unwrap_or(0);
+            let easy = hl
+                .iter()
+                .find(|h| h.hero == 1)
+                .map(|h| h.difficulty)
+                .unwrap_or(0);
+            let medium = hl
+                .iter()
+                .find(|h| h.hero == 2)
+                .map(|h| h.difficulty)
+                .unwrap_or(0);
+            let hard = hl
+                .iter()
+                .find(|h| h.hero == 3)
+                .map(|h| h.difficulty)
+                .unwrap_or(0);
             (easy, medium, hard)
         }
     }
