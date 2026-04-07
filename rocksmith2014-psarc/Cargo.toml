@@ -1,0 +1,15 @@
+[package]
+name = "rocksmith2014-psarc"
+version = "0.1.0"
+edition = "2021"
+description = "Rust implementation of the Rocksmith 2014 PSARC archive format"
+license = "MIT"
+
+[dependencies]
+flate2 = "1.0"
+aes = "0.8"
+md-5 = "0.10"
+thiserror = "2.0"
+
+[dev-dependencies]
+tempfile = "3"

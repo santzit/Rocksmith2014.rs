@@ -1,0 +1,11 @@
+[package]
+name = "rocksmith2014-xml"
+version = "0.1.0"
+edition = "2021"
+description = "Rust implementation of the Rocksmith 2014 XML arrangement format"
+license = "MIT"
+
+[dependencies]
+quick-xml = { version = "0.37", features = ["serialize"] }
+thiserror = "2"
+bitflags = "2"

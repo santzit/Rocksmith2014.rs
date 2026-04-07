@@ -1,0 +1,5 @@
+[package]
+name = "rocksmith2014-dlcproject-tests"
+version = "0.1.0"
+edition = "2021"
+publish = false

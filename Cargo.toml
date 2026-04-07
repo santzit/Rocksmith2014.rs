@@ -1,0 +1,24 @@
+[workspace]
+members = [
+    "rocksmith2014-common",
+    "rocksmith2014-psarc",
+    "rocksmith2014-sng",
+    "rocksmith2014-xml",
+    "rocksmith2014-xml-extension",
+    "rocksmith2014-xml-processing",
+    "rocksmith2014-conversion",
+    "rocksmith2014-audio",
+    "rocksmith2014-fsharp-extensions",
+    "tests/Rocksmith2014.Common.Tests",
+    "tests/Rocksmith2014.PSARC.Tests",
+    "tests/Rocksmith2014.SNG.Tests",
+    "tests/Rocksmith2014.XML.Tests",
+    "tests/Rocksmith2014.XML.Processing.Tests",
+    "tests/Rocksmith2014.Conversion.Tests",
+    "tests/Rocksmith2014.IntegrationTests",
+    "tests/Rocksmith2014.FSharpExtensions.Tests",
+    "tests/DLCBuilder.Domain.Tests",
+    "tests/Rocksmith2014.Audio.Tests",
+    "tests/Rocksmith2014.DLCProject.Tests",
+]
+resolver = "2"
