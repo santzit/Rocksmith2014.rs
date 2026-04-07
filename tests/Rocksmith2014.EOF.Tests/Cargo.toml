@@ -1,9 +1,0 @@
-[package]
-name = "rocksmith2014-eof-tests"
-version = "0.1.0"
-edition = "2021"
-publish = false
-
-[dev-dependencies]
-rocksmith2014-eof = { path = "../../rocksmith2014-eof" }
-rocksmith2014-xml = { path = "../../rocksmith2014-xml" }

@@ -1,9 +1,0 @@
-[package]
-name = "rocksmith2014-eof"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-rocksmith2014-xml = { path = "../rocksmith2014-xml" }
-rocksmith2014-common = { path = "../rocksmith2014-common" }
-regex = "1"

@@ -1,0 +1,4 @@
+[package]
+name = "rocksmith2014-audio"
+version = "0.1.0"
+edition = "2021"

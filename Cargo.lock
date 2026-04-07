@@ -411,8 +411,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dc897dd8d9e8bd1ed8cdad82b5966c3e0ecae09fb1907d58efaa013543185d0a"
 
 [[package]]
+name = "rocksmith2014-audio"
+version = "0.1.0"
+
+[[package]]
 name = "rocksmith2014-audio-tests"
 version = "0.1.0"
+dependencies = [
+ "rocksmith2014-audio",
+]
 
 [[package]]
 name = "rocksmith2014-common"
@@ -446,45 +453,19 @@ dependencies = [
 ]
 
 [[package]]
-name = "rocksmith2014-dd"
-version = "0.1.0"
-dependencies = [
- "rocksmith2014-xml",
- "rocksmith2014-xml-extension",
-]
-
-[[package]]
-name = "rocksmith2014-dd-tests"
-version = "0.1.0"
-dependencies = [
- "rocksmith2014-dd",
- "rocksmith2014-xml",
-]
-
-[[package]]
 name = "rocksmith2014-dlcproject-tests"
 version = "0.1.0"
 
 [[package]]
-name = "rocksmith2014-eof"
+name = "rocksmith2014-fsharp-extensions"
 version = "0.1.0"
-dependencies = [
- "regex",
- "rocksmith2014-common",
- "rocksmith2014-xml",
-]
-
-[[package]]
-name = "rocksmith2014-eof-tests"
-version = "0.1.0"
-dependencies = [
- "rocksmith2014-eof",
- "rocksmith2014-xml",
-]
 
 [[package]]
 name = "rocksmith2014-fsharp-extensions-tests"
 version = "0.1.0"
+dependencies = [
+ "rocksmith2014-fsharp-extensions",
+]
 
 [[package]]
 name = "rocksmith2014-integration-tests"
