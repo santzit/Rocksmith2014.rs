@@ -126,3 +126,24 @@ fn test_can_write_unpacked_sng() {
         "written file should be the same size as the original"
     );
 }
+
+// ---------------------------------------------------------------------------
+// Negative array count guard — mirrors Bug 2 fix
+// ---------------------------------------------------------------------------
+
+/// Crafted input where the first i32 (beat array count) is -1.
+/// Before the fix this caused a capacity overflow / OOM panic via
+/// `Vec::with_capacity((-1i32) as usize)`.
+/// After the fix it must return `Err(Error::InvalidArrayCount(-1))`.
+#[test]
+fn test_negative_array_count_returns_error() {
+    use rocksmith2014_sng::Error;
+
+    // First 4 bytes = array count as little-endian i32 = -1
+    let crafted: Vec<u8> = (-1i32).to_le_bytes().to_vec();
+    let result = Sng::read(&crafted);
+    match result {
+        Err(Error::InvalidArrayCount(n)) => assert_eq!(n, -1),
+        other => panic!("expected InvalidArrayCount(-1), got {:?}", other),
+    }
+}
