@@ -20,5 +20,7 @@ members = [
     "tests/DLCBuilder.Domain.Tests",
     "tests/Rocksmith2014.Audio.Tests",
     "tests/Rocksmith2014.DLCProject.Tests",
+    "rocksmith2014-eof",
+    "tests/Rocksmith2014.EOF.Tests",
 ]
 resolver = "2"

@@ -1,0 +1,10 @@
+[package]
+name = "rocksmith2014-eof"
+version = "0.1.0"
+edition = "2021"
+description = "Rust implementation of EOF project file writer for Rocksmith 2014 arrangements"
+license = "MIT"
+
+[dependencies]
+rocksmith2014-xml = { path = "../rocksmith2014-xml" }
+bitflags = "2"
