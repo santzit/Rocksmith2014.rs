@@ -49,4 +49,3 @@ fn conversion_throws_error_on_missing_file() {
     let msg = result.unwrap_err().to_string();
     assert!(msg.contains("ww2ogg process failed"));
 }
-

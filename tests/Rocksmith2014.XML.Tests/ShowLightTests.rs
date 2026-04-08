@@ -68,4 +68,3 @@ fn list_of_showlights_can_be_read_from_xml_file() {
     assert_eq!(show_lights[5].time, 18_731);
     assert_eq!(show_lights[5].note, 35);
 }
-

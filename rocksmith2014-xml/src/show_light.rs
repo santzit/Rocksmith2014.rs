@@ -70,7 +70,9 @@ pub fn save(file_name: impl AsRef<Path>, show_lights: &[ShowLight]) -> Result<()
         elem.push_attribute(("note", sl.note.to_string().as_str()));
         w.write_event(XmlEvent::Empty(elem))?;
     }
-    w.write_event(XmlEvent::End(quick_xml::events::BytesEnd::new("showlights")))?;
+    w.write_event(XmlEvent::End(quick_xml::events::BytesEnd::new(
+        "showlights",
+    )))?;
     Ok(())
 }
 

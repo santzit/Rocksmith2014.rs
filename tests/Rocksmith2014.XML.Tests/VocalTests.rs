@@ -46,4 +46,3 @@ fn list_of_vocals_can_be_read_from_xml_file() {
     assert_eq!(vocals[5].length, 600);
     assert_eq!(vocals[5].lyric, "sum+");
 }
-

@@ -58,4 +58,3 @@ fn detection_prioritizes_wwiseroot_environment_variable() {
 
     assert_eq!(cli_path, expected_path);
 }
-

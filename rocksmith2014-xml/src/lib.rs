@@ -76,12 +76,12 @@ pub mod vocal;
 mod writer;
 
 pub use show_light::ShowLight;
-pub use vocal::Vocal;
 pub use types::{
     Anchor, ArrangementEvent, ArrangementProperties, BendValue, Chord, ChordMask, ChordNote,
     ChordTemplate, Ebeat, HandShape, HeroLevel, InstrumentalArrangement, Level, LinkedDiff,
     MetaData, Note, NoteMask, Phrase, PhraseIteration, PhraseProperty, Section, ToneChange, Tuning,
 };
+pub use vocal::Vocal;
 
 use quick_xml::events::{BytesDecl, BytesEnd, BytesStart, Event as XmlEvent};
 use quick_xml::{Reader, Writer};
