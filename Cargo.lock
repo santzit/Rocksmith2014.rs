@@ -518,6 +518,9 @@ dependencies = [
 [[package]]
 name = "rocksmith2014-integration-tests"
 version = "0.1.0"
+dependencies = [
+ "rocksmith2014-psarc",
+]
 
 [[package]]
 name = "rocksmith2014-psarc"
