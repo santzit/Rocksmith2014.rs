@@ -8,3 +8,19 @@ publish = false
 rocksmith2014-dlcproject = { path = "../../rocksmith2014-dlcproject" }
 rocksmith2014-sng = { path = "../../rocksmith2014-sng" }
 uuid = { version = "1", features = ["v4"] }
+
+[[test]]
+name = "string_validator_tests"
+path = "string_validator_tests.rs"
+
+[[test]]
+name = "dlc_key_tests"
+path = "dlc_key_tests.rs"
+
+[[test]]
+name = "utils_tests"
+path = "utils_tests.rs"
+
+[[test]]
+name = "phrase_level_comparer_tests"
+path = "phrase_level_comparer_tests.rs"
