@@ -70,6 +70,7 @@
 
 mod parser;
 mod types;
+pub mod utils;
 mod writer;
 
 pub use types::{

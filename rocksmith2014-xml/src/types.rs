@@ -176,7 +176,7 @@ pub struct BendValue {
     pub unk5: i32,
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone)]
 pub struct Note {
     pub time: i32,
     pub string: i8,
@@ -195,7 +195,29 @@ pub struct Note {
     pub bend_values: Vec<BendValue>,
 }
 
-#[derive(Debug, Clone, Default)]
+impl Default for Note {
+    fn default() -> Self {
+        Self {
+            time: 0,
+            string: 0,
+            fret: 0,
+            sustain: 0,
+            vibrato: 0,
+            slide_to: -1,
+            slide_unpitch_to: -1,
+            left_hand: -1,
+            tap: 0,
+            pick_direction: 0,
+            slap: -1,
+            pluck: -1,
+            max_bend: 0.0,
+            mask: NoteMask::empty(),
+            bend_values: Vec::new(),
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
 pub struct ChordNote {
     pub string: i8,
     pub fret: i8,
@@ -208,6 +230,22 @@ pub struct ChordNote {
     pub mask: NoteMask,
 }
 
+impl Default for ChordNote {
+    fn default() -> Self {
+        Self {
+            string: 0,
+            fret: 0,
+            sustain: 0,
+            vibrato: 0,
+            slide_to: -1,
+            slide_unpitch_to: -1,
+            left_hand: -1,
+            bend_values: Vec::new(),
+            mask: NoteMask::empty(),
+        }
+    }
+}
+
 #[derive(Debug, Clone, Default)]
 pub struct Chord {
     pub time: i32,
@@ -217,7 +255,7 @@ pub struct Chord {
     pub chord_notes: Vec<ChordNote>,
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, PartialEq)]
 pub struct Anchor {
     pub time: i32,
     pub end_time: i32,
