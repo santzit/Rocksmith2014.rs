@@ -8,17 +8,17 @@ publish = false
 rocksmith2014-sng = { path = "../../rocksmith2014-sng" }
 
 [[test]]
-name = "read_write_packed"
-path = "read_write_packed.rs"
+name = "ReadWritePacked"
+path = "ReadWritePacked.rs"
 
 [[test]]
-name = "read_write_unpacked"
-path = "read_write_unpacked.rs"
+name = "ReadWriteUnpacked"
+path = "ReadWriteUnpacked.rs"
 
 [[test]]
-name = "round_trip_tests"
-path = "round_trip_tests.rs"
+name = "RoundTripTests"
+path = "RoundTripTests.rs"
 
 [[test]]
-name = "binary_helpers_tests"
-path = "binary_helpers_tests.rs"
+name = "BinaryHelpersTests"
+path = "BinaryHelpersTests.rs"

@@ -9,9 +9,9 @@ rocksmith2014-psarc = { path = "../../rocksmith2014-psarc" }
 tempfile = "3"
 
 [[test]]
-name = "read_tests"
-path = "read_tests.rs"
+name = "ReadTests"
+path = "ReadTests.rs"
 
 [[test]]
-name = "edit_tests"
-path = "edit_tests.rs"
+name = "EditTests"
+path = "EditTests.rs"

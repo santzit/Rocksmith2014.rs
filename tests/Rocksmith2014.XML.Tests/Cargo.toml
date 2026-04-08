@@ -8,37 +8,37 @@ publish = false
 rocksmith2014-xml = { path = "../../rocksmith2014-xml" }
 
 [[test]]
-name = "anchor_tests"
-path = "anchor_tests.rs"
+name = "AnchorTests"
+path = "AnchorTests.rs"
 
 [[test]]
-name = "chord_tests"
-path = "chord_tests.rs"
+name = "ChordTests"
+path = "ChordTests.rs"
 
 [[test]]
-name = "hand_shape_tests"
-path = "hand_shape_tests.rs"
+name = "HandShapeTests"
+path = "HandShapeTests.rs"
 
 [[test]]
-name = "instrumental_arrangement_tests"
-path = "instrumental_arrangement_tests.rs"
+name = "InstrumentalArrangementTests"
+path = "InstrumentalArrangementTests.rs"
 
 [[test]]
-name = "meta_data_tests"
-path = "meta_data_tests.rs"
+name = "MetaDataTests"
+path = "MetaDataTests.rs"
 
 [[test]]
-name = "note_tests"
-path = "note_tests.rs"
+name = "NoteTests"
+path = "NoteTests.rs"
 
 [[test]]
-name = "show_light_tests"
-path = "show_light_tests.rs"
+name = "ShowLightTests"
+path = "ShowLightTests.rs"
 
 [[test]]
-name = "utils_tests"
-path = "utils_tests.rs"
+name = "UtilsTest"
+path = "UtilsTest.rs"
 
 [[test]]
-name = "vocal_tests"
-path = "vocal_tests.rs"
+name = "VocalTests"
+path = "VocalTests.rs"
