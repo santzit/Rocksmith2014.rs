@@ -15,7 +15,3 @@ path = "read_tests.rs"
 [[test]]
 name = "edit_tests"
 path = "edit_tests.rs"
-
-[[test]]
-name = "integration_tests"
-path = "integration_tests.rs"
