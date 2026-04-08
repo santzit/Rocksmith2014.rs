@@ -8,5 +8,21 @@ publish = false
 rocksmith2014-audio = { path = "../../rocksmith2014-audio" }
 
 [[test]]
-name = "audio_tests"
-path = "audio_tests.rs"
+name = "utils_tests"
+path = "utils_tests.rs"
+
+[[test]]
+name = "volume_tests"
+path = "volume_tests.rs"
+
+[[test]]
+name = "preview_tests"
+path = "preview_tests.rs"
+
+[[test]]
+name = "conversion_tests"
+path = "conversion_tests.rs"
+
+[[test]]
+name = "wwise_tests"
+path = "wwise_tests.rs"
