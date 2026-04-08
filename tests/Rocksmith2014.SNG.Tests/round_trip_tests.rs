@@ -1,14 +1,15 @@
 //! Mirrors RoundTripTests.fs from Rocksmith2014.NET tests.
 
-use rocksmith2014_sng::{
-    Anchor, Beat, BeatMask, Level, NoteMask, Note, Platform, Sng,
-};
+use rocksmith2014_sng::{Anchor, Beat, BeatMask, Level, Note, NoteMask, Platform, Sng};
 
 #[test]
 fn test_beat_roundtrip() {
     let mut sng = Sng::default();
     sng.beats.push(Beat {
-        time: 1.0, measure: 1, beat: 0, phrase_iteration: 0,
+        time: 1.0,
+        measure: 1,
+        beat: 0,
+        phrase_iteration: 0,
         mask: BeatMask::FIRST_BEAT_OF_MEASURE,
     });
     let bytes = sng.write().unwrap();
@@ -42,8 +43,13 @@ fn test_level_roundtrip() {
     let level = Level {
         difficulty: 0,
         anchors: vec![Anchor {
-            start_time: 0.0, end_time: 10.0, first_note_time: 0.5,
-            last_note_time: 9.5, fret_id: 1, width: 4, phrase_iteration_id: 0,
+            start_time: 0.0,
+            end_time: 10.0,
+            first_note_time: 0.5,
+            last_note_time: 9.5,
+            fret_id: 1,
+            width: 4,
+            phrase_iteration_id: 0,
         }],
         average_notes_per_iteration: vec![1.0],
         notes_in_phrase_iterations_excl_ignored: vec![1],

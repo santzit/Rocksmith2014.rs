@@ -1,5 +1,5 @@
-use std::io::{Read, Write};
 use crate::binary_helpers::*;
+use std::io::{Read, Write};
 
 #[derive(Debug, Clone)]
 pub struct Section {
@@ -39,7 +39,15 @@ impl SngRead for Section {
         for v in string_mask.iter_mut() {
             *v = read_i8(r)?;
         }
-        Ok(Section { name, number, start_time, end_time, start_phrase_iteration_id, end_phrase_iteration_id, string_mask })
+        Ok(Section {
+            name,
+            number,
+            start_time,
+            end_time,
+            start_phrase_iteration_id,
+            end_phrase_iteration_id,
+            string_mask,
+        })
     }
 }
 

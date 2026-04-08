@@ -1,7 +1,7 @@
-use std::io::{Read, Write};
-use crate::binary_helpers::*;
 use super::bend_value::BendValue;
 use super::masks::NoteMask;
+use crate::binary_helpers::*;
+use std::io::{Read, Write};
 
 #[derive(Debug, Clone)]
 pub struct Note {
@@ -98,10 +98,33 @@ impl SngRead for Note {
         let max_bend = read_f32(r)?;
         let bend_data = read_array::<BendValue, _>(r)?;
         Ok(Note {
-            mask, flags, hash, time, string_index, fret, anchor_fret, anchor_width,
-            chord_id, chord_notes_id, phrase_id, phrase_iteration_id, finger_print_id,
-            next_iter_note, prev_iter_note, parent_prev_note, slide_to, slide_unpitch_to,
-            left_hand, tap, pick_direction, slap, pluck, vibrato, sustain, max_bend, bend_data,
+            mask,
+            flags,
+            hash,
+            time,
+            string_index,
+            fret,
+            anchor_fret,
+            anchor_width,
+            chord_id,
+            chord_notes_id,
+            phrase_id,
+            phrase_iteration_id,
+            finger_print_id,
+            next_iter_note,
+            prev_iter_note,
+            parent_prev_note,
+            slide_to,
+            slide_unpitch_to,
+            left_hand,
+            tap,
+            pick_direction,
+            slap,
+            pluck,
+            vibrato,
+            sustain,
+            max_bend,
+            bend_data,
         })
     }
 }

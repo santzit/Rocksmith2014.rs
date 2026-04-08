@@ -1,9 +1,9 @@
-use std::io::{Read, Write};
-use crate::binary_helpers::*;
 use super::anchor::Anchor;
 use super::anchor_extension::AnchorExtension;
 use super::finger_print::FingerPrint;
 use super::note::Note;
+use crate::binary_helpers::*;
+use std::io::{Read, Write};
 
 #[derive(Debug, Clone, Default)]
 pub struct Level {
@@ -30,8 +30,14 @@ impl SngRead for Level {
         let notes_in_phrase_iterations_excl_ignored = read_vec_i32(r)?;
         let notes_in_phrase_iterations_all = read_vec_i32(r)?;
         Ok(Level {
-            difficulty, anchors, anchor_extensions, hand_shapes, arpeggios, notes,
-            average_notes_per_iteration, notes_in_phrase_iterations_excl_ignored,
+            difficulty,
+            anchors,
+            anchor_extensions,
+            hand_shapes,
+            arpeggios,
+            notes,
+            average_notes_per_iteration,
+            notes_in_phrase_iterations_excl_ignored,
             notes_in_phrase_iterations_all,
         })
     }

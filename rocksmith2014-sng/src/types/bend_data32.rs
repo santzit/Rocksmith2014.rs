@@ -1,6 +1,6 @@
-use std::io::{Read, Write};
-use crate::binary_helpers::*;
 use super::bend_value::BendValue;
+use crate::binary_helpers::*;
+use std::io::{Read, Write};
 
 #[derive(Debug, Clone)]
 pub struct BendData32 {
@@ -24,7 +24,10 @@ impl SngRead for BendData32 {
             *v = BendValue::sng_read(r)?;
         }
         let used_count = read_i32(r)?;
-        Ok(BendData32 { bend_values, used_count })
+        Ok(BendData32 {
+            bend_values,
+            used_count,
+        })
     }
 }
 

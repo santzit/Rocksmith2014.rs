@@ -1,5 +1,5 @@
-use std::io::{Read, Write};
 use crate::binary_helpers::*;
+use std::io::{Read, Write};
 
 #[derive(Debug, Clone, Default)]
 pub struct Phrase {
@@ -21,7 +21,14 @@ impl SngRead for Phrase {
         let iteration_count = read_i32(r)?;
         let mut name = [0u8; 32];
         r.read_exact(&mut name)?;
-        Ok(Phrase { solo, disparity, ignore, max_difficulty, iteration_count, name })
+        Ok(Phrase {
+            solo,
+            disparity,
+            ignore,
+            max_difficulty,
+            iteration_count,
+            name,
+        })
     }
 }
 

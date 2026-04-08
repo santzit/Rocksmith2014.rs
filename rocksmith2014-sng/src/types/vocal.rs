@@ -1,5 +1,5 @@
-use std::io::{Read, Write};
 use crate::binary_helpers::*;
+use std::io::{Read, Write};
 
 #[derive(Debug, Clone)]
 pub struct Vocal {
@@ -11,7 +11,12 @@ pub struct Vocal {
 
 impl Default for Vocal {
     fn default() -> Self {
-        Vocal { time: 0.0, note: 0, length: 0.0, lyric: [0u8; 48] }
+        Vocal {
+            time: 0.0,
+            note: 0,
+            length: 0.0,
+            lyric: [0u8; 48],
+        }
     }
 }
 
@@ -22,7 +27,12 @@ impl SngRead for Vocal {
         let length = read_f32(r)?;
         let mut lyric = [0u8; 48];
         r.read_exact(&mut lyric)?;
-        Ok(Vocal { time, note, length, lyric })
+        Ok(Vocal {
+            time,
+            note,
+            length,
+            lyric,
+        })
     }
 }
 

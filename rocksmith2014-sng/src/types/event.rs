@@ -1,5 +1,5 @@
-use std::io::{Read, Write};
 use crate::binary_helpers::*;
+use std::io::{Read, Write};
 
 #[derive(Debug, Clone)]
 pub struct Event {
@@ -9,7 +9,10 @@ pub struct Event {
 
 impl Default for Event {
     fn default() -> Self {
-        Event { time: 0.0, name: [0u8; 256] }
+        Event {
+            time: 0.0,
+            name: [0u8; 256],
+        }
     }
 }
 

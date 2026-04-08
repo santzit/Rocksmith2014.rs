@@ -1,5 +1,5 @@
-use std::io::{Read, Write};
 use crate::binary_helpers::*;
+use std::io::{Read, Write};
 
 #[derive(Debug, Clone)]
 pub struct Action {
@@ -9,7 +9,10 @@ pub struct Action {
 
 impl Default for Action {
     fn default() -> Self {
-        Action { time: 0.0, action_name: [0u8; 256] }
+        Action {
+            time: 0.0,
+            action_name: [0u8; 256],
+        }
     }
 }
 

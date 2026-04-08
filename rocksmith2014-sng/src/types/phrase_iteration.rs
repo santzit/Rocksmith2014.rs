@@ -1,5 +1,5 @@
-use std::io::{Read, Write};
 use crate::binary_helpers::*;
+use std::io::{Read, Write};
 
 #[derive(Debug, Clone, Default)]
 pub struct PhraseIteration {
@@ -15,7 +15,12 @@ impl SngRead for PhraseIteration {
         let start_time = read_f32(r)?;
         let end_time = read_f32(r)?;
         let difficulty = [read_i32(r)?, read_i32(r)?, read_i32(r)?];
-        Ok(PhraseIteration { phrase_id, start_time, end_time, difficulty })
+        Ok(PhraseIteration {
+            phrase_id,
+            start_time,
+            end_time,
+            difficulty,
+        })
     }
 }
 

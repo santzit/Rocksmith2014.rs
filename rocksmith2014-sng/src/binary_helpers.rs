@@ -1,7 +1,7 @@
 //! Primitive read/write helpers for the SNG binary format.
 
-use std::io::{self, Read, Write};
 use crate::{Error, Result};
+use std::io::{self, Read, Write};
 
 pub(crate) fn read_u8<R: Read>(r: &mut R) -> io::Result<u8> {
     let mut buf = [0u8; 1];

@@ -1,5 +1,5 @@
-use std::io::{Read, Write};
 use crate::binary_helpers::*;
+use std::io::{Read, Write};
 
 #[derive(Debug, Clone, Default)]
 pub struct BendValue {
@@ -10,7 +10,11 @@ pub struct BendValue {
 
 impl SngRead for BendValue {
     fn sng_read<R: Read>(r: &mut R) -> crate::Result<Self> {
-        Ok(BendValue { time: read_f32(r)?, step: read_f32(r)?, unused: read_u32(r)? })
+        Ok(BendValue {
+            time: read_f32(r)?,
+            step: read_f32(r)?,
+            unused: read_u32(r)?,
+        })
     }
 }
 

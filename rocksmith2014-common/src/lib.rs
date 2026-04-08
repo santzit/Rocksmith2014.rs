@@ -10,5 +10,5 @@ pub mod random_generator;
 pub mod types;
 
 pub use platform::Platform;
-pub use types::AudioFile;
 pub use random_generator::random;
+pub use types::AudioFile;

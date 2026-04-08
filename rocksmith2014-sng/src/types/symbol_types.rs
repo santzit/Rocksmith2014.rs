@@ -1,5 +1,5 @@
-use std::io::{Read, Write};
 use crate::binary_helpers::*;
+use std::io::{Read, Write};
 
 #[derive(Debug, Clone, Default)]
 pub struct SymbolsHeader {
@@ -52,7 +52,12 @@ pub struct SymbolsTexture {
 
 impl Default for SymbolsTexture {
     fn default() -> Self {
-        SymbolsTexture { font: [0u8; 128], font_path_length: 0, width: 0, height: 0 }
+        SymbolsTexture {
+            font: [0u8; 128],
+            font_path_length: 0,
+            width: 0,
+            height: 0,
+        }
     }
 }
 
@@ -64,7 +69,12 @@ impl SngRead for SymbolsTexture {
         let _ = read_i32(r)?; // unknown
         let width = read_i32(r)?;
         let height = read_i32(r)?;
-        Ok(SymbolsTexture { font, font_path_length, width, height })
+        Ok(SymbolsTexture {
+            font,
+            font_path_length,
+            width,
+            height,
+        })
     }
 }
 
@@ -89,7 +99,12 @@ pub struct Rect {
 
 impl SngRead for Rect {
     fn sng_read<R: Read>(r: &mut R) -> crate::Result<Self> {
-        Ok(Rect { ymin: read_f32(r)?, xmin: read_f32(r)?, ymax: read_f32(r)?, xmax: read_f32(r)? })
+        Ok(Rect {
+            ymin: read_f32(r)?,
+            xmin: read_f32(r)?,
+            ymax: read_f32(r)?,
+            xmax: read_f32(r)?,
+        })
     }
 }
 
@@ -116,7 +131,11 @@ impl SngRead for SymbolDefinition {
         r.read_exact(&mut symbol)?;
         let outer = Rect::sng_read(r)?;
         let inner = Rect::sng_read(r)?;
-        Ok(SymbolDefinition { symbol, outer, inner })
+        Ok(SymbolDefinition {
+            symbol,
+            outer,
+            inner,
+        })
     }
 }
 

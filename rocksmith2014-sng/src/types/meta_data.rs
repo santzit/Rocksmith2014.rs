@@ -1,5 +1,5 @@
-use std::io::{Read, Write};
 use crate::binary_helpers::*;
+use std::io::{Read, Write};
 
 #[derive(Debug, Clone, Default)]
 pub struct MetaData {
@@ -36,9 +36,19 @@ impl SngRead for MetaData {
         let _ = read_f32(r)?; // second copy
         let max_difficulty = read_i32(r)?;
         Ok(MetaData {
-            max_score, max_notes_and_chords, max_notes_and_chords_real, points_per_note,
-            first_beat_length, start_time, capo_fret_id, last_conversion_date_time,
-            part, song_length, tuning, first_note_time, max_difficulty,
+            max_score,
+            max_notes_and_chords,
+            max_notes_and_chords_real,
+            points_per_note,
+            first_beat_length,
+            start_time,
+            capo_fret_id,
+            last_conversion_date_time,
+            part,
+            song_length,
+            tuning,
+            first_note_time,
+            max_difficulty,
         })
     }
 }

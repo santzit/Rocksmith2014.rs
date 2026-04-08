@@ -1,5 +1,5 @@
-use std::io::{Read, Write};
 use crate::binary_helpers::*;
+use std::io::{Read, Write};
 
 #[derive(Debug, Clone, Default)]
 pub struct PhraseExtraInfo {
@@ -18,7 +18,13 @@ impl SngRead for PhraseExtraInfo {
         let level_jump = read_i8(r)?;
         let redundant = read_i16(r)?;
         let _ = read_u8(r)?; // padding
-        Ok(PhraseExtraInfo { phrase_id, difficulty, empty, level_jump, redundant })
+        Ok(PhraseExtraInfo {
+            phrase_id,
+            difficulty,
+            empty,
+            level_jump,
+            redundant,
+        })
     }
 }
 

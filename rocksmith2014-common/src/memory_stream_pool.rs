@@ -15,11 +15,7 @@ impl MemoryStreamPool {
 
     /// Takes a buffer from the pool, or creates a new one.
     pub fn rent(&self) -> Vec<u8> {
-        self.pool
-            .lock()
-            .unwrap()
-            .pop()
-            .unwrap_or_default()
+        self.pool.lock().unwrap().pop().unwrap_or_default()
     }
 
     /// Returns a buffer to the pool after clearing it.

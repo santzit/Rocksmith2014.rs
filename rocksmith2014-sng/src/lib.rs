@@ -117,10 +117,24 @@ impl Sng {
         let levels = read_array::<Level, _>(&mut r)?;
         let metadata = MetaData::sng_read(&mut r)?;
         Ok(Sng {
-            beats, phrases, chords, chord_notes, vocals,
-            symbols_headers, symbols_textures, symbol_definitions,
-            phrase_iterations, phrase_extra_info, new_linked_difficulties,
-            actions, events, tones, dnas, sections, levels, metadata,
+            beats,
+            phrases,
+            chords,
+            chord_notes,
+            vocals,
+            symbols_headers,
+            symbols_textures,
+            symbol_definitions,
+            phrase_iterations,
+            phrase_extra_info,
+            new_linked_difficulties,
+            actions,
+            events,
+            tones,
+            dnas,
+            sections,
+            levels,
+            metadata,
         })
     }
 
@@ -170,7 +184,11 @@ mod tests {
 
     #[test]
     fn test_bend_value_roundtrip() {
-        let bv = BendValue { time: 1.5, step: 0.5, unused: 0 };
+        let bv = BendValue {
+            time: 1.5,
+            step: 0.5,
+            unused: 0,
+        };
         let mut buf = Vec::new();
         bv.sng_write(&mut buf).unwrap();
         assert_eq!(buf.len(), 12);
@@ -182,7 +200,10 @@ mod tests {
     #[test]
     fn test_beat_roundtrip() {
         let beat = Beat {
-            time: 1.0, measure: 1, beat: 0, phrase_iteration: 0,
+            time: 1.0,
+            measure: 1,
+            beat: 0,
+            phrase_iteration: 0,
             mask: BeatMask::FIRST_BEAT_OF_MEASURE,
         };
         let mut buf = Vec::new();
@@ -196,13 +217,32 @@ mod tests {
     fn test_note_roundtrip() {
         let note = Note {
             mask: NoteMask::SINGLE,
-            flags: 0, hash: 0, time: 2.5, string_index: 2, fret: 5,
-            anchor_fret: 5, anchor_width: 4, chord_id: -1, chord_notes_id: -1,
-            phrase_id: 0, phrase_iteration_id: 0, finger_print_id: [-1, -1],
-            next_iter_note: -1, prev_iter_note: -1, parent_prev_note: -1,
-            slide_to: -1, slide_unpitch_to: -1, left_hand: -1,
-            tap: 0, pick_direction: 0, slap: -1, pluck: -1,
-            vibrato: 0, sustain: 0.0, max_bend: 0.0, bend_data: vec![],
+            flags: 0,
+            hash: 0,
+            time: 2.5,
+            string_index: 2,
+            fret: 5,
+            anchor_fret: 5,
+            anchor_width: 4,
+            chord_id: -1,
+            chord_notes_id: -1,
+            phrase_id: 0,
+            phrase_iteration_id: 0,
+            finger_print_id: [-1, -1],
+            next_iter_note: -1,
+            prev_iter_note: -1,
+            parent_prev_note: -1,
+            slide_to: -1,
+            slide_unpitch_to: -1,
+            left_hand: -1,
+            tap: 0,
+            pick_direction: 0,
+            slap: -1,
+            pluck: -1,
+            vibrato: 0,
+            sustain: 0.0,
+            max_bend: 0.0,
+            bend_data: vec![],
         };
         let mut buf = Vec::new();
         note.sng_write(&mut buf).unwrap();
@@ -217,8 +257,13 @@ mod tests {
         let level = Level {
             difficulty: 0,
             anchors: vec![Anchor {
-                start_time: 0.0, end_time: 10.0, first_note_time: 0.5,
-                last_note_time: 9.5, fret_id: 1, width: 4, phrase_iteration_id: 0,
+                start_time: 0.0,
+                end_time: 10.0,
+                first_note_time: 0.5,
+                last_note_time: 9.5,
+                fret_id: 1,
+                width: 4,
+                phrase_iteration_id: 0,
             }],
             anchor_extensions: vec![],
             hand_shapes: vec![],

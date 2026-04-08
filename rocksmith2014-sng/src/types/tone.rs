@@ -1,5 +1,5 @@
-use std::io::{Read, Write};
 use crate::binary_helpers::*;
+use std::io::{Read, Write};
 
 #[derive(Debug, Clone, Default)]
 pub struct Tone {
@@ -9,7 +9,10 @@ pub struct Tone {
 
 impl SngRead for Tone {
     fn sng_read<R: Read>(r: &mut R) -> crate::Result<Self> {
-        Ok(Tone { time: read_f32(r)?, tone_id: read_i32(r)? })
+        Ok(Tone {
+            time: read_f32(r)?,
+            tone_id: read_i32(r)?,
+        })
     }
 }
 

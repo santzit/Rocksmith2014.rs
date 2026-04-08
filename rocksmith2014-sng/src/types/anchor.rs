@@ -1,5 +1,5 @@
-use std::io::{Read, Write};
 use crate::binary_helpers::*;
+use std::io::{Read, Write};
 
 #[derive(Debug, Clone, Default)]
 pub struct Anchor {
@@ -23,7 +23,15 @@ impl SngRead for Anchor {
         r.read_exact(&mut pad)?;
         let width = read_i32(r)?;
         let phrase_iteration_id = read_i32(r)?;
-        Ok(Anchor { start_time, end_time, first_note_time, last_note_time, fret_id, width, phrase_iteration_id })
+        Ok(Anchor {
+            start_time,
+            end_time,
+            first_note_time,
+            last_note_time,
+            fret_id,
+            width,
+            phrase_iteration_id,
+        })
     }
 }
 
