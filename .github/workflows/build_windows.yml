@@ -33,6 +33,8 @@ jobs:
     name: Build release (Windows)
     needs: test
     runs-on: windows-latest
+    permissions:
+      contents: write
 
     steps:
       - uses: actions/checkout@v4
@@ -58,7 +60,7 @@ jobs:
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path dist/windows | Out-Null
-          Get-ChildItem target/release -MaxDepth 0 -Include *.rlib, *.lib, *.dll |
+          Get-ChildItem target/release -Depth 0 -Include *.rlib, *.lib, *.dll |
             Copy-Item -Destination dist/windows
           Compress-Archive -Path dist/windows -DestinationPath rocksmith2014-rs-windows.zip
 
