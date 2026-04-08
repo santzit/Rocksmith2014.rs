@@ -55,6 +55,16 @@ Provides the `XmlEntity` enum (note or chord) and helpers for building sorted en
 
 Checks arrangements for common errors and applies automatic improvements (anchor fixes, phrase cleanup, hand-shape adjustments, etc.).
 
+## Roadmap / TODOs
+
+### DD (Dynamic Difficulty)
+
+Port the Dynamic Difficulty generator from [Rocksmith2014.NET](https://github.com/iminashi/Rocksmith2014.NET). This library generates multiple phrase difficulty levels from a fully-notated arrangement, allowing players to learn songs progressively.
+
+### DD.Model
+
+Port the DD data model types from [Rocksmith2014.NET](https://github.com/iminashi/Rocksmith2014.NET). These types describe the structure and parameters used by the Dynamic Difficulty generator (phrase levels, note densities, difficulty thresholds, etc.).
+
 ## Building
 
 ### Prerequisites
