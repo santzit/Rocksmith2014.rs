@@ -138,10 +138,10 @@ impl NoteData {
         note_is_ignore(self.mask)
     }
     fn is_slide(&self) -> bool {
-        self.slide_to > 0
+        self.slide_to >= 0
     }
     fn is_unpitched_slide(&self) -> bool {
-        self.slide_unpitch_to > 0
+        self.slide_unpitch_to >= 0
     }
     fn is_bend(&self) -> bool {
         !self.bend_values.is_empty()

@@ -85,3 +85,72 @@ fn detects_fret_number_more_than_24() {
         "should detect fret > 24"
     );
 }
+
+#[test]
+fn detects_slide_to_fret_more_than_24() {
+    let mut arr = basic_arr();
+    let notes = vec![Note {
+        time: 1000,
+        fret: 5,
+        slide_to: 32,
+        sustain: 500,
+        ..Default::default()
+    }];
+    arr.levels = vec![Level {
+        notes,
+        ..Default::default()
+    }];
+    let issues = check_instrumental(&arr);
+    assert!(
+        issues
+            .iter()
+            .any(|i| matches!(i.issue_type(), IssueType::FretNumberMoreThan24)),
+        "should detect slide_to > 24 as FretNumberMoreThan24"
+    );
+}
+
+#[test]
+fn detects_slide_unpitch_to_fret_more_than_24() {
+    let mut arr = basic_arr();
+    let notes = vec![Note {
+        time: 1000,
+        fret: 5,
+        slide_unpitch_to: 81,
+        sustain: 500,
+        ..Default::default()
+    }];
+    arr.levels = vec![Level {
+        notes,
+        ..Default::default()
+    }];
+    let issues = check_instrumental(&arr);
+    assert!(
+        issues
+            .iter()
+            .any(|i| matches!(i.issue_type(), IssueType::FretNumberMoreThan24)),
+        "should detect slide_unpitch_to > 24 as FretNumberMoreThan24"
+    );
+}
+
+#[test]
+fn valid_slide_to_does_not_trigger_fret_issue() {
+    let mut arr = basic_arr();
+    let notes = vec![Note {
+        time: 1000,
+        fret: 5,
+        slide_to: 12,
+        sustain: 500,
+        ..Default::default()
+    }];
+    arr.levels = vec![Level {
+        notes,
+        ..Default::default()
+    }];
+    let issues = check_instrumental(&arr);
+    assert!(
+        !issues
+            .iter()
+            .any(|i| matches!(i.issue_type(), IssueType::FretNumberMoreThan24)),
+        "should not report FretNumberMoreThan24 for valid slide_to"
+    );
+}

@@ -153,6 +153,12 @@ fn check_notes(arr: &InstrumentalArrangement, level: &Level, issues: &mut Vec<Is
         if note.fret > 24 {
             issues.push(at(IssueType::FretNumberMoreThan24, t));
         }
+        if note.slide_to > 24 {
+            issues.push(at(IssueType::FretNumberMoreThan24, t));
+        }
+        if note.slide_unpitch_to > 24 {
+            issues.push(at(IssueType::FretNumberMoreThan24, t));
+        }
         if t > end_time {
             issues.push(at(IssueType::NoteAfterSongEnd, t));
         }
