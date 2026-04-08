@@ -69,10 +69,14 @@
 //! ```
 
 mod parser;
+pub mod show_light;
 mod types;
 pub mod utils;
+pub mod vocal;
 mod writer;
 
+pub use show_light::ShowLight;
+pub use vocal::Vocal;
 pub use types::{
     Anchor, ArrangementEvent, ArrangementProperties, BendValue, Chord, ChordMask, ChordNote,
     ChordTemplate, Ebeat, HandShape, HeroLevel, InstrumentalArrangement, Level, LinkedDiff,
