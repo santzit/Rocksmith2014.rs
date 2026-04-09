@@ -4,8 +4,27 @@ use quick_xml::Reader;
 use crate::types::*;
 use crate::Result;
 
+/// Mirrors .NET `Utils.TimeCodeFromFloatString`: truncates (does not round)
+/// the fractional part to at most 3 decimal digits, then returns the combined
+/// integer millisecond value.
 pub(crate) fn time_from_str(s: &str) -> i32 {
-    (s.parse::<f64>().unwrap_or(0.0) * 1000.0).round() as i32
+    match s.find('.') {
+        None => s.parse::<i32>().unwrap_or(0) * 1000,
+        Some(dot) => {
+            let whole: i32 = s[..dot].parse().unwrap_or(0);
+            // Take at most 3 characters after the dot, pad with '0' on the right
+            let frac_src = &s[dot + 1..];
+            let mut frac_chars = [b'0'; 3];
+            for (i, b) in frac_src.bytes().take(3).enumerate() {
+                frac_chars[i] = b;
+            }
+            let frac: i32 = std::str::from_utf8(&frac_chars)
+                .ok()
+                .and_then(|f| f.parse().ok())
+                .unwrap_or(0);
+            whole * 1000 + frac
+        }
+    }
 }
 
 pub(crate) fn time_to_str(ms: i32) -> String {

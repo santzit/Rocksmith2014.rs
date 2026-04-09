@@ -20,7 +20,7 @@ A port of the [Rocksmith2014.NET](https://github.com/iminashi/Rocksmith2014.NET)
 | FSharp Extensions | 27 | 27 | 0 | 0 |
 | PSARC | 9 | 9 | 0 | 0 |
 | SNG | 34 | 34 | 0 | 0 |
-| XML | 28 | 28 | 0 | 0 |
+| XML | 50 | 50 | 0 | 0 |
 | XML Processing | 3 | 3 | 0 | 0 |
 
 ## Libraries

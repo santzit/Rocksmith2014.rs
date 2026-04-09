@@ -9,16 +9,12 @@ fn xml_dir() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
 }
 
-/// Mirrors `InstrumentalArrangementTests.CanRemoveDD`:
-/// loads instrumental.xml and confirms it has multiple difficulty levels.
+/// Mirrors `InstrumentalArrangementTests.CanRemoveDD`.
 #[test]
-fn can_load_from_xml_file_with_multiple_dd_levels() {
-    let arr = read_file(xml_dir().join("instrumental.xml")).expect("read instrumental.xml");
-    assert!(
-        arr.levels.len() > 1,
-        "instrumental.xml should have multiple DD levels, got {}",
-        arr.levels.len()
-    );
+fn can_remove_dd() {
+    let mut arr = read_file(xml_dir().join("instrumental.xml")).expect("read instrumental.xml");
+    arr.remove_dd();
+    assert_eq!(arr.levels.len(), 1);
 }
 
 /// Round-trip: load → serialise → reload and confirm the arrangement is stable.
