@@ -2,7 +2,8 @@
 
 ## Project Description
 
-This is `Rocksmith2014.rs` — a Rust implementation of the [Rocksmith2014.NET](https://github.com/iminashi/Rocksmith2014.NET) library. The .NET project is written in F# and this is the Rust port.
+This is `Rocksmith2014.rs` — a Rust implementation of the [Rocksmith2014.NET](https://github.com/iminashi/Rocksmith2014.NET) library. 
+The .NET project is written in F# (tests use C#) and this is the Rust port.
 
 
 ## Project implementation status
