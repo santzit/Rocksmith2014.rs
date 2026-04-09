@@ -12,6 +12,7 @@ Use `/Rocksmith2014.NET` folder/subproject as the primary knowledge base referen
 - The naming conventions for types and functions
 - The strict same tests files, functions and parameters of .NET implementation, if the test FAIL is OK, report it and stop. We work on it later.
 - Use same .NET file separation, eg.: `<filename>.fs` became `<filename>.rs`
+- Use [ww2ogg](https://github.com/hcs64/ww2ogg) for Wwise cli
 
 
 The .NET project is in **F#** and this is the **Rust** implementation. Translate F# idioms to idiomatic Rust (e.g., F# discriminated unions → Rust enums, F# records → Rust structs, F# modules → Rust modules).
