@@ -7,7 +7,7 @@ The `.NET` project is written in `F#` (tests use `C#`) and this is the `Rust` po
 
 
 ## Project implementation status
-Create and update an table on project README.md file with the submodule, number of tests, passed, ignored, failed.
+Create and update an table on project `README.md` file with the submodule, number of tests, passed, ignored, failed.
 
 example:
 |Submodule|Tests|Passed|Ignored|Failed|
@@ -33,7 +33,7 @@ Use `/Rocksmith2014.NET` folder/subproject as the primary knowledge base referen
 - Keep same file and directory path, eg. `src/Rocksmith2014.Common/Profile` should became `src/rocksmith2014-common/profile`
 - Do not use generic/consolidated lib.rs, use separated files segregation like .NET implementation.
 
-The .NET project is in **F#** and this is the **Rust** implementation. Translate F# idioms to idiomatic Rust (e.g., F# discriminated unions → Rust enums, F# records → Rust structs, F# modules → Rust modules).
+The .NET project is in `**F#**` and this is the `**Rust**` implementation. Translate `F#` idioms to idiomatic `Rust` (e.g., `F# discriminated unions` → `Rust enums`, `F# records` → `Rust structs`, `F# modules` → `Rust modules`).
 
 Note: we can mark encode and japanese tests as `ignore`, we will not work on audio encoding or use japanese for now.
 
