@@ -4,6 +4,16 @@
 
 This is `Rocksmith2014.rs` — a Rust implementation of the [Rocksmith2014.NET](https://github.com/iminashi/Rocksmith2014.NET) library. The .NET project is written in F# and this is the Rust port.
 
+Create and update an table on project README.md file with the submodule, number of tests, passed, ignored, failed.
+
+example:
+|Submodule|Tests|Passed|Ignored|Failed|
+|------|------|------|------|------|
+|Audio|20|18|0|2|
+|Common|32|4|2|26|
+
+Update this table at each commit/unit tests
+
 ## Knowledge Base Reference
 
 Use `/Rocksmith2014.NET` folder/subproject as the primary knowledge base reference for understanding:
