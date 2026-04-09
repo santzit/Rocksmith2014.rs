@@ -10,10 +10,10 @@ The `.NET` project is written in `F#` (tests use `C#`) and this is the `Rust` po
 Create and update an table on project `README.md` file with the submodule, number of tests, passed, ignored, failed.
 
 example:
-|Submodule|Tests|Passed|Ignored|Failed|
-|------|------|------|------|------|
-|Audio|20|18|0|2|
-|Common|32|4|2|26|
+|Submodule|.NET Total tests|Rust Tests|Passed|Ignored|Failed|
+|------|-------|------|------|------|------|
+|Audio|20|20|18|0|2|
+|Common|32|32|4|2|26|
 
 Update this table at each commit/unit tests
 
