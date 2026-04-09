@@ -123,7 +123,16 @@ pub fn generate_phrases(arr: &mut InstrumentalArrangement) {
         }
         if measure_counter >= 9 {
             measure_counter = 1;
-            let t = beat.time;
+            let mut t = beat.time;
+            // If t falls inside a note's sustain, move boundary back to note start
+            if let Some(note_start) = level
+                .notes
+                .iter()
+                .find(|n| n.time < t && n.time + n.sustain > t)
+                .map(|n| n.time)
+            {
+                t = note_start;
+            }
             if t - last_phrase_time > MIN_PHRASE_SEP {
                 last_phrase_time = t;
                 let pid = arr.phrases.len() as u32;

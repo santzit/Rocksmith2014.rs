@@ -151,7 +151,6 @@ fn identical_anchor_at_phrase_time_is_not_removed() {
 }
 
 #[test]
-#[ignore = "remove_muted_notes_from_chords needs verification of chord template mutation behavior"]
 fn muted_strings_are_removed_from_non_muted_chords() {
     let templates = vec![
         ChordTemplate { name: "".into(), display_name: "".into(), fingers: [1, 3, 4, -1, -1, -1], frets: [1, 3, 3, -1, -1, -1] },

@@ -1,5 +1,5 @@
 use rocksmith2014_xml::{
-    Anchor, ArrangementEvent as Event, Chord, HandShape, InstrumentalArrangement, Level, MetaData,
+    Anchor, ArrangementEvent as Event, HandShape, InstrumentalArrangement, Level, MetaData,
     Note, Phrase, PhraseIteration, Section, ToneChange,
 };
 use rocksmith2014_xml_processing::checker::{check_anchors, check_crowd_events, check_handshapes, check_phrases};
@@ -250,7 +250,7 @@ fn detects_non_empty_first_phrase() {
     let results = check_phrases(&arr);
     // The first phrase iteration points to phrase index 0 which has max_difficulty=0
     // Not triggering FirstPhraseNotEmpty - needs max_difficulty > 0 in the phrase
-    assert!(results.iter().any(|i| matches!(i.issue_type(), IssueType::NoEndPhrase)) || results.is_empty() || results.len() >= 0);
+    assert!(results.iter().any(|i| matches!(i.issue_type(), IssueType::NoEndPhrase)) || results.is_empty());
 }
 
 #[test]

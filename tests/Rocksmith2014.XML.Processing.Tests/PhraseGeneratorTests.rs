@@ -1,4 +1,4 @@
-use rocksmith2014_xml::{Anchor, Chord, Ebeat, InstrumentalArrangement, Level, Note};
+use rocksmith2014_xml::{Anchor, Ebeat, InstrumentalArrangement, Level, Note};
 use rocksmith2014_xml_processing::phrase_gen::generate_phrases;
 
 fn beats() -> Vec<Ebeat> {
@@ -36,7 +36,6 @@ fn creates_phrases_and_sections_when_one_note() {
 }
 
 #[test]
-#[ignore = "phrase generator places phrases on beats; notes between beats need further investigation"]
 fn does_not_create_phrase_in_middle_of_note_sustain() {
     let mut arr = base_arr();
     arr.levels[0].notes.push(Note { time: 2_000, ..Default::default() });

@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use regex::Regex;
 use rocksmith2014_xml::{Anchor, ArrangementEvent, InstrumentalArrangement, NoteMask};
@@ -246,10 +246,14 @@ pub fn remove_redundant_anchors(arr: &mut InstrumentalArrangement) {
 /// Removes fret-hand-muted notes from chords that also contain normal notes.
 /// Mirrors BasicFixes.removeMutedNotesFromChords in the .NET implementation.
 pub fn remove_muted_notes_from_chords(arr: &mut InstrumentalArrangement) {
-    let mut fixed_chord_templates: HashSet<i32> = HashSet::new();
+    // First pass: remove muted chord notes and collect which templates need updating.
+    // We process each chord_id at most once (first occurrence wins).
+    let mut template_updates: HashMap<i32, Vec<i8>> = HashMap::new();
+    let mut seen_ids: HashSet<i32> = HashSet::new();
+
     for level in &mut arr.levels {
         for chord in &mut level.chords {
-            if fixed_chord_templates.contains(&chord.chord_id)
+            if seen_ids.contains(&chord.chord_id)
                 || chord.chord_notes.is_empty()
                 || chord.mask.contains(rocksmith2014_xml::ChordMask::FRET_HAND_MUTE)
             {
@@ -261,19 +265,24 @@ pub fn remove_muted_notes_from_chords(arr: &mut InstrumentalArrangement) {
                 .filter(|cn| cn.mask.contains(NoteMask::FRET_HAND_MUTE))
                 .map(|cn| cn.string)
                 .collect();
+            seen_ids.insert(chord.chord_id);
             if muted_strings.is_empty() || muted_strings.len() == chord.chord_notes.len() {
                 continue;
             }
             chord.chord_notes.retain(|cn| !cn.mask.contains(NoteMask::FRET_HAND_MUTE));
-            if let Some(template) = arr.chord_templates.get_mut(chord.chord_id as usize) {
-                for &s in &muted_strings {
-                    if s >= 0 && (s as usize) < 6 {
-                        template.frets[s as usize] = -1;
-                        template.fingers[s as usize] = -1;
-                    }
+            template_updates.insert(chord.chord_id, muted_strings);
+        }
+    }
+
+    // Second pass: update chord templates (no conflict with levels borrow now).
+    for (chord_id, muted_strings) in template_updates {
+        if let Some(template) = arr.chord_templates.get_mut(chord_id as usize) {
+            for s in muted_strings {
+                if s >= 0 && (s as usize) < 6 {
+                    template.frets[s as usize] = -1;
+                    template.fingers[s as usize] = -1;
                 }
             }
-            fixed_chord_templates.insert(chord.chord_id);
         }
     }
 }

@@ -1,4 +1,4 @@
-use rocksmith2014_xml::{Anchor, ArrangementEvent, ChordMask, InstrumentalArrangement, NoteMask};
+use rocksmith2014_xml::{Anchor, ChordMask, InstrumentalArrangement, NoteMask};
 
 /// Adds LinkNext to chords missing the attribute when a chord note has it.
 /// Also fixes varying sustains: sets all chord note sustains to the max.

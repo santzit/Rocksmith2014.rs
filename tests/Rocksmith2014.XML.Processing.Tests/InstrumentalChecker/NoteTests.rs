@@ -1,5 +1,5 @@
 use rocksmith2014_xml::{
-    Anchor, BendValue, Chord, ChordNote, ChordTemplate, InstrumentalArrangement, Level, MetaData,
+    BendValue, Chord, ChordNote, ChordTemplate, InstrumentalArrangement, Level, MetaData,
     Note, NoteMask, Phrase, PhraseIteration, Section, ToneChange,
 };
 use rocksmith2014_xml_processing::checker::check_notes;
