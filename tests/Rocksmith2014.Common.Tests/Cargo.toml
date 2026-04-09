@@ -9,24 +9,24 @@ rocksmith2014-common = { path = "../../rocksmith2014-common" }
 
 [[test]]
 name = "BigEndianBinaryReadWrite"
-path = "tests/BigEndianBinaryReadWrite.rs"
+path = "BigEndianBinaryReadWrite.rs"
 
 [[test]]
 name = "LittleEndianBinaryReadWrite"
-path = "tests/LittleEndianBinaryReadWrite.rs"
+path = "LittleEndianBinaryReadWrite.rs"
 
 [[test]]
 name = "SlowStreamTests"
-path = "tests/SlowStreamTests.rs"
+path = "SlowStreamTests.rs"
 
 [[test]]
 name = "PlatformTests"
-path = "tests/PlatformTests.rs"
+path = "PlatformTests.rs"
 
 [[test]]
 name = "ToneDescriptorTests"
-path = "tests/ToneDescriptorTests.rs"
+path = "ToneDescriptorTests.rs"
 
 [[test]]
 name = "ToneTests"
-path = "tests/ToneTests.rs"
+path = "ToneTests.rs"
