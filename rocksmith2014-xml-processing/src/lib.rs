@@ -27,7 +27,16 @@ mod improver;
 mod issue;
 mod phrase_gen;
 
-pub use checker::check_instrumental;
-pub use improver::{apply_all_improvements, apply_minimum_improvements};
+pub use checker::{
+    check_instrumental, check_notes_pub as check_notes, check_chords_pub as check_chords,
+    check_handshapes_pub as check_handshapes, check_anchors_pub as check_anchors,
+    check_phrases_pub as check_phrases, check_crowd_events_pub as check_crowd_events,
+};
+pub use improver::{
+    apply_all_improvements, apply_minimum_improvements,
+    validate_phrase_names, add_ignores, fix_link_nexts,
+    remove_overlapping_bend_values, add_crowd_events, remove_extra_beats,
+    remove_redundant_anchors, process_chord_names,
+};
 pub use issue::{Issue, IssueType};
 pub use phrase_gen::generate_phrases;

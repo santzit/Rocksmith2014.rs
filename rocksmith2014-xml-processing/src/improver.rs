@@ -3,7 +3,7 @@ use std::collections::HashSet;
 use regex::Regex;
 use rocksmith2014_xml::{Anchor, ArrangementEvent, InstrumentalArrangement, NoteMask};
 
-fn validate_phrase_names(arr: &mut InstrumentalArrangement) {
+pub fn validate_phrase_names(arr: &mut InstrumentalArrangement) {
     let re = Regex::new(r"[^a-zA-Z0-9 _#]").unwrap();
     for phrase in &mut arr.phrases {
         let cleaned = re.replace_all(&phrase.name, "").into_owned();
@@ -11,7 +11,7 @@ fn validate_phrase_names(arr: &mut InstrumentalArrangement) {
     }
 }
 
-fn add_ignores(arr: &mut InstrumentalArrangement) {
+pub fn add_ignores(arr: &mut InstrumentalArrangement) {
     let chord_ids: Vec<Vec<i32>> = arr
         .levels
         .iter()
@@ -36,7 +36,7 @@ fn add_ignores(arr: &mut InstrumentalArrangement) {
     }
 }
 
-fn remove_overlapping_bend_values(arr: &mut InstrumentalArrangement) {
+pub fn remove_overlapping_bend_values(arr: &mut InstrumentalArrangement) {
     for level in &mut arr.levels {
         for note in &mut level.notes {
             if !note.bend_values.is_empty() {
@@ -55,7 +55,7 @@ fn remove_overlapping_bend_values(arr: &mut InstrumentalArrangement) {
     }
 }
 
-fn fix_link_nexts(arr: &mut InstrumentalArrangement) {
+pub fn fix_link_nexts(arr: &mut InstrumentalArrangement) {
     for level in &mut arr.levels {
         let count = level.notes.len();
         for i in 0..count {
@@ -108,7 +108,7 @@ fn get_first_note_time(arr: &InstrumentalArrangement) -> Option<i32> {
     }
 }
 
-fn add_crowd_events(arr: &mut InstrumentalArrangement) {
+pub fn add_crowd_events(arr: &mut InstrumentalArrangement) {
     if arr.events.iter().any(|e| e.code == "E3" || e.code == "D3") {
         return;
     }
@@ -154,12 +154,12 @@ fn add_crowd_events(arr: &mut InstrumentalArrangement) {
     );
 }
 
-fn remove_extra_beats(arr: &mut InstrumentalArrangement) {
+pub fn remove_extra_beats(arr: &mut InstrumentalArrangement) {
     let limit = arr.meta.song_length;
     arr.ebeats.retain(|b| b.time <= limit);
 }
 
-fn process_chord_names(arr: &mut InstrumentalArrangement) {
+pub fn process_chord_names(arr: &mut InstrumentalArrangement) {
     for template in &mut arr.chord_templates {
         if template.display_name.contains("(no name)") {
             let count = template.frets.iter().filter(|&&f| f >= 0).count();
@@ -195,7 +195,7 @@ fn fix_phrase_start_anchors(arr: &mut InstrumentalArrangement) {
     }
 }
 
-fn remove_redundant_anchors(arr: &mut InstrumentalArrangement) {
+pub fn remove_redundant_anchors(arr: &mut InstrumentalArrangement) {
     for level in &mut arr.levels {
         let mut seen: HashSet<i32> = HashSet::new();
         level.anchors.retain(|a| seen.insert(a.time));

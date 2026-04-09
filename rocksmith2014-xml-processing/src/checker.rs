@@ -105,6 +105,202 @@ fn check_overlapping_bends(note: &rocksmith2014_xml::Note) -> Option<Issue> {
     None
 }
 
+pub fn check_notes_pub(arr: &InstrumentalArrangement, level: &Level) -> Vec<Issue> {
+    let mut issues = Vec::new();
+    check_notes(arr, level, &mut issues);
+    issues
+}
+
+pub fn check_crowd_events_pub(arr: &InstrumentalArrangement) -> Vec<Issue> {
+    let mut issues = Vec::new();
+    check_crowd_events(arr, &mut issues);
+    issues
+}
+
+pub fn check_phrases_pub(arr: &InstrumentalArrangement) -> Vec<Issue> {
+    let mut issues = Vec::new();
+    check_phrase_structure(arr, &mut issues);
+    issues
+}
+
+pub fn check_chords_pub(arr: &InstrumentalArrangement, level: &Level) -> Vec<Issue> {
+    let mut issues = Vec::new();
+    let ng = get_noguitar_sections(arr);
+    let end_time = get_end_time(arr);
+    for chord in &level.chords {
+        let t = chord.time;
+        if arr.tones.iter().any(|tc| tc.time == t) {
+            issues.push(at(IssueType::ToneChangeOnNote, t));
+        }
+        if inside_noguitar(&ng, t) {
+            issues.push(at(IssueType::NoteInsideNoguitarSection, t));
+        }
+        if t >= end_time {
+            issues.push(at(IssueType::NoteAfterSongEnd, t));
+        }
+        let link_next = chord.mask.contains(rocksmith2014_xml::ChordMask::LINK_NEXT);
+        if link_next && chord.chord_notes.is_empty() {
+            issues.push(at(IssueType::MissingLinkNextChordNotes, t));
+        } else if link_next && !chord.chord_notes.iter().any(|cn| cn.mask.contains(NoteMask::LINK_NEXT)) {
+            issues.push(at(IssueType::MissingLinkNextChordNotes, t));
+        }
+        for cn in &chord.chord_notes {
+            let cn_link = cn.mask.contains(NoteMask::LINK_NEXT);
+            let harmonic = cn.mask.contains(NoteMask::HARMONIC);
+            let pinch = cn.mask.contains(NoteMask::PINCH_HARMONIC);
+            if harmonic && pinch { issues.push(at(IssueType::DoubleHarmonic, t)); }
+            if cn.fret == 7 && harmonic && cn.sustain > 0 { issues.push(at(IssueType::SeventhFretHarmonicWithSustain, t)); }
+            let is_bend = !cn.bend_values.is_empty();
+            if is_bend && cn.bend_values.iter().all(|bv| bv.step == 0.0) {
+                issues.push(at(IssueType::MissingBendValue, t));
+            }
+            for w in cn.bend_values.windows(2) {
+                if w[0].time == w[1].time { issues.push(at(IssueType::OverlappingBendValues, w[1].time)); }
+            }
+            if cn_link && cn.slide_unpitch_to >= 0 { issues.push(at(IssueType::UnpitchedSlideWithLinkNext, t)); }
+            if cn_link {
+                let next = level.notes.iter().find(|n| n.string == cn.string && n.time > t);
+                match next {
+                    None => issues.push(at(IssueType::LinkNextMissingTargetNote, t)),
+                    Some(n) if n.time - (t + cn.sustain) > 1 => issues.push(at(IssueType::IncorrectLinkNext, t)),
+                    Some(n) if cn.slide_to >= 0 && cn.slide_to != n.fret => issues.push(at(IssueType::LinkNextSlideMismatch, t)),
+                    Some(n) if !cn.bend_values.is_empty() => {
+                        let last = cn.bend_values.last().map_or(0.0, |b| b.step);
+                        let first_next = if !n.bend_values.is_empty() && n.bend_values[0].time == n.time { n.bend_values[0].step } else { 0.0 };
+                        if (last - first_next).abs() > f64::EPSILON { issues.push(at(IssueType::LinkNextBendMismatch, n.time)); }
+                    }
+                    _ => {}
+                }
+            }
+            // TechniqueNoteWithoutSustain for chord notes
+            let is_slide = cn.slide_to >= 0;
+            let is_unpitch = cn.slide_unpitch_to >= 0;
+            let is_vibrato = cn.vibrato > 0;
+            let is_tremolo = cn.mask.contains(NoteMask::TREMOLO);
+            if (is_slide || is_unpitch || is_bend || is_vibrato || is_tremolo) && cn.sustain < 5 {
+                issues.push(at(IssueType::TechniqueNoteWithoutSustain, t));
+            }
+        }
+        // MutedStringInNonMutedChord
+        if !chord.chord_notes.is_empty() {
+            let all_muted = chord.chord_notes.iter().all(|cn| cn.mask.contains(NoteMask::FRET_HAND_MUTE));
+            if !all_muted && chord.chord_notes.iter().any(|cn| cn.mask.contains(NoteMask::FRET_HAND_MUTE)) {
+                issues.push(at(IssueType::MutedStringInNonMutedChord, t));
+            }
+        }
+        // Chord fingering checks
+        if let Some(template) = arr.chord_templates.get(chord.chord_id as usize) {
+            let fingers = &template.fingers;
+            let uses_thumb = fingers.iter().any(|&f| f == 0);
+            let has_barre = {
+                let active: Vec<i8> = fingers.iter().copied().filter(|&f| f > 0).collect();
+                let fret_arr = &template.frets;
+                let active_frets: Vec<i8> = (0..6).filter(|&i| fingers[i] > 0).map(|i| fret_arr[i]).collect();
+                let min_fret = active_frets.iter().copied().filter(|&f| f > 0).min().unwrap_or(0);
+                active.len() > 1 && active.iter().filter(|&&f| f == *active.iter().min().unwrap_or(&0)).count() > 1
+                    && min_fret > 0
+                    && fret_arr.iter().zip(fingers.iter()).any(|(&fr, &fi)| fi < 0 && fr == 0)
+            };
+            // PossiblyWrongChordFingering - first finger not on lowest fret
+            if !uses_thumb && !chord.chord_notes.is_empty() {
+                let active_frets: Vec<(i8, i8)> = (0..6usize)
+                    .filter(|&i| fingers[i] > 0)
+                    .map(|i| (fingers[i], template.frets[i]))
+                    .collect();
+                if !active_frets.is_empty() {
+                    let min_fret = active_frets.iter().map(|&(_, f)| f).filter(|&f| f > 0).min();
+                    if let Some(mf) = min_fret {
+                        let min_finger_at_min_fret = active_frets.iter().filter(|&&(_, f)| f == mf).map(|&(fi, _)| fi).min();
+                        let overall_min_finger = active_frets.iter().map(|&(fi, _)| fi).min();
+                        if min_finger_at_min_fret != overall_min_finger {
+                            issues.push(at(IssueType::PossiblyWrongChordFingering, t));
+                        }
+                    }
+                }
+            }
+            // BarreOverOpenStrings
+            if !uses_thumb && has_barre {
+                issues.push(at(IssueType::BarreOverOpenStrings, t));
+            }
+        }
+        // InvalidBassArrangementString  
+        if arr.meta.arrangement_properties.path_bass > 0 {
+            for cn in &chord.chord_notes {
+                if cn.string > 3 { issues.push(at(IssueType::InvalidBassArrangementString, t)); break; }
+            }
+        }
+        // PositionShiftIntoPullOff for chords with pull-off notes
+        if chord.chord_notes.iter().any(|cn| cn.mask.contains(NoteMask::PULL_OFF)) {
+            let anchor = level.anchors.iter().rev().find(|a| a.time <= t);
+            let prev_anchor = level.anchors.iter().rev().find(|a| a.time < t);
+            if let (Some(a), Some(pa)) = (anchor, prev_anchor) {
+                if a.fret != pa.fret { issues.push(at(IssueType::PositionShiftIntoPullOff, t)); }
+            }
+        }
+    }
+    issues
+}
+
+pub fn check_handshapes_pub(arr: &InstrumentalArrangement, level: &Level) -> Vec<Issue> {
+    let mut issues = Vec::new();
+    let phrase_times: Vec<i32> = arr.phrase_iterations.iter().map(|pi| pi.time).collect();
+    let will_be_moved: Vec<i32> = arr.phrase_iterations.iter()
+        .filter(|pi| arr.phrases.get(pi.phrase_id as usize)
+            .map_or(false, |p| p.name.to_lowercase().starts_with("mover")))
+        .map(|pi| pi.time)
+        .collect();
+    for hs in &level.hand_shapes {
+        let anchor = level.anchors.iter().rev().find(|a| a.time <= hs.start_time);
+        if let Some(a) = anchor {
+            if let Some(template) = arr.chord_templates.get(hs.chord_id as usize) {
+                let uses_thumb = template.fingers.iter().any(|&f| f == 0);
+                if !uses_thumb && a.fret != template.frets.iter().copied().filter(|&f| f > 0).min().unwrap_or(a.fret) {
+                    issues.push(at(IssueType::FingeringAnchorMismatch, hs.start_time));
+                }
+            }
+        }
+        // AnchorInsideHandShape checks done in check_anchors
+    }
+    issues
+}
+
+pub fn check_anchors_pub(arr: &InstrumentalArrangement, level: &Level) -> Vec<Issue> {
+    let mut issues = Vec::new();
+    let phrase_times: Vec<i32> = arr.phrase_iterations.iter().map(|pi| pi.time).collect();
+    let will_be_moved: Vec<i32> = arr.phrase_iterations.iter()
+        .filter(|pi| arr.phrases.get(pi.phrase_id as usize)
+            .map_or(false, |p| p.name.to_lowercase().starts_with("mover")))
+        .map(|pi| pi.time)
+        .collect();
+    for anchor in &level.anchors {
+        let t = anchor.time;
+        // AnchorInsideHandShape
+        let inside = level.hand_shapes.iter().any(|hs| t > hs.start_time && t < hs.end_time);
+        if inside {
+            let at_phrase_boundary = phrase_times.iter().any(|&pt| t == pt);
+            if at_phrase_boundary {
+                let mover = will_be_moved.iter().any(|&mt| {
+                    level.hand_shapes.iter().any(|hs| hs.start_time < mt && hs.end_time > mt && t >= hs.start_time && t < hs.end_time)
+                });
+                if !mover { issues.push(at(IssueType::AnchorInsideHandShapeAtPhraseBoundary, t)); }
+            } else {
+                issues.push(at(IssueType::AnchorInsideHandShape, t));
+            }
+        }
+        // AnchorCloseToUnpitchedSlide
+        for note in &level.notes {
+            if note.slide_unpitch_to >= 0 && note.sustain > 0 {
+                let slide_end = note.time + note.sustain;
+                if t > slide_end - 5 && t <= slide_end {
+                    let mover = will_be_moved.iter().any(|&mt| t == mt || (t > mt - 5 && t <= mt));
+                    if !mover { issues.push(at(IssueType::AnchorCloseToUnpitchedSlide, t)); }
+                }
+            }
+        }
+    }
+    issues
+}
+
 fn check_notes(arr: &InstrumentalArrangement, level: &Level, issues: &mut Vec<Issue>) {
     let ng = get_noguitar_sections(arr);
     let end_time = get_end_time(arr);
