@@ -1,5 +1,7 @@
 //! Tests mirroring Rocksmith2014.DLCProject.Tests/PhraseLevelComparerTests.fs
 
+#![allow(clippy::field_reassign_with_default)]
+
 use rocksmith2014_dlcproject::{
     arrangement::{Arrangement, Instrumental},
     phrase_level_comparer::{compare_levels, ProjectLevels},

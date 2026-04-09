@@ -74,7 +74,19 @@ fn process_file(cmd: &Path, path: &Path, extra_args: &[&str]) -> Result<(i32, St
         .current_dir(tools_dir())
         .output()?;
 
-    let exit_code = output.status.code().unwrap_or(-1);
+    let exit_code = output.status.code().unwrap_or_else(|| {
+        // Process was killed by a signal (Unix only). Map to 128+signal to
+        // match the .NET convention where SIGABRT (6) → 134, which is then
+        // handled as a known-OK case for revorb on macOS.
+        #[cfg(unix)]
+        {
+            use std::os::unix::process::ExitStatusExt;
+            if let Some(sig) = output.status.signal() {
+                return 128 + sig;
+            }
+        }
+        -1
+    });
     let stdout = String::from_utf8_lossy(&output.stdout).to_string();
     Ok((exit_code, stdout))
 }
@@ -199,7 +211,7 @@ pub fn flac_to_wav(source_path: &Path, target_path: &Path) -> Result<()> {
     };
 
     let bits = info.bits_per_sample;
-    let shift = if bits > 16 { bits - 16 } else { 0 };
+    let shift = bits.saturating_sub(16);
 
     let mut writer = hound::WavWriter::create(target_path, spec)
         .map_err(|e| AudioError::Other(format!("WAV create failed: {e}")))?;
