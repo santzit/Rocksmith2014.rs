@@ -46,6 +46,8 @@ rocksmith2014-xml-processing/ — XML processing (checker, improver)
 tests/                      — Integration test crates mirroring .NET test structure
 ```
 
+Note: we can mark encode tests as `ignore`, we will not work on audio encoding for now.
+
 ## Coding Conventions
 
 - Use `thiserror` for error types
