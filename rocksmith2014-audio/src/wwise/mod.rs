@@ -109,15 +109,6 @@ fn get_wwise_version(executable_path: &Path) -> Result<WwiseVersion> {
     }
 }
 
-fn version_name(version: WwiseVersion) -> &'static str {
-    match version {
-        WwiseVersion::Wwise2019 => "wwise2019",
-        WwiseVersion::Wwise2021 => "wwise2021",
-        WwiseVersion::Wwise2022 => "wwise2022",
-        WwiseVersion::Wwise2023 => "wwise2023",
-    }
-}
-
 /// Extracts the embedded Wwise project template for the given version into
 /// `target_dir`.
 ///
@@ -134,8 +125,9 @@ fn extract_template(target_dir: &Path, version: WwiseVersion) -> Result<()> {
     };
 
     // ZipArchive::new accepts any Read + Seek; Cursor<&[u8]> satisfies both.
-    let mut archive = ZipArchive::new(Cursor::new(zip_bytes))
-        .map_err(|e: ZipError| AudioError::Other(format!("Failed to open embedded Wwise template: {e}")))?;
+    let mut archive = ZipArchive::new(Cursor::new(zip_bytes)).map_err(|e: ZipError| {
+        AudioError::Other(format!("Failed to open embedded Wwise template: {e}"))
+    })?;
 
     for i in 0..archive.len() {
         let mut entry = archive
