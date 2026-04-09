@@ -60,11 +60,11 @@ tests/                      — Integration test crates mirroring .NET test stru
    rocksmith2014-conversion-tests/
    rocksmith2014-dlcproject-tests/  
    rocksmith2014-eof-tests/         
-   rocksmith2014-fsharp-extensions-tests/ 
+   rocksmith2014-fsharp-extensions-tests/
+   rocksmith2014-integration-tests/
    rocksmith2014-psarc-tests/      
    rocksmith2014-sng-tests/
    rocksmith2014-xml-tests/
-   rocksmith2014-xml-extension-tests/ 
    rocksmith2014-xml-processing-tests/
 ```
 
