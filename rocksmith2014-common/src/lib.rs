@@ -7,6 +7,7 @@ pub mod json_options;
 pub mod memory_stream_pool;
 pub mod platform;
 pub mod random_generator;
+pub mod tone_descriptor;
 pub mod types;
 
 pub use platform::Platform;
