@@ -22,7 +22,7 @@ Use `/Rocksmith2014.NET` folder/subproject as the primary knowledge base referen
 - The data structures and binary formats for SNG, PSARC, and other file formats
 - The expected behavior of reading/writing operations
 - The naming conventions for types and functions
-- The strict same tests files, functions and parameters of .NET implementation, if the test FAIL is OK, report it and stop. We work on it later.
+- The strict same tests files, functions and parameters of .NET implementation, if the test FAIL, report it (reply/comment) and stop the session. We work on it later.
 - Use same .NET file separation, eg.: `<filename>.fs` became `<filename>.rs`
 - Use [ww2ogg](https://github.com/hcs64/ww2ogg) for Wwise cli (decoding only)
 - Use same .NET file separation, eg.: `<filename>.fs` became `<filename>.rs`, do not mix files
