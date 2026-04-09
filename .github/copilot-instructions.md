@@ -46,7 +46,7 @@ rocksmith2014-xml-processing/ — XML processing (checker, improver)
 tests/                      — Integration test crates mirroring .NET test structure
 ```
 
-Note: we can mark encode tests as `ignore`, we will not work on audio encoding for now.
+Note: we can mark encode and japanese tests as `ignore`, we will not work on audio encoding or use japanese for now.
 
 ## Coding Conventions
 
