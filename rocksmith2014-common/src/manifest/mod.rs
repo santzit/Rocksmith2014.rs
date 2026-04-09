@@ -5,6 +5,7 @@
 pub mod arrangement_properties;
 pub mod attributes;
 pub mod chord_template;
+#[allow(clippy::module_inception)]
 pub mod manifest;
 pub mod phrase;
 pub mod phrase_iteration;

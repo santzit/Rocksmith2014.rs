@@ -9,6 +9,20 @@
 Rust library crates for [Rocksmith 2014](https://www.ubisoft.com/en-us/game/rocksmith) custom DLC.
 A port of the [Rocksmith2014.NET](https://github.com/iminashi/Rocksmith2014.NET) libraries to Rust.
 
+## Subproject Status
+
+| Submodule | Tests | Passed | Ignored | Failed |
+|---|---|---|---|---|
+| Audio | 18 | 18 | 0 | 0 |
+| Common | 38 | 38 | 0 | 0 |
+| Conversion | 12 | 12 | 0 | 0 |
+| EOF | 1 | 1 | 0 | 0 |
+| FSharp Extensions | 27 | 27 | 0 | 0 |
+| PSARC | 9 | 9 | 0 | 0 |
+| SNG | 12 | 12 | 0 | 0 |
+| XML | 28 | 28 | 0 | 0 |
+| XML Processing | 3 | 3 | 0 | 0 |
+
 ## Libraries
 
 ### Audio

@@ -140,7 +140,7 @@ pub fn xml_vocals_to_sng(font: FontOption<'_>, xml_vocals: &[XmlVocal]) -> Sng {
             font_bytes[..len].copy_from_slice(&b[..len]);
             let texture = SymbolsTexture {
                 font: font_bytes,
-                font_path_length: asset_path.as_bytes().len().min(128) as i32,
+                font_path_length: asset_path.len().min(128) as i32,
                 width: glyphs.texture_width,
                 height: glyphs.texture_height,
             };

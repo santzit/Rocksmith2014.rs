@@ -34,20 +34,23 @@ fn vocals() {
         String::from_utf8_lossy(&bytes[..end]).into_owned()
     };
 
-    for i in 0..xml.len() {
+    for (i, xml_vocal) in xml.iter().enumerate() {
         assert_eq!(
-            xml[i].lyric,
+            xml_vocal.lyric,
             lyric_str(&sng.vocals[i].lyric),
             "Lyric #{i} is same"
         );
-        assert_eq!(xml[i].note, sng.vocals[i].note as u8, "Note #{i} is same");
         assert_eq!(
-            xml[i].time,
+            xml_vocal.note, sng.vocals[i].note as u8,
+            "Note #{i} is same"
+        );
+        assert_eq!(
+            xml_vocal.time,
             convert_time(sng.vocals[i].time),
             "Time #{i} is same"
         );
         assert_eq!(
-            xml[i].length,
+            xml_vocal.length,
             convert_time(sng.vocals[i].length),
             "Length #{i} is same"
         );

@@ -8,7 +8,7 @@ use std::path::Path;
 // ─── Domain types ─────────────────────────────────────────────────────────────
 
 /// A single gear item (amp, cabinet, pedal, rack unit).
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct Pedal {
     /// The gear type category string (e.g. "Amps", "Cabinets", "Pedals").
     pub pedal_type: String,
@@ -19,19 +19,6 @@ pub struct Pedal {
     pub category: Option<String>,
     pub skin: Option<String>,
     pub skin_index: Option<f32>,
-}
-
-impl Default for Pedal {
-    fn default() -> Self {
-        Self {
-            pedal_type: String::new(),
-            knob_values: HashMap::new(),
-            key: String::new(),
-            category: None,
-            skin: None,
-            skin_index: None,
-        }
-    }
 }
 
 /// The full gear list for a tone.
