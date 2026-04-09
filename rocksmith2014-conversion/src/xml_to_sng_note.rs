@@ -370,17 +370,31 @@ impl<'a> NoteConverter<'a> {
         }
 
         // Has chord notes that need SNG chord notes?
-        let has_chord_panel = !is_double_stop && !is_arpeggio;
+        let has_chord_panel = !chord.chord_notes.is_empty() && !is_double_stop && !is_arpeggio;
         if has_chord_panel {
             sng_mask |= SngNoteMask::CHORD_PANEL;
         }
 
-        // Create SNG chord notes if needed
+        // Create SNG chord notes if needed (with deduplication like .NET ChordNotesMap)
         let (sng_chord_notes_id, _needs_chord_notes) =
             if !chord.chord_notes.is_empty() && should_create_chord_notes(&chord.chord_notes) {
                 let cn = build_sng_chord_notes(&chord.chord_notes, &[]);
-                let id = self.accu_data.chord_notes.len() as i32;
-                self.accu_data.chord_notes.push(cn);
+                // Serialize to bytes for dedup (f32 compared by bits)
+                let key = chord_notes_key(&cn);
+                // Look for existing identical entry
+                let id = if let Some(pos) = self
+                    .accu_data
+                    .chord_notes_keys
+                    .iter()
+                    .position(|k| *k == key)
+                {
+                    pos as i32
+                } else {
+                    let id = self.accu_data.chord_notes.len() as i32;
+                    self.accu_data.chord_notes_keys.push(key);
+                    self.accu_data.chord_notes.push(cn);
+                    id
+                };
                 sng_mask |= SngNoteMask::CHORD_NOTES;
                 (id, true)
             } else {
@@ -475,18 +489,25 @@ impl<'a> NoteConverter<'a> {
     }
 }
 
-/// Returns true if any chord note has techniques that require SNG chord notes.
+/// Returns true if any chord note would produce a non-None SNG mask,
+/// following the .NET `createMaskForChordNote` logic.
 fn should_create_chord_notes(chord_notes: &[rocksmith2014_xml::ChordNote]) -> bool {
     chord_notes.iter().any(|cn| {
-        cn.slide_to >= 0
+        cn.fret == 0  // OPEN
+            || cn.sustain > 0  // SUSTAIN
+            || cn.slide_to >= 0
             || cn.slide_unpitch_to >= 0
             || cn.vibrato != 0
             || !cn.bend_values.is_empty()
             || cn.mask.intersects(
-                XmlNoteMask::HARMONIC
-                    | XmlNoteMask::PINCH_HARMONIC
+                XmlNoteMask::LINK_NEXT
+                    | XmlNoteMask::ACCENT
+                    | XmlNoteMask::TREMOLO
+                    | XmlNoteMask::FRET_HAND_MUTE
                     | XmlNoteMask::HAMMER_ON
-                    | XmlNoteMask::PULL_OFF,
+                    | XmlNoteMask::HARMONIC
+                    | XmlNoteMask::PALM_MUTE
+                    | XmlNoteMask::PINCH_HARMONIC,
             )
     })
 }
@@ -504,20 +525,53 @@ fn build_sng_chord_notes(
             continue;
         }
 
-        // Set mask
+        // Set mask following .NET createMaskForChordNote logic
         let cn_xml_mask = cn.mask;
         let mut sng_m = 0u32;
+        if cn.fret == 0 {
+            sng_m |= SngNoteMask::OPEN.bits();
+        }
+        if cn.sustain > 0 {
+            sng_m |= SngNoteMask::SUSTAIN.bits();
+        }
+        if cn.slide_to >= 0 {
+            sng_m |= SngNoteMask::SLIDE.bits();
+        }
+        if cn.slide_unpitch_to >= 0 {
+            sng_m |= SngNoteMask::UNPITCHED_SLIDE.bits();
+        }
+        if cn.vibrato != 0 {
+            sng_m |= SngNoteMask::VIBRATO.bits();
+        }
+        if !cn.bend_values.is_empty() {
+            sng_m |= SngNoteMask::BEND.bits();
+        }
+        if cn_xml_mask.contains(XmlNoteMask::LINK_NEXT) {
+            sng_m |= SngNoteMask::PARENT.bits();
+        }
+        if cn_xml_mask.contains(XmlNoteMask::ACCENT) {
+            sng_m |= SngNoteMask::ACCENT.bits();
+        }
+        if cn_xml_mask.contains(XmlNoteMask::TREMOLO) {
+            sng_m |= SngNoteMask::TREMOLO.bits();
+        }
+        if cn_xml_mask.contains(XmlNoteMask::FRET_HAND_MUTE) {
+            sng_m |= SngNoteMask::MUTE.bits();
+        }
         if cn_xml_mask.contains(XmlNoteMask::HAMMER_ON) {
             sng_m |= SngNoteMask::HAMMER_ON.bits();
-        }
-        if cn_xml_mask.contains(XmlNoteMask::PULL_OFF) {
-            sng_m |= SngNoteMask::PULL_OFF.bits();
         }
         if cn_xml_mask.contains(XmlNoteMask::HARMONIC) {
             sng_m |= SngNoteMask::HARMONIC.bits();
         }
+        if cn_xml_mask.contains(XmlNoteMask::PALM_MUTE) {
+            sng_m |= SngNoteMask::PALM_MUTE.bits();
+        }
         if cn_xml_mask.contains(XmlNoteMask::PINCH_HARMONIC) {
             sng_m |= SngNoteMask::PINCH_HARMONIC.bits();
+        }
+        if cn_xml_mask.contains(XmlNoteMask::PULL_OFF) {
+            sng_m |= SngNoteMask::PULL_OFF.bits();
         }
         result.mask[s] = sng_m;
 
@@ -551,4 +605,31 @@ fn build_sng_chord_notes(
     }
 
     result
+}
+
+/// Produces a byte-level key for a ChordNotes struct for deduplication.
+/// Follows .NET's structural equality semantics for the ChordNotesMap dictionary.
+fn chord_notes_key(cn: &ChordNotes) -> Vec<u8> {
+    let mut key = Vec::with_capacity(6 * (4 + 1 + 1 + 2) + 6 * 32 * 12 + 6 * 4);
+    for &m in &cn.mask {
+        key.extend_from_slice(&m.to_le_bytes());
+    }
+    for bd in &cn.bend_data {
+        for bv in &bd.bend_values {
+            key.extend_from_slice(&bv.time.to_bits().to_le_bytes());
+            key.extend_from_slice(&bv.step.to_bits().to_le_bytes());
+            key.extend_from_slice(&bv.unused.to_le_bytes());
+        }
+        key.extend_from_slice(&bd.used_count.to_le_bytes());
+    }
+    for &v in &cn.slide_to {
+        key.push(v as u8);
+    }
+    for &v in &cn.slide_unpitch_to {
+        key.push(v as u8);
+    }
+    for &v in &cn.vibrato {
+        key.extend_from_slice(&v.to_le_bytes());
+    }
+    key
 }

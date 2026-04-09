@@ -318,6 +318,13 @@ fn parse_chord(reader: &mut Reader<&[u8]>, e: &BytesStart, is_start: bool) -> Re
                     chord_notes = parse_chord_notes_list(reader)?;
                 }
                 XmlEvent::Empty(ce) if ce.name().as_ref() == b"chordNotes" => {}
+                // Direct <chordNote> children (some XML variants omit the wrapper)
+                XmlEvent::Empty(ce) if ce.name().as_ref() == b"chordNote" => {
+                    chord_notes.push(parse_chord_note(reader, &ce, false)?);
+                }
+                XmlEvent::Start(ce) if ce.name().as_ref() == b"chordNote" => {
+                    chord_notes.push(parse_chord_note(reader, &ce, true)?);
+                }
                 XmlEvent::End(ce) if ce.name().as_ref() == b"chord" => break,
                 XmlEvent::Eof => break,
                 _ => {}

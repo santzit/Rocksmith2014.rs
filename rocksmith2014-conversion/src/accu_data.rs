@@ -15,6 +15,8 @@ pub struct AccuData {
     pub string_masks: Vec<Vec<i8>>,
     /// Created chord notes objects
     pub chord_notes: Vec<ChordNotes>,
+    /// Byte-serialized keys for chord_notes deduplication (parallel to chord_notes)
+    pub chord_notes_keys: Vec<Vec<u8>>,
     /// Anchor extensions created for slide notes, per difficulty level
     pub anchor_extensions: Vec<Vec<AnchorExtension>>,
     /// Note counts per difficulty per phrase iteration (excluding ignored)
@@ -32,6 +34,7 @@ impl AccuData {
         Self {
             string_masks: vec![vec![0i8; 36]; section_count],
             chord_notes: Vec::new(),
+            chord_notes_keys: Vec::new(),
             anchor_extensions: vec![Vec::new(); level_count.max(1)],
             notes_in_phrase_iterations_excl_ignored: vec![vec![0i32; pi_count]; level_count.max(1)],
             notes_in_phrase_iterations_all: vec![vec![0i32; pi_count]; level_count.max(1)],
