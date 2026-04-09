@@ -300,7 +300,7 @@ fn detects_more_than_100_phrases() {
 
 #[test]
 fn does_not_throw_for_arrangement_without_notes() {
-    use rocksmith2014_xml_processing::check_instrumental;
+    use rocksmith2014_xml_processing::checker::check_instrumental;
     let arr = InstrumentalArrangement {
         phrases: vec![
             Phrase { name: "A".into(), ..Default::default() },
