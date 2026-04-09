@@ -7,3 +7,11 @@ publish = false
 [dev-dependencies]
 rocksmith2014-psarc = { path = "../../rocksmith2014-psarc" }
 tempfile = "3"
+
+[[test]]
+name = "ReadTests"
+path = "ReadTests.rs"
+
+[[test]]
+name = "EditTests"
+path = "EditTests.rs"

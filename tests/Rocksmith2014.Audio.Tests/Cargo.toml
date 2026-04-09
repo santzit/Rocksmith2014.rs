@@ -6,3 +6,23 @@ publish = false
 
 [dev-dependencies]
 rocksmith2014-audio = { path = "../../rocksmith2014-audio" }
+
+[[test]]
+name = "UtilsTests"
+path = "UtilsTests.rs"
+
+[[test]]
+name = "VolumeTests"
+path = "VolumeTests.rs"
+
+[[test]]
+name = "PreviewTests"
+path = "PreviewTests.rs"
+
+[[test]]
+name = "ConversionTests"
+path = "ConversionTests.rs"
+
+[[test]]
+name = "WwiseTests"
+path = "WwiseTests.rs"

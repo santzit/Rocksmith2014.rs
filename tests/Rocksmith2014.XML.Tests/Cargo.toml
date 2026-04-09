@@ -6,3 +6,39 @@ publish = false
 
 [dev-dependencies]
 rocksmith2014-xml = { path = "../../rocksmith2014-xml" }
+
+[[test]]
+name = "AnchorTests"
+path = "AnchorTests.rs"
+
+[[test]]
+name = "ChordTests"
+path = "ChordTests.rs"
+
+[[test]]
+name = "HandShapeTests"
+path = "HandShapeTests.rs"
+
+[[test]]
+name = "InstrumentalArrangementTests"
+path = "InstrumentalArrangementTests.rs"
+
+[[test]]
+name = "MetaDataTests"
+path = "MetaDataTests.rs"
+
+[[test]]
+name = "NoteTests"
+path = "NoteTests.rs"
+
+[[test]]
+name = "ShowLightTests"
+path = "ShowLightTests.rs"
+
+[[test]]
+name = "UtilsTest"
+path = "UtilsTest.rs"
+
+[[test]]
+name = "VocalTests"
+path = "VocalTests.rs"

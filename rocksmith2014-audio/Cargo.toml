@@ -4,3 +4,10 @@ version = "0.1.0"
 edition = "2021"
 description = "Audio utilities for Rocksmith 2014 (LUFS loudness measurement, preview audio, volume helpers)"
 license = "MIT"
+
+[dependencies]
+claxon = "0.4"
+hound = "3.5"
+lewton = "0.10"
+thiserror = "2"
+zip = { version = "8.5.1", default-features = false, features = ["deflate"] }

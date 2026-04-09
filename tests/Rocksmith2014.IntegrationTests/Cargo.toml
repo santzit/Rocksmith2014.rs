@@ -3,3 +3,10 @@ name = "rocksmith2014-integration-tests"
 version = "0.1.0"
 edition = "2021"
 publish = false
+
+[dev-dependencies]
+rocksmith2014-psarc = { path = "../../rocksmith2014-psarc" }
+
+[[test]]
+name = "integration_tests"
+path = "integration_tests.rs"

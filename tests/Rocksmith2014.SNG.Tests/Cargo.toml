@@ -6,3 +6,19 @@ publish = false
 
 [dev-dependencies]
 rocksmith2014-sng = { path = "../../rocksmith2014-sng" }
+
+[[test]]
+name = "ReadWritePacked"
+path = "ReadWritePacked.rs"
+
+[[test]]
+name = "ReadWriteUnpacked"
+path = "ReadWriteUnpacked.rs"
+
+[[test]]
+name = "RoundTripTests"
+path = "RoundTripTests.rs"
+
+[[test]]
+name = "BinaryHelpersTests"
+path = "BinaryHelpersTests.rs"
