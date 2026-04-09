@@ -12,9 +12,17 @@ pub(crate) mod finder;
 use crate::conversion;
 use crate::error::{AudioError, Result};
 use std::fs;
+use std::io::Cursor;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use zip::{result::ZipError, ZipArchive};
+
+// Wwise project templates embedded directly in the binary.
+// Mirrors .NET's EmbeddedFileProvider(Assembly.GetExecutingAssembly()).
+const WWISE2019_ZIP: &[u8] = include_bytes!("wwise2019.zip");
+const WWISE2021_ZIP: &[u8] = include_bytes!("wwise2021.zip");
+const WWISE2022_ZIP: &[u8] = include_bytes!("wwise2022.zip");
+const WWISE2023_ZIP: &[u8] = include_bytes!("wwise2023.zip");
 
 // Re-export finder functions so callers can use `wwise::find_windows_cli()`.
 pub use finder::{find_linux, find_mac, find_windows};
@@ -113,36 +121,21 @@ fn version_name(version: WwiseVersion) -> &'static str {
 /// Extracts the embedded Wwise project template for the given version into
 /// `target_dir`.
 ///
-/// The .NET version uses `EmbeddedFileProvider` + `ZipArchive` to unpack
-/// templates that are embedded in the assembly.  In Rust, template zip files
-/// should be placed next to the binary under a `Wwise/` directory.
-///
-/// NOTE: the template zip files are **not bundled** in this crate yet.
-/// This function will return `AudioError::Other` if the file is missing.
+/// Mirrors the .NET `extractTemplate` which uses
+/// `EmbeddedFileProvider(Assembly.GetExecutingAssembly())` to read the zip
+/// from embedded resources.  In Rust we use `include_bytes!()` so the four
+/// zip files are compiled directly into the binary — no external files needed.
 fn extract_template(target_dir: &Path, version: WwiseVersion) -> Result<()> {
-    let exe_dir = std::env::current_exe()
-        .ok()
-        .and_then(|p| p.parent().map(PathBuf::from))
-        .unwrap_or_default();
-    let zip_path = exe_dir
-        .join("Wwise")
-        .join(format!("{}.zip", version_name(version)));
+    let zip_bytes: &[u8] = match version {
+        WwiseVersion::Wwise2019 => WWISE2019_ZIP,
+        WwiseVersion::Wwise2021 => WWISE2021_ZIP,
+        WwiseVersion::Wwise2022 => WWISE2022_ZIP,
+        WwiseVersion::Wwise2023 => WWISE2023_ZIP,
+    };
 
-    if !zip_path.exists() {
-        return Err(AudioError::Other(format!(
-            "Wwise template '{}' not found. \
-             Place the template zip files under a 'Wwise/' directory next to \
-             the executable.",
-            zip_path.display()
-        )));
-    }
-
-    // Template zip extraction: read each entry and write to target_dir.
-    // This mirrors ZipArchive.ExtractToDirectory in the .NET reference.
-    let file = fs::File::open(&zip_path)?;
-    let mut archive = ZipArchive::new(std::io::BufReader::new(file)).map_err(|e: ZipError| {
-        AudioError::Other(format!("Failed to open Wwise template zip: {e}"))
-    })?;
+    // ZipArchive::new accepts any Read + Seek; Cursor<&[u8]> satisfies both.
+    let mut archive = ZipArchive::new(Cursor::new(zip_bytes))
+        .map_err(|e: ZipError| AudioError::Other(format!("Failed to open embedded Wwise template: {e}")))?;
 
     for i in 0..archive.len() {
         let mut entry = archive
