@@ -248,23 +248,37 @@ pub fn check_chords(arr: &InstrumentalArrangement, level: &Level) -> Vec<Issue> 
 
 pub fn check_handshapes(arr: &InstrumentalArrangement, level: &Level) -> Vec<Issue> {
     let mut issues = Vec::new();
-    let phrase_times: Vec<i32> = arr.phrase_iterations.iter().map(|pi| pi.time).collect();
-    let will_be_moved: Vec<i32> = arr.phrase_iterations.iter()
-        .filter(|pi| arr.phrases.get(pi.phrase_id as usize)
-            .map_or(false, |p| p.name.to_lowercase().starts_with("mover")))
-        .map(|pi| pi.time)
-        .collect();
     for hs in &level.hand_shapes {
         let anchor = level.anchors.iter().rev().find(|a| a.time <= hs.start_time);
         if let Some(a) = anchor {
             if let Some(template) = arr.chord_templates.get(hs.chord_id as usize) {
                 let uses_thumb = template.fingers.iter().any(|&f| f == 0);
-                if !uses_thumb && a.fret != template.frets.iter().copied().filter(|&f| f > 0).min().unwrap_or(a.fret) {
-                    issues.push(at(IssueType::FingeringAnchorMismatch, hs.start_time));
+                if !uses_thumb {
+                    // Collect active (finger > 0) (finger, fret) pairs
+                    let active: Vec<(i8, i8)> = (0..6usize)
+                        .filter(|&i| template.fingers[i] > 0)
+                        .map(|i| (template.fingers[i], template.frets[i]))
+                        .collect();
+                    if !active.is_empty() {
+                        let min_finger = active.iter().map(|&(f, _)| f).min().unwrap();
+                        // Expected anchor fret = min fret used by the lowest finger - (min_finger - 1)
+                        // This is the position finger 1 would occupy for this chord shape.
+                        let min_fret_at_min_finger = active
+                            .iter()
+                            .filter(|&&(f, _)| f == min_finger)
+                            .map(|&(_, r)| r)
+                            .filter(|&r| r > 0)
+                            .min();
+                        if let Some(mfr) = min_fret_at_min_finger {
+                            let expected_anchor = mfr - (min_finger - 1);
+                            if a.fret != expected_anchor {
+                                issues.push(at(IssueType::FingeringAnchorMismatch, hs.start_time));
+                            }
+                        }
+                    }
                 }
             }
         }
-        // AnchorInsideHandShape checks done in check_anchors
     }
     issues
 }

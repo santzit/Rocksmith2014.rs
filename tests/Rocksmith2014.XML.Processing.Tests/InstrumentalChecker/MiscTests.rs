@@ -113,7 +113,6 @@ fn detects_multiple_unexpected_events() {
 // ---- Handshape Tests ----
 
 #[test]
-#[ignore = "check_handshapes fingering logic not fully implemented"]
 fn detects_fingering_that_does_not_match_anchor_position() {
     let level = Level {
         hand_shapes: vec![HandShape { chord_id: 0, start_time: 1000, end_time: 1500 }],
@@ -126,7 +125,6 @@ fn detects_fingering_that_does_not_match_anchor_position() {
 }
 
 #[test]
-#[ignore = "check_handshapes thumb logic not fully implemented"]
 fn thumb_fingering_ignored_in_anchor_check() {
     let level = Level {
         hand_shapes: vec![
