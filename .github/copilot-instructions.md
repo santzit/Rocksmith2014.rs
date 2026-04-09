@@ -13,7 +13,10 @@ Use `/Rocksmith2014.NET` folder/subproject as the primary knowledge base referen
 - The strict same tests files, functions and parameters of .NET implementation, if the test FAIL is OK, report it and stop. We work on it later.
 - Use same .NET file separation, eg.: `<filename>.fs` became `<filename>.rs`
 - Use [ww2ogg](https://github.com/hcs64/ww2ogg) for Wwise cli (decoding only)
-
+- Use same .NET file separation, eg.: `<filename>.fs` became `<filename>.rs`, do not mix files
+- Use subproject directory naming `rocksmith2014-<subproject>`, eg.: `Rocksmith2014.Sng` became `rocksmith2014-sng`, `Rocksmith2014.Sng.Tests` became `rocksmith2014.sng-tests`, etc.
+- Use same public methods, functions names
+- Use same data, structures, enum
 
 The .NET project is in **F#** and this is the **Rust** implementation. Translate F# idioms to idiomatic Rust (e.g., F# discriminated unions → Rust enums, F# records → Rust structs, F# modules → Rust modules).
 
@@ -40,9 +43,8 @@ tests/                      — Integration test crates mirroring .NET test stru
 
 ## Coding Conventions
 
+
 - Use `thiserror` for error types
 - Use `bitflags` for bitmask enums
 - Use little-endian byte order for all binary I/O
 - Keep public API backward compatible when refactoring
-- Use same .NET file separation, eg.: `<filename>.fs` became `<filename>.rs`, do not mix files
-- Use subproject directory naming `rocksmith2014-<subproject>`, eg.: `Rocksmith2014.Sng` became `rocksmith2014-sng`, `Rocksmith2014.Sng.Tests` became `rocksmith2014.sng-tests`, etc.
