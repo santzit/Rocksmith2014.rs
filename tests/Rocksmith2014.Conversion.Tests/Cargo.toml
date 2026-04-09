@@ -8,3 +8,19 @@ publish = false
 rocksmith2014-conversion = { path = "../../rocksmith2014-conversion" }
 rocksmith2014-sng = { path = "../../rocksmith2014-sng" }
 rocksmith2014-xml = { path = "../../rocksmith2014-xml" }
+
+[[test]]
+name = "XmlFilesToSng"
+path = "tests/XmlFilesToSng.rs"
+
+[[test]]
+name = "SngFilesToXml"
+path = "tests/SngFilesToXml.rs"
+
+[[test]]
+name = "InstrumentalConversion"
+path = "tests/InstrumentalConversion.rs"
+
+[[test]]
+name = "VocalsConversion"
+path = "tests/VocalsConversion.rs"

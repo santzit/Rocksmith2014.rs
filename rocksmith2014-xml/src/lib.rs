@@ -68,6 +68,7 @@
 //! assert!(roundtripped.contains("<title>Test</title>"));
 //! ```
 
+pub mod glyph_definitions;
 mod parser;
 pub mod show_light;
 mod types;
@@ -75,6 +76,7 @@ pub mod utils;
 pub mod vocal;
 mod writer;
 
+pub use glyph_definitions::{GlyphDefinition, GlyphDefinitions};
 pub use show_light::ShowLight;
 pub use types::{
     Anchor, ArrangementEvent, ArrangementProperties, BendValue, Chord, ChordMask, ChordNote,
