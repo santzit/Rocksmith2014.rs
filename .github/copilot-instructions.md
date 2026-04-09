@@ -10,7 +10,7 @@ Use `/Rocksmith2014.NET` folder/subproject as the primary knowledge base referen
 - The data structures and binary formats for SNG, PSARC, and other file formats
 - The expected behavior of reading/writing operations
 - The naming conventions for types and functions
-- The strict same tests files, functions and parameters of .NET implementation
+- The strict same tests files, functions and parameters of .NET implementation, if the test FAIL is OK, report it and stop. We work on it later.
 - Use same .NET file separation, eg.: `<filename>.fs` became `<filename>.rs`
 
 
