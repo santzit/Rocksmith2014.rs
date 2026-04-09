@@ -41,18 +41,31 @@ Note: we can mark encode and japanese tests as `ignore`, we will not work on aud
 ## Project Structure
 
 ```
-rocksmith2014-audio/        — Audio processing (loudness, preview)
-rocksmith2014-common/       — Shared types (Platform, AudioFile, binary I/O helpers)
-rocksmith2014-conversion/   — XML ↔ SNG conversion
-rocksmith2014-dlcproject/   — DLC project types
-rocksmith2014-eof/          — EOF project writer
-rocksmith2014-fsharp-extensions/ — F#-inspired extension traits
-rocksmith2014-psarc/        — PSARC archive reader/writer
-rocksmith2014-sng/          — SNG binary format reader/writer
-rocksmith2014-xml/          — Rocksmith XML types
-rocksmith2014-xml-extension/ — XML extension utilities
-rocksmith2014-xml-processing/ — XML processing (checker, improver)
+src/
+   rocksmith2014-audio/        — Audio processing (loudness, preview)
+   rocksmith2014-common/       — Shared types (Platform, AudioFile, binary I/O helpers)
+   rocksmith2014-conversion/   — XML ↔ SNG conversion
+   rocksmith2014-dlcproject/   — DLC project types
+   rocksmith2014-eof/          — EOF project writer
+   rocksmith2014-fsharp-extensions/ — F#-inspired extension traits
+   rocksmith2014-psarc/        — PSARC archive reader/writer
+   rocksmith2014-sng/          — SNG binary format reader/writer
+   rocksmith2014-xml/          — Rocksmith XML types
+   rocksmith2014-xml-extension/ — XML extension utilities
+   rocksmith2014-xml-processing/ — XML processing (checker, improver)
+
 tests/                      — Integration test crates mirroring .NET test structure
+   rocksmith2014-audio-tests/       
+   rocksmith2014-common-tests/      
+   rocksmith2014-conversion-tests/
+   rocksmith2014-dlcproject-tests/  
+   rocksmith2014-eof-tests/         
+   rocksmith2014-fsharp-extensions-tests/ 
+   rocksmith2014-psarc-tests/      
+   rocksmith2014-sng-tests/
+   rocksmith2014-xml-tests/
+   rocksmith2014-xml-extension-tests/ 
+   rocksmith2014-xml-processing-tests/
 ```
 
 
