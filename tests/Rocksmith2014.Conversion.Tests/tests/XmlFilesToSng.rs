@@ -37,8 +37,8 @@ fn vocals_default_font() {
 #[test]
 fn vocals_custom_font() {
     let xml = vocal::load(test_dir().join("vocals.xml")).expect("load vocals.xml");
-    let custom_font =
-        GlyphDefinitions::load(test_dir().join("vocals.glyphs.xml")).expect("load vocals.glyphs.xml");
+    let custom_font = GlyphDefinitions::load(test_dir().join("vocals.glyphs.xml"))
+        .expect("load vocals.glyphs.xml");
 
     let sng = xml_vocals_to_sng(FontOption::CustomFont(&custom_font, "nothing"), &xml);
 
@@ -49,13 +49,11 @@ fn vocals_custom_font() {
         "Symbol definition count is correct"
     );
     assert_eq!(
-        sng.symbols_textures[0].width,
-        custom_font.texture_width,
+        sng.symbols_textures[0].width, custom_font.texture_width,
         "Texture width is correct"
     );
     assert_eq!(
-        sng.symbols_textures[0].height,
-        custom_font.texture_height,
+        sng.symbols_textures[0].height, custom_font.texture_height,
         "Texture height is correct"
     );
 }
@@ -75,15 +73,13 @@ fn japanese_vocals_custom_font() {
     use rocksmith2014_sng::{Platform, Sng};
 
     let xml = vocal::load(test_dir().join("jvocals.xml")).expect("load jvocals.xml");
-    let custom_font =
-        GlyphDefinitions::load(test_dir().join("jvocals.glyphs.xml")).expect("load jvocals.glyphs.xml");
+    let custom_font = GlyphDefinitions::load(test_dir().join("jvocals.glyphs.xml"))
+        .expect("load jvocals.glyphs.xml");
 
     let sng_in = xml_vocals_to_sng(FontOption::CustomFont(&custom_font, "nothing"), &xml);
 
     // Round-trip through SNG encryption (PC platform)
-    let encrypted = sng_in
-        .to_encrypted(Platform::Pc)
-        .expect("to_encrypted");
+    let encrypted = sng_in.to_encrypted(Platform::Pc).expect("to_encrypted");
     let sng = Sng::from_encrypted(&encrypted, Platform::Pc).expect("from_encrypted");
 
     assert_eq!(sng.vocals.len(), xml.len(), "Vocal count is same");
@@ -151,11 +147,7 @@ fn instrumental() {
         "Chord template count is same"
     );
     assert_eq!(sng.vocals.len(), 0, "Vocals count is zero");
-    assert_eq!(
-        sng.symbols_headers.len(),
-        0,
-        "Symbol headers count is zero"
-    );
+    assert_eq!(sng.symbols_headers.len(), 0, "Symbol headers count is zero");
     assert_eq!(
         sng.symbols_textures.len(),
         0,
@@ -177,7 +169,11 @@ fn instrumental() {
         "Linked difficulties count is same"
     );
     assert_eq!(sng.events.len(), xml.events.len(), "Event count is same");
-    assert_eq!(sng.tones.len(), xml.tones.len(), "Tone change count is same");
+    assert_eq!(
+        sng.tones.len(),
+        xml.tones.len(),
+        "Tone change count is same"
+    );
     assert_eq!(sng.dnas.len(), 2, "DNA count is correct");
     assert_eq!(
         sng.sections.len(),

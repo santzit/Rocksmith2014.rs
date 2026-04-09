@@ -33,12 +33,32 @@ fn can_be_imported_from_xml() {
     assert_eq!(tone.volume, -12.0, "Volume is correct");
     assert_eq!(tone.key, "Test", "Key is correct");
     assert_eq!(tone.name, "Test", "Name is correct");
-    assert_eq!(tone.tone_descriptors, vec!["$[35720]CLEAN"], "Descriptors are correct");
-    assert!(tone.gear_list.cabinet.category.is_none(), "Cabinet category is none");
-    assert!(tone.gear_list.cabinet.skin.is_none(), "Cabinet skin is none");
-    assert_eq!(tone.gear_list.amp.key, "Amp_OrangeAD50", "Amp key is correct");
-    assert_eq!(tone.gear_list.amp.knob_values.len(), 4, "There are 4 amp knob values");
-    assert!(tone.gear_list.pre_pedals[0].is_some(), "Pre-pedal 1 was imported");
+    assert_eq!(
+        tone.tone_descriptors,
+        vec!["$[35720]CLEAN"],
+        "Descriptors are correct"
+    );
+    assert!(
+        tone.gear_list.cabinet.category.is_none(),
+        "Cabinet category is none"
+    );
+    assert!(
+        tone.gear_list.cabinet.skin.is_none(),
+        "Cabinet skin is none"
+    );
+    assert_eq!(
+        tone.gear_list.amp.key, "Amp_OrangeAD50",
+        "Amp key is correct"
+    );
+    assert_eq!(
+        tone.gear_list.amp.knob_values.len(),
+        4,
+        "There are 4 amp knob values"
+    );
+    assert!(
+        tone.gear_list.pre_pedals[0].is_some(),
+        "Pre-pedal 1 was imported"
+    );
 }
 
 /// testTask "Can be exported to XML"
@@ -65,12 +85,29 @@ fn can_be_exported_to_xml() {
     assert_eq!(tone.volume, -12.0, "Volume is correct");
     assert_eq!(tone.key, "Test", "Key is correct");
     assert_eq!(tone.name, "Test", "Name is correct");
-    assert_eq!(tone.tone_descriptors, vec!["$[35720]CLEAN"], "Descriptors are correct");
-    assert_eq!(tone.gear_list.cabinet.pedal_type, "Cabinets", "Cabinet type is correct");
-    assert!(tone.gear_list.cabinet.skin_index.is_none(), "Cabinet skin index is none");
+    assert_eq!(
+        tone.tone_descriptors,
+        vec!["$[35720]CLEAN"],
+        "Descriptors are correct"
+    );
+    assert_eq!(
+        tone.gear_list.cabinet.pedal_type, "Cabinets",
+        "Cabinet type is correct"
+    );
+    assert!(
+        tone.gear_list.cabinet.skin_index.is_none(),
+        "Cabinet skin index is none"
+    );
     assert_eq!(tone.gear_list.amp.pedal_type, "Amps", "Amp type is correct");
-    assert_eq!(tone.gear_list.amp.knob_values.len(), 4, "There are 4 amp knob values");
-    assert!(tone.gear_list.pre_pedals[0].is_some(), "Pre-pedal 1 was imported");
+    assert_eq!(
+        tone.gear_list.amp.knob_values.len(),
+        4,
+        "There are 4 amp knob values"
+    );
+    assert!(
+        tone.gear_list.pre_pedals[0].is_some(),
+        "Pre-pedal 1 was imported"
+    );
 }
 
 /// testTask "Can be exported to JSON and imported from JSON"
@@ -95,10 +132,24 @@ fn can_be_exported_to_json_and_imported_from_json() {
     assert_eq!(tone.volume, -12.0, "Volume is correct");
     assert_eq!(tone.key, "Test", "Key is correct");
     assert_eq!(tone.name, "Test", "Name is correct");
-    assert_eq!(tone.tone_descriptors, vec!["$[35720]CLEAN"], "Descriptors are correct");
-    assert!(tone.gear_list.cabinet.skin.is_none(), "Cabinet skin is none");
-    assert_eq!(tone.gear_list.amp.key, "Amp_OrangeAD50", "Amp key is correct");
-    assert_eq!(tone.gear_list.amp.knob_values.len(), 4, "There are 4 amp knob values");
+    assert_eq!(
+        tone.tone_descriptors,
+        vec!["$[35720]CLEAN"],
+        "Descriptors are correct"
+    );
+    assert!(
+        tone.gear_list.cabinet.skin.is_none(),
+        "Cabinet skin is none"
+    );
+    assert_eq!(
+        tone.gear_list.amp.key, "Amp_OrangeAD50",
+        "Amp key is correct"
+    );
+    assert_eq!(
+        tone.gear_list.amp.knob_values.len(),
+        4,
+        "There are 4 amp knob values"
+    );
 }
 
 /// test "Number of effects can be counted"
@@ -126,4 +177,3 @@ fn number_of_effects_can_be_counted() {
     let count = Tone::get_effect_count(&gear);
     assert_eq!(count, 6, "Gear list has 6 effects");
 }
-

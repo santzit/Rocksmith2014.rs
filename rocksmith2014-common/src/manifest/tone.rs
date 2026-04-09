@@ -240,10 +240,7 @@ fn parse_knob_values(reader: &mut quick_xml::Reader<&[u8]>) -> HashMap<String, f
 
 /// Parse a `<PrePedal1>` / `<Amp>` etc element.
 /// `start` is the opening event already consumed.
-fn parse_pedal(
-    reader: &mut quick_xml::Reader<&[u8]>,
-    tag: &[u8],
-) -> Option<Pedal> {
+fn parse_pedal(reader: &mut quick_xml::Reader<&[u8]>, tag: &[u8]) -> Option<Pedal> {
     let mut pedal = Pedal::default();
     loop {
         match reader.read_event() {
@@ -496,7 +493,10 @@ fn write_pedal_xml(buf: &mut String, tag: &str, pedal: &Pedal) {
         for k in keys {
             let v = pedal.knob_values[k];
             buf.push_str("        <d4p1:KeyValueOfstringfloat>\n");
-            buf.push_str(&format!("          <d4p1:Key>{}</d4p1:Key>\n", escape_xml(k)));
+            buf.push_str(&format!(
+                "          <d4p1:Key>{}</d4p1:Key>\n",
+                escape_xml(k)
+            ));
             buf.push_str(&format!("          <d4p1:Value>{v}</d4p1:Value>\n"));
             buf.push_str("        </d4p1:KeyValueOfstringfloat>\n");
         }
@@ -564,7 +564,9 @@ fn write_tone_xml(tone: &Tone) -> Result<String, ToneError> {
     ));
     buf.push_str(&format!(
         "  <SortOrder>{}</SortOrder>\n",
-        tone.sort_order.map(|v| format!("{v}")).unwrap_or_else(|| "0".into())
+        tone.sort_order
+            .map(|v| format!("{v}"))
+            .unwrap_or_else(|| "0".into())
     ));
 
     // ToneDescriptors
@@ -573,7 +575,10 @@ fn write_tone_xml(tone: &Tone) -> Result<String, ToneError> {
 "#,
     );
     for d in &tone.tone_descriptors {
-        buf.push_str(&format!("    <d2p1:string>{}</d2p1:string>\n", escape_xml(d)));
+        buf.push_str(&format!(
+            "    <d2p1:string>{}</d2p1:string>\n",
+            escape_xml(d)
+        ));
     }
     buf.push_str("  </ToneDescriptors>\n");
 
@@ -719,10 +724,7 @@ fn tone_from_dto(dto: ToneDto) -> Tone {
         .as_deref()
         .map(Tone::volume_from_str)
         .unwrap_or(0.0);
-    let mac_volume = dto
-        .mac_volume
-        .as_deref()
-        .map(Tone::volume_from_str);
+    let mac_volume = dto.mac_volume.as_deref().map(Tone::volume_from_str);
 
     Tone {
         gear_list: gear,
@@ -758,9 +760,7 @@ fn tone_to_dto(tone: &Tone) -> ToneDto {
         rack4: try_get(&tone.gear_list.racks, 3),
     };
 
-    let mac_vol = tone
-        .mac_volume
-        .map(Tone::volume_to_string);
+    let mac_vol = tone.mac_volume.map(Tone::volume_to_string);
 
     ToneDto {
         gear_list: gear,

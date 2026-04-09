@@ -9,16 +9,14 @@
 //! - Uncompressed length: u32 LE
 //! - Body: AES-256-ECB encrypted, then zlib compressed
 
-use aes::cipher::{BlockDecrypt, BlockEncrypt, KeyInit};
 use aes::cipher::generic_array::GenericArray;
+use aes::cipher::{BlockDecrypt, BlockEncrypt, KeyInit};
 use aes::Aes256;
 
 /// The AES-256-ECB key used for profile encryption.
 const PROFILE_KEY: [u8; 32] = [
-    0x72, 0x8B, 0x36, 0x9E, 0x24, 0xED, 0x01, 0x34,
-    0x76, 0x85, 0x11, 0x02, 0x18, 0x12, 0xAF, 0xC0,
-    0xA3, 0xC2, 0x5D, 0x02, 0x06, 0x5F, 0x16, 0x6B,
-    0x4B, 0xCC, 0x58, 0xCD, 0x26, 0x44, 0xF2, 0x9E,
+    0x72, 0x8B, 0x36, 0x9E, 0x24, 0xED, 0x01, 0x34, 0x76, 0x85, 0x11, 0x02, 0x18, 0x12, 0xAF, 0xC0,
+    0xA3, 0xC2, 0x5D, 0x02, 0x06, 0x5F, 0x16, 0x6B, 0x4B, 0xCC, 0x58, 0xCD, 0x26, 0x44, 0xF2, 0x9E,
 ];
 
 /// The profile file magic bytes.
@@ -77,11 +75,14 @@ pub fn read_header(data: &[u8]) -> Result<ProfileHeader, ProfileMagicError> {
     }
     let version = u32::from_le_bytes([data[4], data[5], data[6], data[7]]);
     let id = u64::from_le_bytes([
-        data[8], data[9], data[10], data[11],
-        data[12], data[13], data[14], data[15],
+        data[8], data[9], data[10], data[11], data[12], data[13], data[14], data[15],
     ]);
     let uncompressed_length = u32::from_le_bytes([data[16], data[17], data[18], data[19]]);
-    Ok(ProfileHeader { version, id, uncompressed_length })
+    Ok(ProfileHeader {
+        version,
+        id,
+        uncompressed_length,
+    })
 }
 
 /// Decrypts a Rocksmith profile byte slice.
@@ -96,10 +97,7 @@ pub fn decrypt(data: &[u8]) -> Result<(ProfileHeader, Vec<u8>), Box<dyn std::err
 }
 
 /// Encrypts and wraps profile JSON data into the profile file format.
-pub fn encrypt(
-    profile_id: u64,
-    json_data: &[u8],
-) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+pub fn encrypt(profile_id: u64, json_data: &[u8]) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
     // Compress first
     let mut compressed = Vec::new();
     crate::compression::zip(&mut &*json_data, &mut compressed)?;

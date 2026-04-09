@@ -54,8 +54,7 @@ fn lyrics_round_trip_conversion_truncates_long_lyric() {
         "Lyric was truncated to 47 characters"
     );
     assert_eq!(
-        xml[0].lyric,
-        "This line of lyrics is more than 48 characters ",
+        xml[0].lyric, "This line of lyrics is more than 48 characters ",
         "Lyric string was truncated"
     );
 }

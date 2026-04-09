@@ -2,9 +2,9 @@
 //!
 //! Mirrors `Manifest.fs` from `Rocksmith2014.Common`.
 
+use super::attributes::AttributesContainer;
 use std::collections::HashMap;
 use std::path::Path;
-use super::attributes::AttributesContainer;
 
 /// The top-level manifest object.
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
@@ -67,7 +67,8 @@ impl Manifest {
     /// Deserializes a manifest from a file.
     pub fn from_json_file<P: AsRef<Path>>(path: P) -> std::io::Result<Self> {
         let data = std::fs::read_to_string(path)?;
-        serde_json::from_str(&data).map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e))
+        serde_json::from_str(&data)
+            .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e))
     }
 
     /// Serializes the manifest to a file.

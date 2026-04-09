@@ -18,8 +18,7 @@ pub enum FontOption<'a> {
 }
 
 /// Default symbols — loaded lazily from the embedded `default_symbols.bin`.
-static DEFAULT_SYMBOLS_BIN: &[u8] =
-    include_bytes!("../default_symbols.bin");
+static DEFAULT_SYMBOLS_BIN: &[u8] = include_bytes!("../default_symbols.bin");
 
 /// Parses the embedded `default_symbols.bin` into a Vec of SymbolDefinition.
 fn default_symbols() -> Vec<SymbolDefinition> {
@@ -50,7 +49,11 @@ fn default_symbols() -> Vec<SymbolDefinition> {
             ymax: f(36),
             xmax: f(40),
         };
-        out.push(SymbolDefinition { symbol, outer, inner });
+        out.push(SymbolDefinition {
+            symbol,
+            outer,
+            inner,
+        });
     }
     out
 }
@@ -73,7 +76,10 @@ fn default_texture() -> SymbolsTexture {
 fn default_headers() -> Vec<SymbolsHeader> {
     vec![
         SymbolsHeader::default(),
-        SymbolsHeader { id: 1, ..Default::default() },
+        SymbolsHeader {
+            id: 1,
+            ..Default::default()
+        },
     ]
 }
 
@@ -134,10 +140,7 @@ pub fn xml_vocals_to_sng(font: FontOption<'_>, xml_vocals: &[XmlVocal]) -> Sng {
             font_bytes[..len].copy_from_slice(&b[..len]);
             let texture = SymbolsTexture {
                 font: font_bytes,
-                font_path_length: asset_path
-                    .as_bytes()
-                    .len()
-                    .min(128) as i32,
+                font_path_length: asset_path.as_bytes().len().min(128) as i32,
                 width: glyphs.texture_width,
                 height: glyphs.texture_height,
             };
@@ -146,11 +149,7 @@ pub fn xml_vocals_to_sng(font: FontOption<'_>, xml_vocals: &[XmlVocal]) -> Sng {
                 .iter()
                 .map(convert_symbol_definition)
                 .collect();
-            (
-                vec![SymbolsHeader::default()],
-                vec![texture],
-                syms,
-            )
+            (vec![SymbolsHeader::default()], vec![texture], syms)
         }
     };
 

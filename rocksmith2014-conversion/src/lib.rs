@@ -33,9 +33,7 @@ use rocksmith2014_sng::Sng;
 use rocksmith2014_xml::InstrumentalArrangement;
 
 pub use accu_data::{AccuData, NoteCounts};
-pub use convert_vocals::{
-    extract_glyph_data, sng_vocals_to_xml, xml_vocals_to_sng, FontOption,
-};
+pub use convert_vocals::{extract_glyph_data, sng_vocals_to_xml, xml_vocals_to_sng, FontOption};
 pub use sng_to_xml::{
     convert_anchor as sng_convert_anchor, convert_beat as sng_convert_beat,
     convert_bend_value as sng_convert_bend_value, convert_chord as sng_convert_chord,

@@ -2,9 +2,9 @@
 //!
 //! Mirrors `Attributes.fs` from `Rocksmith2014.Common`.
 
-use std::collections::HashMap;
-use super::{ArrangementProperties, ChordTemplate, Phrase, PhraseIteration, Section, Tuning};
 use super::tone::ToneDto as ToneDtoRef;
+use super::{ArrangementProperties, ChordTemplate, Phrase, PhraseIteration, Section, Tuning};
+use std::collections::HashMap;
 
 /// Full set of manifest attributes for an arrangement.
 #[derive(Debug, Default, serde::Serialize, serde::Deserialize)]
@@ -44,7 +44,11 @@ pub struct Attributes {
     pub dlc: bool,
     #[serde(default)]
     pub dlc_key: String,
-    #[serde(rename = "DNA_Chords", skip_serializing_if = "Option::is_none", default)]
+    #[serde(
+        rename = "DNA_Chords",
+        skip_serializing_if = "Option::is_none",
+        default
+    )]
     pub dna_chords: Option<f64>,
     #[serde(rename = "DNA_Riffs", skip_serializing_if = "Option::is_none", default)]
     pub dna_riffs: Option<f64>,
@@ -70,11 +74,19 @@ pub struct Attributes {
     pub leaderboard_challenge_rating: i32,
     #[serde(default)]
     pub manifest_urn: String,
-    #[serde(rename = "MasterID_PS3", skip_serializing_if = "Option::is_none", default)]
+    #[serde(
+        rename = "MasterID_PS3",
+        skip_serializing_if = "Option::is_none",
+        default
+    )]
     pub master_id_ps3: Option<i32>,
     #[serde(rename = "MasterID_RDV", default)]
     pub master_id_rdv: i32,
-    #[serde(rename = "MasterID_XBox360", skip_serializing_if = "Option::is_none", default)]
+    #[serde(
+        rename = "MasterID_XBox360",
+        skip_serializing_if = "Option::is_none",
+        default
+    )]
     pub master_id_xbox360: Option<i32>,
     #[serde(skip_serializing_if = "Option::is_none", default)]
     pub max_phrase_difficulty: Option<i32>,
@@ -166,8 +178,12 @@ pub struct Attributes {
     pub tuning: Option<Tuning>,
 }
 
-fn bool_true() -> bool { true }
-fn default_sku() -> String { "RS2".to_string() }
+fn bool_true() -> bool {
+    true
+}
+fn default_sku() -> String {
+    "RS2".to_string()
+}
 
 /// A wrapper used in the manifest entries map.
 #[derive(Debug, serde::Serialize, serde::Deserialize)]

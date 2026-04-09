@@ -51,7 +51,9 @@ pub fn read_u32<R: Read>(r: &mut R) -> io::Result<u32> {
 pub fn read_u40<R: Read>(r: &mut R) -> io::Result<u64> {
     let mut buf = [0u8; 5];
     r.read_exact(&mut buf)?;
-    Ok(u64::from_le_bytes([buf[0], buf[1], buf[2], buf[3], buf[4], 0, 0, 0]))
+    Ok(u64::from_le_bytes([
+        buf[0], buf[1], buf[2], buf[3], buf[4], 0, 0, 0,
+    ]))
 }
 
 pub fn read_u64<R: Read>(r: &mut R) -> io::Result<u64> {
@@ -118,7 +120,9 @@ pub fn read_u32_be<R: Read>(r: &mut R) -> io::Result<u32> {
 pub fn read_u40_be<R: Read>(r: &mut R) -> io::Result<u64> {
     let mut buf = [0u8; 5];
     r.read_exact(&mut buf)?;
-    Ok(u64::from_be_bytes([0, 0, 0, buf[0], buf[1], buf[2], buf[3], buf[4]]))
+    Ok(u64::from_be_bytes([
+        0, 0, 0, buf[0], buf[1], buf[2], buf[3], buf[4],
+    ]))
 }
 
 pub fn read_u64_be<R: Read>(r: &mut R) -> io::Result<u64> {

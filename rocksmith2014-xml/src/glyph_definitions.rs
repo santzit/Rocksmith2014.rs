@@ -84,12 +84,8 @@ impl GlyphDefinitions {
                     for attr in e.attributes().filter_map(|a| a.ok()) {
                         let val = std::str::from_utf8(attr.value.as_ref()).unwrap_or("");
                         match attr.key.as_ref() {
-                            b"TextureWidth" => {
-                                result.texture_width = val.parse().unwrap_or(0)
-                            }
-                            b"TextureHeight" => {
-                                result.texture_height = val.parse().unwrap_or(0)
-                            }
+                            b"TextureWidth" => result.texture_width = val.parse().unwrap_or(0),
+                            b"TextureHeight" => result.texture_height = val.parse().unwrap_or(0),
                             _ => {}
                         }
                     }

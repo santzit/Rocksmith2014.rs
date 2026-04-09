@@ -40,11 +40,7 @@ fn vocals() {
             lyric_str(&sng.vocals[i].lyric),
             "Lyric #{i} is same"
         );
-        assert_eq!(
-            xml[i].note,
-            sng.vocals[i].note as u8,
-            "Note #{i} is same"
-        );
+        assert_eq!(xml[i].note, sng.vocals[i].note as u8, "Note #{i} is same");
         assert_eq!(
             xml[i].time,
             convert_time(sng.vocals[i].time),
@@ -76,13 +72,11 @@ fn extract_glyphs() {
         "Same glyph count"
     );
     assert_eq!(
-        xml.texture_width,
-        sng.symbols_textures[0].width,
+        xml.texture_width, sng.symbols_textures[0].width,
         "Same texture width"
     );
     assert_eq!(
-        xml.texture_height,
-        sng.symbols_textures[0].height,
+        xml.texture_height, sng.symbols_textures[0].height,
         "Same texture height"
     );
 }
@@ -120,15 +114,10 @@ fn instrumental() {
         String::from_utf8_lossy(&sng.metadata.last_conversion_date_time[..end]).into_owned()
     };
 
-    assert_eq!(
-        xml.meta.part,
-        sng.metadata.part as i32,
-        "Same part"
-    );
+    assert_eq!(xml.meta.part, sng.metadata.part as i32, "Same part");
     assert_eq!(xml.meta.capo, 0, "Capo fret -1 in SNG is 0 in XML");
     assert_eq!(
-        xml.meta.last_conversion_date_time,
-        lcd_sng,
+        xml.meta.last_conversion_date_time, lcd_sng,
         "Same last conversion date"
     );
     assert_eq!(
@@ -141,11 +130,7 @@ fn instrumental() {
         convert_time(sng.metadata.song_length),
         "Same song length"
     );
-    assert_eq!(
-        xml.phrases.len(),
-        sng.phrases.len(),
-        "Same phrase count"
-    );
+    assert_eq!(xml.phrases.len(), sng.phrases.len(), "Same phrase count");
     assert_eq!(
         xml.phrase_iterations.len(),
         sng.phrase_iterations.len(),

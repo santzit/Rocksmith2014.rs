@@ -23,4 +23,4 @@ pub use tone::{Gear, Pedal, Tone, ToneError};
 pub use tuning::Tuning;
 
 // Re-export ToneDescriptor from the parent crate module
-pub use crate::tone_descriptor::{ToneDescriptor, get_descriptions_or_default, combine_ui_names};
+pub use crate::tone_descriptor::{combine_ui_names, get_descriptions_or_default, ToneDescriptor};
