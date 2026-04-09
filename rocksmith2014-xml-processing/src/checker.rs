@@ -1,6 +1,6 @@
 use rocksmith2014_xml::{InstrumentalArrangement, Level, NoteMask};
 
-use crate::{Issue, IssueType};
+use crate::issue::{Issue, IssueType};
 
 fn at(kind: IssueType, time: i32) -> Issue {
     Issue::WithTimeCode(kind, time)
@@ -105,25 +105,25 @@ fn check_overlapping_bends(note: &rocksmith2014_xml::Note) -> Option<Issue> {
     None
 }
 
-pub fn check_notes_pub(arr: &InstrumentalArrangement, level: &Level) -> Vec<Issue> {
+pub fn check_notes(arr: &InstrumentalArrangement, level: &Level) -> Vec<Issue> {
     let mut issues = Vec::new();
-    check_notes(arr, level, &mut issues);
+    check_notes_inner(arr, level, &mut issues);
     issues
 }
 
-pub fn check_crowd_events_pub(arr: &InstrumentalArrangement) -> Vec<Issue> {
+pub fn check_crowd_events(arr: &InstrumentalArrangement) -> Vec<Issue> {
     let mut issues = Vec::new();
-    check_crowd_events(arr, &mut issues);
+    check_crowd_events_inner(arr, &mut issues);
     issues
 }
 
-pub fn check_phrases_pub(arr: &InstrumentalArrangement) -> Vec<Issue> {
+pub fn check_phrases(arr: &InstrumentalArrangement) -> Vec<Issue> {
     let mut issues = Vec::new();
     check_phrase_structure(arr, &mut issues);
     issues
 }
 
-pub fn check_chords_pub(arr: &InstrumentalArrangement, level: &Level) -> Vec<Issue> {
+pub fn check_chords(arr: &InstrumentalArrangement, level: &Level) -> Vec<Issue> {
     let mut issues = Vec::new();
     let ng = get_noguitar_sections(arr);
     let end_time = get_end_time(arr);
@@ -246,7 +246,7 @@ pub fn check_chords_pub(arr: &InstrumentalArrangement, level: &Level) -> Vec<Iss
     issues
 }
 
-pub fn check_handshapes_pub(arr: &InstrumentalArrangement, level: &Level) -> Vec<Issue> {
+pub fn check_handshapes(arr: &InstrumentalArrangement, level: &Level) -> Vec<Issue> {
     let mut issues = Vec::new();
     let phrase_times: Vec<i32> = arr.phrase_iterations.iter().map(|pi| pi.time).collect();
     let will_be_moved: Vec<i32> = arr.phrase_iterations.iter()
@@ -269,7 +269,7 @@ pub fn check_handshapes_pub(arr: &InstrumentalArrangement, level: &Level) -> Vec
     issues
 }
 
-pub fn check_anchors_pub(arr: &InstrumentalArrangement, level: &Level) -> Vec<Issue> {
+pub fn check_anchors(arr: &InstrumentalArrangement, level: &Level) -> Vec<Issue> {
     let mut issues = Vec::new();
     let phrase_times: Vec<i32> = arr.phrase_iterations.iter().map(|pi| pi.time).collect();
     let will_be_moved: Vec<i32> = arr.phrase_iterations.iter()
@@ -306,7 +306,7 @@ pub fn check_anchors_pub(arr: &InstrumentalArrangement, level: &Level) -> Vec<Is
     issues
 }
 
-fn check_notes(arr: &InstrumentalArrangement, level: &Level, issues: &mut Vec<Issue>) {
+fn check_notes_inner(arr: &InstrumentalArrangement, level: &Level, issues: &mut Vec<Issue>) {
     let ng = get_noguitar_sections(arr);
     let end_time = get_end_time(arr);
 
@@ -401,7 +401,7 @@ fn check_phrase_structure(arr: &InstrumentalArrangement, issues: &mut Vec<Issue>
     }
 }
 
-fn check_crowd_events(arr: &InstrumentalArrangement, issues: &mut Vec<Issue>) {
+fn check_crowd_events_inner(arr: &InstrumentalArrangement, issues: &mut Vec<Issue>) {
     let intro = arr.events.iter().find(|e| e.code == "E3");
     let end = arr.events.iter().find(|e| e.code == "E13");
     match (intro, end) {
@@ -429,10 +429,10 @@ fn check_crowd_events(arr: &InstrumentalArrangement, issues: &mut Vec<Issue>) {
 /// Runs all checks on the given arrangement and returns a list of issues.
 pub fn check_instrumental(arr: &InstrumentalArrangement) -> Vec<Issue> {
     let mut issues = Vec::new();
-    check_crowd_events(arr, &mut issues);
+    check_crowd_events_inner(arr, &mut issues);
     check_phrase_structure(arr, &mut issues);
     if let Some(level) = arr.levels.last() {
-        check_notes(arr, level, &mut issues);
+        check_notes_inner(arr, level, &mut issues);
     }
     issues
 }

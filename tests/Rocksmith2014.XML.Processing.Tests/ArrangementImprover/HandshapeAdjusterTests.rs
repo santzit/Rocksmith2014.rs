@@ -1,5 +1,5 @@
 use rocksmith2014_xml::{Anchor, Chord, Ebeat, HandShape, InstrumentalArrangement, Level, Note};
-use rocksmith2014_xml_processing::{lengthen_handshapes, shorten_handshapes};
+use rocksmith2014_xml_processing::handshape_adjuster::{lengthen_handshapes, shorten_handshapes};
 
 fn beats() -> Vec<Ebeat> {
     vec![

@@ -1,5 +1,6 @@
 use rocksmith2014_xml::{ChordTemplate, InstrumentalArrangement};
-use rocksmith2014_xml_processing::{improve_double_stop_names, process_chord_names};
+use rocksmith2014_xml_processing::improver::process_chord_names;
+use rocksmith2014_xml_processing::double_stop_name_remover::improve as improve_double_stop_names;
 
 fn template(name: &str) -> ChordTemplate {
     ChordTemplate {

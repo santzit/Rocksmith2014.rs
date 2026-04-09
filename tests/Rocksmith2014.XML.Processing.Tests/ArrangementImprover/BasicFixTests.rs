@@ -2,7 +2,7 @@ use rocksmith2014_xml::{
     Anchor, BendValue, Chord, ChordNote, ChordTemplate, InstrumentalArrangement, Level, Note,
     NoteMask, Phrase, PhraseIteration,
 };
-use rocksmith2014_xml_processing::{
+use rocksmith2014_xml_processing::improver::{
     add_ignores, fix_link_nexts, remove_muted_notes_from_chords, remove_overlapping_bend_values,
     remove_redundant_anchors, validate_phrase_names,
 };

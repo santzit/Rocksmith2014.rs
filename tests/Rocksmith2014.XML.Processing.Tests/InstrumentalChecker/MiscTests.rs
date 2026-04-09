@@ -2,9 +2,8 @@ use rocksmith2014_xml::{
     Anchor, ArrangementEvent as Event, Chord, HandShape, InstrumentalArrangement, Level, MetaData,
     Note, Phrase, PhraseIteration, Section, ToneChange,
 };
-use rocksmith2014_xml_processing::{
-    check_anchors, check_crowd_events, check_handshapes, check_phrases, IssueType,
-};
+use rocksmith2014_xml_processing::checker::{check_anchors, check_crowd_events, check_handshapes, check_phrases};
+use rocksmith2014_xml_processing::issue::IssueType;
 
 fn test_arr() -> InstrumentalArrangement {
     use rocksmith2014_xml::ChordTemplate;

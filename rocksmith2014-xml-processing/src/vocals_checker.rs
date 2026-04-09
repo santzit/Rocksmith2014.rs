@@ -1,6 +1,6 @@
 use rocksmith2014_xml::{GlyphDefinitions, Vocal};
 
-use crate::{Issue, IssueType};
+use crate::issue::{Issue, IssueType};
 
 const MAX_LYRIC_BYTES: usize = 48;
 

@@ -1,5 +1,6 @@
 use rocksmith2014_xml::ShowLight;
-use rocksmith2014_xml_processing::{check_show_lights, IssueType};
+use rocksmith2014_xml_processing::show_lights_checker::check as check_show_lights;
+use rocksmith2014_xml_processing::issue::IssueType;
 
 #[test]
 fn detects_missing_fog_note() {
