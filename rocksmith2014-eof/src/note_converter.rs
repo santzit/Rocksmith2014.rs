@@ -479,7 +479,7 @@ pub fn convert_notes(
 
             let eof_note = EofNote {
                 difficulty: *diff,
-                chord_name: chord.template.chord_name.clone(),
+                chord_name: chord.template.name.clone(),
                 bit_flag,
                 ghost_bit_flag: bit_flag,
                 frets,
@@ -710,7 +710,7 @@ pub fn convert_notes(
 
             let chord_name = chord_opt
                 .as_ref()
-                .map(|x| x.template.chord_name.clone())
+                .map(|x| x.template.name.clone())
                 .unwrap_or_default();
 
             let eof_note = EofNote {

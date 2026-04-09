@@ -10,9 +10,9 @@ fn test_arr() -> InstrumentalArrangement {
     use rocksmith2014_xml::ChordTemplate;
     InstrumentalArrangement {
         sections: vec![
-            Section { name: "noguitar".into(), start_time: 6000, number: 1 },
-            Section { name: "riff".into(), start_time: 6500, number: 1 },
-            Section { name: "noguitar".into(), start_time: 8000, number: 2 },
+            Section { name: "noguitar".into(), start_time: 6000, number: 1, end_time: 0 },
+            Section { name: "riff".into(), start_time: 6500, number: 1, end_time: 0 },
+            Section { name: "noguitar".into(), start_time: 8000, number: 2, end_time: 0 },
         ],
         chord_templates: vec![
             ChordTemplate { name: "".into(), display_name: "".into(), fingers: [2, 2, -1, -1, -1, -1], frets: [2, 2, -1, -1, -1, -1] },
@@ -228,8 +228,8 @@ fn ignores_anchors_on_mover_phrases_unpitched_slide_check() {
 fn detects_non_empty_first_phrase() {
     let arr = InstrumentalArrangement {
         sections: vec![
-            Section { name: "riff".into(), start_time: 1500, number: 1 },
-            Section { name: "noguitar".into(), start_time: 2000, number: 2 },
+            Section { name: "riff".into(), start_time: 1500, number: 1, end_time: 0 },
+            Section { name: "noguitar".into(), start_time: 2000, number: 2, end_time: 0 },
         ],
         phrases: vec![
             Phrase { name: "COUNT".into(), max_difficulty: 0, ..Default::default() },

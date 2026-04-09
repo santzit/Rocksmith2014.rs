@@ -7,3 +7,55 @@ publish = false
 [dev-dependencies]
 rocksmith2014-xml-processing = { path = "../../rocksmith2014-xml-processing" }
 rocksmith2014-xml = { path = "../../rocksmith2014-xml" }
+
+[[test]]
+name = "MiscTests"
+path = "InstrumentalChecker/MiscTests.rs"
+
+[[test]]
+name = "NoteTests"
+path = "InstrumentalChecker/NoteTests.rs"
+
+[[test]]
+name = "ChordTests"
+path = "InstrumentalChecker/ChordTests.rs"
+
+[[test]]
+name = "ArrangementImproverTests"
+path = "ArrangementImprover/ArrangementImproverTests.rs"
+
+[[test]]
+name = "BasicFixTests"
+path = "ArrangementImprover/BasicFixTests.rs"
+
+[[test]]
+name = "ChordRenamingTests"
+path = "ArrangementImprover/ChordRenamingTests.rs"
+
+[[test]]
+name = "EOFFixTests"
+path = "ArrangementImprover/EOFFixTests.rs"
+
+[[test]]
+name = "HandshapeAdjusterTests"
+path = "ArrangementImprover/HandshapeAdjusterTests.rs"
+
+[[test]]
+name = "PhraseMoverTests"
+path = "ArrangementImprover/PhraseMoverTests.rs"
+
+[[test]]
+name = "PhraseGeneratorTests"
+path = "PhraseGeneratorTests.rs"
+
+[[test]]
+name = "ShowLightsCheckerTests"
+path = "ShowLightsCheckerTests.rs"
+
+[[test]]
+name = "UtilsTests"
+path = "UtilsTests.rs"
+
+[[test]]
+name = "VocalsCheckerTests"
+path = "VocalsCheckerTests.rs"

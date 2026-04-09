@@ -193,13 +193,18 @@ pub fn check_chords_pub(arr: &InstrumentalArrangement, level: &Level) -> Vec<Iss
             let fingers = &template.fingers;
             let uses_thumb = fingers.iter().any(|&f| f == 0);
             let has_barre = {
-                let active: Vec<i8> = fingers.iter().copied().filter(|&f| f > 0).collect();
                 let fret_arr = &template.frets;
-                let active_frets: Vec<i8> = (0..6).filter(|&i| fingers[i] > 0).map(|i| fret_arr[i]).collect();
-                let min_fret = active_frets.iter().copied().filter(|&f| f > 0).min().unwrap_or(0);
-                active.len() > 1 && active.iter().filter(|&&f| f == *active.iter().min().unwrap_or(&0)).count() > 1
-                    && min_fret > 0
-                    && fret_arr.iter().zip(fingers.iter()).any(|(&fr, &fi)| fi < 0 && fr == 0)
+                let active_fingers: Vec<i8> = fingers.iter().copied().filter(|&f| f > 0).collect();
+                let has_repeated_finger = active_fingers
+                    .iter()
+                    .any(|&f| active_fingers.iter().filter(|&&g| g == f).count() > 1);
+                let has_open_unplayed = fret_arr
+                    .iter()
+                    .zip(fingers.iter())
+                    .any(|(&fr, &fi)| fi < 0 && fr == 0);
+                let has_non_open_active = (0..6usize)
+                    .any(|i| fingers[i] > 0 && fret_arr[i] > 0);
+                has_repeated_finger && has_open_unplayed && has_non_open_active
             };
             // PossiblyWrongChordFingering - first finger not on lowest fret
             if !uses_thumb && !chord.chord_notes.is_empty() {
@@ -291,7 +296,7 @@ pub fn check_anchors_pub(arr: &InstrumentalArrangement, level: &Level) -> Vec<Is
         for note in &level.notes {
             if note.slide_unpitch_to >= 0 && note.sustain > 0 {
                 let slide_end = note.time + note.sustain;
-                if t > slide_end - 5 && t <= slide_end {
+                if (t - slide_end).abs() <= 5 && t > note.time {
                     let mover = will_be_moved.iter().any(|&mt| t == mt || (t > mt - 5 && t <= mt));
                     if !mover { issues.push(at(IssueType::AnchorCloseToUnpitchedSlide, t)); }
                 }
@@ -356,6 +361,9 @@ fn check_notes(arr: &InstrumentalArrangement, level: &Level, issues: &mut Vec<Is
         if (is_bend || is_slide || is_unpitch) && note.sustain == 0 {
             issues.push(at(IssueType::TechniqueNoteWithoutSustain, t));
         }
+        if arr.meta.arrangement_properties.path_bass > 0 && note.string > 3 {
+            issues.push(at(IssueType::InvalidBassArrangementString, t));
+        }
         // HOPO into same fret
         let is_hopo =
             note.mask.contains(NoteMask::HAMMER_ON) || note.mask.contains(NoteMask::PULL_OFF);
@@ -388,7 +396,7 @@ fn check_phrase_structure(arr: &InstrumentalArrangement, issues: &mut Vec<Issue>
             }
         }
     }
-    if arr.phrases.len() > 100 {
+    if arr.phrase_iterations.len() > 100 {
         issues.push(Issue::General(IssueType::MoreThan100Phrases));
     }
 }

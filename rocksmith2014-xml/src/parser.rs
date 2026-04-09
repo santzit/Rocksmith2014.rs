@@ -764,7 +764,7 @@ fn parse_chord_templates(reader: &mut Reader<&[u8]>, end_tag: &[u8]) -> Result<V
 
 fn parse_chord_template_from_elem(e: &BytesStart) -> ChordTemplate {
     ChordTemplate {
-        chord_name: get_attr(e, b"chordName").unwrap_or_default(),
+        name: get_attr(e, b"chordName").unwrap_or_default(),
         display_name: get_attr(e, b"displayName").unwrap_or_default(),
         fingers: [
             get_attr(e, b"finger0")

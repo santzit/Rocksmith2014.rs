@@ -3,6 +3,18 @@ use std::collections::HashSet;
 use regex::Regex;
 use rocksmith2014_xml::{Anchor, ArrangementEvent, InstrumentalArrangement, NoteMask};
 
+/// Returns the time of the first note or chord across all levels.
+pub fn get_first_note_time(arr: &InstrumentalArrangement) -> Option<i32> {
+    arr.levels
+        .iter()
+        .flat_map(|level| {
+            let note_t = level.notes.iter().map(|n| n.time);
+            let chord_t = level.chords.iter().map(|c| c.time);
+            note_t.chain(chord_t)
+        })
+        .min()
+}
+
 pub fn validate_phrase_names(arr: &mut InstrumentalArrangement) {
     let re = Regex::new(r"[^a-zA-Z0-9 _#]").unwrap();
     for phrase in &mut arr.phrases {
@@ -97,17 +109,6 @@ fn insert_event_sorted(events: &mut Vec<ArrangementEvent>, ev: ArrangementEvent)
     events.insert(pos, ev);
 }
 
-fn get_first_note_time(arr: &InstrumentalArrangement) -> Option<i32> {
-    let level = arr.levels.first()?;
-    let note_t = level.notes.first().map(|n| n.time);
-    let chord_t = level.chords.first().map(|c| c.time);
-    match (note_t, chord_t) {
-        (Some(a), Some(b)) => Some(a.min(b)),
-        (Some(a), None) | (None, Some(a)) => Some(a),
-        (None, None) => None,
-    }
-}
-
 pub fn add_crowd_events(arr: &mut InstrumentalArrangement) {
     if arr.events.iter().any(|e| e.code == "E3" || e.code == "D3") {
         return;
@@ -154,23 +155,46 @@ pub fn add_crowd_events(arr: &mut InstrumentalArrangement) {
     );
 }
 
+/// Removes beats that come after the audio has ended.
+/// Mirrors ExtraBeatRemover.improve in the .NET implementation.
 pub fn remove_extra_beats(arr: &mut InstrumentalArrangement) {
-    let limit = arr.meta.song_length;
-    arr.ebeats.retain(|b| b.time <= limit);
+    let audio_end = arr.meta.song_length;
+    if arr.ebeats.len() < 2 {
+        return;
+    }
+    while arr.ebeats.len() >= 2 && arr.ebeats[arr.ebeats.len() - 2].time > audio_end {
+        arr.ebeats.pop();
+    }
+    if arr.ebeats.len() < 2 {
+        return;
+    }
+    let last_idx = arr.ebeats.len() - 1;
+    let penultimate_time = arr.ebeats[last_idx - 1].time;
+    let last_time = arr.ebeats[last_idx].time;
+    if audio_end - penultimate_time <= last_time - audio_end {
+        arr.ebeats.pop();
+    }
+    if let Some(last) = arr.ebeats.last_mut() {
+        last.time = audio_end;
+    }
 }
 
+/// Processes chord names: replaces "min" with "m", handles -arp, -nop, CONV suffixes.
+/// Mirrors ChordNameProcessor.improve in the .NET implementation.
 pub fn process_chord_names(arr: &mut InstrumentalArrangement) {
+    fn empty_or_else(s: &str, f: impl Fn(&str) -> String) -> String {
+        if s.trim().is_empty() { String::new() } else { f(s) }
+    }
     for template in &mut arr.chord_templates {
-        if template.display_name.contains("(no name)") {
-            let count = template.frets.iter().filter(|&&f| f >= 0).count();
-            if count == 2 {
-                template.display_name = template
-                    .display_name
-                    .replace("(no name)", "")
-                    .trim()
-                    .to_string();
-            }
-        }
+        template.name = empty_or_else(&template.name, |name| {
+            name.replace("min", "m")
+                .replace("CONV", "")
+                .replace("-nop", "")
+                .replace("-arp", "")
+        });
+        template.display_name = empty_or_else(&template.display_name, |dname| {
+            dname.replace("min", "m").replace("CONV", "-arp")
+        });
     }
 }
 
@@ -195,10 +219,62 @@ fn fix_phrase_start_anchors(arr: &mut InstrumentalArrangement) {
     }
 }
 
+/// Removes anchors identical (same fret and width) to the previous anchor,
+/// unless the anchor is at a phrase iteration time.
+/// Mirrors BasicFixes.removeRedundantAnchors in the .NET implementation.
 pub fn remove_redundant_anchors(arr: &mut InstrumentalArrangement) {
+    let phrase_times: HashSet<i32> = arr.phrase_iterations.iter().map(|pi| pi.time).collect();
     for level in &mut arr.levels {
-        let mut seen: HashSet<i32> = HashSet::new();
-        level.anchors.retain(|a| seen.insert(a.time));
+        if level.anchors.len() <= 1 {
+            continue;
+        }
+        let anchors = std::mem::take(&mut level.anchors);
+        let mut result = Vec::with_capacity(anchors.len());
+        result.push(anchors[0].clone());
+        for i in 1..anchors.len() {
+            let prev = &anchors[i - 1];
+            let curr = &anchors[i];
+            let identical = prev.fret == curr.fret && prev.width == curr.width;
+            if !identical || phrase_times.contains(&curr.time) {
+                result.push(curr.clone());
+            }
+        }
+        level.anchors = result;
+    }
+}
+
+/// Removes fret-hand-muted notes from chords that also contain normal notes.
+/// Mirrors BasicFixes.removeMutedNotesFromChords in the .NET implementation.
+pub fn remove_muted_notes_from_chords(arr: &mut InstrumentalArrangement) {
+    let mut fixed_chord_templates: HashSet<i32> = HashSet::new();
+    for level in &mut arr.levels {
+        for chord in &mut level.chords {
+            if fixed_chord_templates.contains(&chord.chord_id)
+                || chord.chord_notes.is_empty()
+                || chord.mask.contains(rocksmith2014_xml::ChordMask::FRET_HAND_MUTE)
+            {
+                continue;
+            }
+            let muted_strings: Vec<i8> = chord
+                .chord_notes
+                .iter()
+                .filter(|cn| cn.mask.contains(NoteMask::FRET_HAND_MUTE))
+                .map(|cn| cn.string)
+                .collect();
+            if muted_strings.is_empty() || muted_strings.len() == chord.chord_notes.len() {
+                continue;
+            }
+            chord.chord_notes.retain(|cn| !cn.mask.contains(NoteMask::FRET_HAND_MUTE));
+            if let Some(template) = arr.chord_templates.get_mut(chord.chord_id as usize) {
+                for &s in &muted_strings {
+                    if s >= 0 && (s as usize) < 6 {
+                        template.frets[s as usize] = -1;
+                        template.fingers[s as usize] = -1;
+                    }
+                }
+            }
+            fixed_chord_templates.insert(chord.chord_id);
+        }
     }
 }
 

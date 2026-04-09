@@ -400,7 +400,7 @@ pub(crate) fn write_arrangement(
         writer.write_event(XmlEvent::Start(ct_elem))?;
         for ct in &arr.chord_templates {
             let mut cte = BytesStart::new("chordTemplate");
-            cte.push_attribute(("chordName", ct.chord_name.as_str()));
+            cte.push_attribute(("chordName", ct.name.as_str()));
             cte.push_attribute(("displayName", ct.display_name.as_str()));
             cte.push_attribute(("finger0", ct.fingers[0].to_string().as_str()));
             cte.push_attribute(("finger1", ct.fingers[1].to_string().as_str()));
