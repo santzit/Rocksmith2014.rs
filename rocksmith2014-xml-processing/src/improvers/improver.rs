@@ -1,7 +1,7 @@
 use std::collections::{HashMap, HashSet};
 
 use regex::Regex;
-use rocksmith2014_xml::{Anchor, ArrangementEvent, InstrumentalArrangement, NoteMask};
+use rocksmith2014_xml::{Anchor, ArrangementEvent, ChordMask, InstrumentalArrangement, NoteMask};
 
 /// Returns the time of the first note or chord across all levels.
 pub fn get_first_note_time(arr: &InstrumentalArrangement) -> Option<i32> {
@@ -313,4 +313,111 @@ pub fn apply_minimum_improvements(arr: &mut InstrumentalArrangement) {
     add_ignores(arr);
     remove_overlapping_bend_values(arr);
     fix_phrase_start_anchors(arr);
+}
+
+/// Moves anchors that are within 5ms of a note or chord to be exactly at the note/chord time.
+/// Does not move if the target note is within 5ms of another note (notes too close together).
+/// Mirrors AnchorMover.improve in the .NET implementation.
+pub fn move_anchors(arr: &mut InstrumentalArrangement) {
+    const MAX_DIFF: i32 = 5;
+
+    for level in &mut arr.levels {
+        let event_times: Vec<i32> = level
+            .notes
+            .iter()
+            .map(|n| n.time)
+            .chain(level.chords.iter().map(|c| c.time))
+            .collect();
+
+        // Note end times for slides/sustained notes
+        let note_end_times: Vec<i32> = level
+            .notes
+            .iter()
+            .filter(|n| n.sustain > 0)
+            .map(|n| n.time + n.sustain)
+            .collect();
+
+        for anchor in &mut level.anchors {
+            let closest = event_times
+                .iter()
+                .min_by_key(|&&t| (t - anchor.time).abs())
+                .copied()
+                .filter(|&t| (t - anchor.time).abs() <= MAX_DIFF);
+
+            if let Some(target) = closest {
+                let too_close = event_times
+                    .iter()
+                    .chain(note_end_times.iter())
+                    .any(|&t| t != target && (t - target).abs() < MAX_DIFF);
+                if !too_close {
+                    anchor.time = target;
+                }
+            }
+        }
+    }
+}
+
+/// Removes unnecessary notes with no sustain that follow LINK_NEXT notes or chord slides.
+/// Mirrors ArrangementImprover.removeUnnecessaryNotes in the .NET implementation.
+pub fn remove_unnecessary_notes(arr: &mut InstrumentalArrangement) {
+    for level in &mut arr.levels {
+        let mut to_remove: HashSet<usize> = HashSet::new();
+
+        // Notes without sustain that follow LINK_NEXT notes at the end of their sustain
+        for i in 0..level.notes.len() {
+            if !level.notes[i].mask.contains(NoteMask::LINK_NEXT) {
+                continue;
+            }
+            let end_time = level.notes[i].time + level.notes[i].sustain;
+            let string = level.notes[i].string;
+            if let Some(j) = level.notes[i + 1..]
+                .iter()
+                .position(|n| n.string == string && n.time == end_time && n.sustain == 0)
+            {
+                to_remove.insert(i + 1 + j);
+            }
+        }
+
+        // Notes without sustain that follow chord LINK_NEXT (chord slides)
+        for chord in &level.chords {
+            let is_link_next = chord.mask.contains(ChordMask::LINK_NEXT);
+            let has_slide = chord
+                .chord_notes
+                .iter()
+                .any(|cn| cn.slide_to >= 0 || cn.slide_unpitch_to >= 0);
+            if !is_link_next && !has_slide {
+                continue;
+            }
+            for cn in &chord.chord_notes {
+                let end_time = chord.time + cn.sustain;
+                if let Some(j) = level
+                    .notes
+                    .iter()
+                    .position(|n| n.string == cn.string && n.time == end_time && n.sustain == 0)
+                {
+                    to_remove.insert(j);
+                }
+            }
+        }
+
+        let mut indices: Vec<usize> = to_remove.into_iter().collect();
+        indices.sort_unstable_by(|a, b| b.cmp(a));
+        for idx in indices {
+            level.notes.remove(idx);
+        }
+    }
+}
+
+/// Removes the HARMONIC mask from notes that also have a slide (slides and harmonics are incompatible).
+/// Mirrors HarmonicFixer.improve in the .NET implementation.
+pub fn remove_harmonic_mask(arr: &mut InstrumentalArrangement) {
+    for level in &mut arr.levels {
+        for note in &mut level.notes {
+            if note.mask.contains(NoteMask::HARMONIC)
+                && (note.slide_to > 0 || note.slide_unpitch_to > 0)
+            {
+                note.mask.remove(NoteMask::HARMONIC);
+            }
+        }
+    }
 }

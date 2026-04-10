@@ -144,8 +144,8 @@ fn anchor_width_3_event_can_change_fret() {
 }
 
 #[test]
-#[ignore = "not yet implemented"]
 fn slide_out_event_works_for_normal_chord() {
+    use rocksmith2014_xml_processing::improvers::improver::move_anchors as _move_anchors;
     let templates = vec![ChordTemplate {
         name: "".into(), display_name: "".into(),
         fingers: [1, 3, -1, -1, -1, -1],
@@ -156,8 +156,8 @@ fn slide_out_event_works_for_normal_chord() {
         ChordNote { string: 1, fret: 3, sustain: 1000, slide_unpitch_to: 9, ..Default::default() },
     ];
     let chords = vec![Chord { chord_notes: cn, ..Default::default() }];
-    let hs = HandShape { chord_id: 0, start_time: 0, end_time: 1000 };
-    let _arr = InstrumentalArrangement {
+    let hs = HandShape { chord_id: 0, start_time: 0, end_time: 1500 };
+    let mut arr = InstrumentalArrangement {
         chord_templates: templates,
         phrases: vec![Phrase { name: "".into(), ..Default::default() }],
         phrase_iterations: vec![PhraseIteration { time: 0, phrase_id: 0, ..Default::default() }],
@@ -165,12 +165,14 @@ fn slide_out_event_works_for_normal_chord() {
         levels: vec![Level { chords, hand_shapes: vec![hs], ..Default::default() }],
         ..Default::default()
     };
-    // CustomEvents.improve not implemented for slide-out events
-    panic!("slide-out event not implemented");
+    improve_custom_events(&mut arr);
+    // "so" event should be removed
+    assert!(!arr.events.iter().any(|e| e.code == "so"));
+    // Handshape end time should be adjusted to sustain (1000)
+    assert_eq!(arr.levels[0].hand_shapes[0].end_time, 1000);
 }
 
 #[test]
-#[ignore = "not yet implemented"]
 fn slide_out_event_works_for_link_next_chord() {
     let templates = vec![ChordTemplate {
         name: "".into(), display_name: "".into(),
@@ -187,7 +189,7 @@ fn slide_out_event_works_for_link_next_chord() {
         Note { time: 1000, string: 3, fret: 5, sustain: 500, slide_unpitch_to: 12, ..Default::default() },
     ];
     let hs = HandShape { chord_id: 0, start_time: 0, end_time: 1500 };
-    let _arr = InstrumentalArrangement {
+    let mut arr = InstrumentalArrangement {
         chord_templates: templates,
         phrases: vec![Phrase { name: "".into(), ..Default::default() }],
         phrase_iterations: vec![PhraseIteration { time: 0, phrase_id: 0, ..Default::default() }],
@@ -195,71 +197,99 @@ fn slide_out_event_works_for_link_next_chord() {
         levels: vec![Level { notes, chords, hand_shapes: vec![hs], ..Default::default() }],
         ..Default::default()
     };
-    // CustomEvents.improve not implemented for slide-out events
-    panic!("slide-out event not implemented");
+    improve_custom_events(&mut arr);
+    // "so" event should be removed
+    assert!(!arr.events.iter().any(|e| e.code == "so"));
+    // Handshape end time should be adjusted to 1000 + 500 = 1500 (note sustain at so_time)
+    assert_eq!(arr.levels[0].hand_shapes[0].end_time, 1500);
 }
 
 #[test]
-#[ignore = "not yet implemented"]
 fn anchor_before_note_is_moved() {
-    // AnchorMover.improve not implemented in Rust
-    let _anchors = vec![Anchor { fret: 1, time: 99, width: 4, end_time: 0 }];
-    let _notes = vec![Note { time: 100, fret: 1, ..Default::default() }];
-    panic!("AnchorMover not implemented");
+    use rocksmith2014_xml_processing::improvers::improver::move_anchors;
+    let anchors = vec![Anchor { fret: 1, time: 99, width: 4, end_time: 0 }];
+    let notes = vec![Note { time: 100, fret: 1, ..Default::default() }];
+    let mut arr = InstrumentalArrangement {
+        levels: vec![Level { anchors, notes, ..Default::default() }],
+        ..Default::default()
+    };
+    move_anchors(&mut arr);
+    assert_eq!(arr.levels[0].anchors[0].time, 100);
 }
 
 #[test]
-#[ignore = "not yet implemented"]
 fn anchor_after_note_by_5ms_is_moved() {
-    // AnchorMover.improve not implemented in Rust
-    let _anchors = vec![Anchor { fret: 1, time: 105, width: 4, end_time: 0 }];
-    let _notes = vec![Note { time: 100, fret: 1, ..Default::default() }];
-    panic!("AnchorMover not implemented");
+    use rocksmith2014_xml_processing::improvers::improver::move_anchors;
+    let anchors = vec![Anchor { fret: 1, time: 105, width: 4, end_time: 0 }];
+    let notes = vec![Note { time: 100, fret: 1, ..Default::default() }];
+    let mut arr = InstrumentalArrangement {
+        levels: vec![Level { anchors, notes, ..Default::default() }],
+        ..Default::default()
+    };
+    move_anchors(&mut arr);
+    assert_eq!(arr.levels[0].anchors[0].time, 100);
 }
 
 #[test]
-#[ignore = "not yet implemented"]
 fn anchor_after_note_by_6ms_is_not_moved() {
-    // AnchorMover.improve not implemented in Rust
-    let _anchors = vec![Anchor { fret: 1, time: 106, width: 4, end_time: 0 }];
-    let _notes = vec![Note { time: 100, fret: 1, ..Default::default() }];
-    panic!("AnchorMover not implemented");
+    use rocksmith2014_xml_processing::improvers::improver::move_anchors;
+    let anchors = vec![Anchor { fret: 1, time: 106, width: 4, end_time: 0 }];
+    let notes = vec![Note { time: 100, fret: 1, ..Default::default() }];
+    let mut arr = InstrumentalArrangement {
+        levels: vec![Level { anchors, notes, ..Default::default() }],
+        ..Default::default()
+    };
+    move_anchors(&mut arr);
+    assert_eq!(arr.levels[0].anchors[0].time, 106);
 }
 
 #[test]
-#[ignore = "not yet implemented"]
 fn anchor_after_chord_is_moved() {
-    // AnchorMover.improve not implemented in Rust
-    let _anchors = vec![Anchor { fret: 1, time: 102, width: 4, end_time: 0 }];
-    let _chords = vec![Chord { time: 100, ..Default::default() }];
-    panic!("AnchorMover not implemented");
+    use rocksmith2014_xml_processing::improvers::improver::move_anchors;
+    let anchors = vec![Anchor { fret: 1, time: 102, width: 4, end_time: 0 }];
+    let chords = vec![Chord { time: 100, ..Default::default() }];
+    let mut arr = InstrumentalArrangement {
+        levels: vec![Level { anchors, chords, ..Default::default() }],
+        ..Default::default()
+    };
+    move_anchors(&mut arr);
+    assert_eq!(arr.levels[0].anchors[0].time, 100);
 }
 
 #[test]
-#[ignore = "not yet implemented"]
 fn anchor_on_note_that_is_very_close_to_another_note_is_not_moved() {
-    // AnchorMover.improve not implemented in Rust
-    let _anchors = vec![Anchor { fret: 1, time: 100, width: 4, end_time: 0 }];
-    let _notes = vec![
+    use rocksmith2014_xml_processing::improvers::improver::move_anchors;
+    let anchors = vec![Anchor { fret: 1, time: 100, width: 4, end_time: 0 }];
+    let notes = vec![
         Note { time: 100, fret: 1, ..Default::default() },
         Note { time: 103, fret: 3, ..Default::default() },
     ];
-    panic!("AnchorMover not implemented");
+    let mut arr = InstrumentalArrangement {
+        levels: vec![Level { anchors, notes, ..Default::default() }],
+        ..Default::default()
+    };
+    move_anchors(&mut arr);
+    assert_eq!(arr.levels[0].anchors[0].time, 100);
 }
 
 #[test]
-#[ignore = "not yet implemented"]
 fn anchor_at_the_end_of_a_slide_that_is_very_close_to_another_note_is_not_moved() {
-    // AnchorMover.improve not implemented in Rust
-    let _anchors = vec![
+    use rocksmith2014_xml_processing::improvers::improver::move_anchors;
+    let anchors = vec![
         Anchor { fret: 1, time: 100, width: 4, end_time: 0 },
         Anchor { fret: 3, time: 300, width: 4, end_time: 0 },
     ];
-    let _notes = vec![
+    let notes = vec![
         Note { time: 100, sustain: 200, fret: 1, slide_to: 3, ..Default::default() },
         Note { time: 303, fret: 3, ..Default::default() },
     ];
-    panic!("AnchorMover not implemented");
+    let mut arr = InstrumentalArrangement {
+        levels: vec![Level { anchors, notes, ..Default::default() }],
+        ..Default::default()
+    };
+    move_anchors(&mut arr);
+    assert_eq!(arr.levels[0].anchors[0].time, 100);
+    assert_eq!(arr.levels[0].anchors[1].time, 300);
 }
 
 #[test]
@@ -297,43 +327,96 @@ fn extra_anchors_are_not_created_when_moving_phrases() {
 }
 
 #[test]
-#[ignore = "not yet implemented"]
 fn removes_notes_without_sustain_after_a_linknext_note() {
-    // ArrangementImprover.removeUnnecessaryNotes not implemented in Rust
-    panic!("removeUnnecessaryNotes not implemented");
+    use rocksmith2014_xml_processing::improvers::improver::remove_unnecessary_notes;
+    let notes = vec![
+        Note { time: 1000, fret: 5, sustain: 500, mask: NoteMask::LINK_NEXT, ..Default::default() },
+        Note { time: 1500, fret: 5, sustain: 0, ..Default::default() },
+    ];
+    let mut arr = InstrumentalArrangement {
+        levels: vec![Level { notes, ..Default::default() }],
+        ..Default::default()
+    };
+    remove_unnecessary_notes(&mut arr);
+    assert_eq!(arr.levels[0].notes.len(), 1);
+    assert_eq!(arr.levels[0].notes[0].time, 1000);
 }
 
 #[test]
-#[ignore = "not yet implemented"]
 fn does_not_remove_note_with_sustain_after_a_linknext_note() {
-    // ArrangementImprover.removeUnnecessaryNotes not implemented in Rust
-    panic!("removeUnnecessaryNotes not implemented");
+    use rocksmith2014_xml_processing::improvers::improver::remove_unnecessary_notes;
+    let notes = vec![
+        Note { time: 1000, fret: 5, sustain: 500, mask: NoteMask::LINK_NEXT, ..Default::default() },
+        Note { time: 1500, fret: 5, sustain: 200, ..Default::default() },
+    ];
+    let mut arr = InstrumentalArrangement {
+        levels: vec![Level { notes, ..Default::default() }],
+        ..Default::default()
+    };
+    remove_unnecessary_notes(&mut arr);
+    assert_eq!(arr.levels[0].notes.len(), 2);
 }
 
 #[test]
-#[ignore = "not yet implemented"]
 fn removes_note_without_sustain_after_a_chord() {
-    // ArrangementImprover.removeUnnecessaryNotes not implemented in Rust
-    panic!("removeUnnecessaryNotes not implemented");
+    use rocksmith2014_xml_processing::improvers::improver::remove_unnecessary_notes;
+    let cn = vec![ChordNote { string: 0, fret: 5, sustain: 500, ..Default::default() }];
+    let chords = vec![Chord { time: 1000, mask: ChordMask::LINK_NEXT, chord_notes: cn, ..Default::default() }];
+    let notes = vec![Note { time: 1500, string: 0, fret: 5, sustain: 0, ..Default::default() }];
+    let mut arr = InstrumentalArrangement {
+        levels: vec![Level { chords, notes, ..Default::default() }],
+        ..Default::default()
+    };
+    remove_unnecessary_notes(&mut arr);
+    assert_eq!(arr.levels[0].notes.len(), 0);
 }
 
 #[test]
-#[ignore = "not yet implemented"]
 fn removes_note_without_sustain_after_a_chord_slide() {
-    // ArrangementImprover.removeUnnecessaryNotes not implemented in Rust
-    panic!("removeUnnecessaryNotes not implemented");
+    use rocksmith2014_xml_processing::improvers::improver::remove_unnecessary_notes;
+    let cn = vec![ChordNote { string: 0, fret: 5, sustain: 500, slide_unpitch_to: 9, ..Default::default() }];
+    let chords = vec![Chord { time: 1000, chord_notes: cn, ..Default::default() }];
+    let notes = vec![Note { time: 1500, string: 0, fret: 9, sustain: 0, ..Default::default() }];
+    let mut arr = InstrumentalArrangement {
+        levels: vec![Level { chords, notes, ..Default::default() }],
+        ..Default::default()
+    };
+    remove_unnecessary_notes(&mut arr);
+    assert_eq!(arr.levels[0].notes.len(), 0);
 }
 
 #[test]
-#[ignore = "not yet implemented"]
 fn removes_all_notes_without_sustain_after_a_chord_slide() {
-    // ArrangementImprover.removeUnnecessaryNotes not implemented in Rust
-    panic!("removeUnnecessaryNotes not implemented");
+    use rocksmith2014_xml_processing::improvers::improver::remove_unnecessary_notes;
+    let cn = vec![
+        ChordNote { string: 0, fret: 5, sustain: 500, slide_unpitch_to: 9, ..Default::default() },
+        ChordNote { string: 1, fret: 7, sustain: 500, slide_unpitch_to: 12, ..Default::default() },
+    ];
+    let chords = vec![Chord { time: 1000, chord_notes: cn, ..Default::default() }];
+    let notes = vec![
+        Note { time: 1500, string: 0, fret: 9, sustain: 0, ..Default::default() },
+        Note { time: 1500, string: 1, fret: 12, sustain: 0, ..Default::default() },
+    ];
+    let mut arr = InstrumentalArrangement {
+        levels: vec![Level { chords, notes, ..Default::default() }],
+        ..Default::default()
+    };
+    remove_unnecessary_notes(&mut arr);
+    assert_eq!(arr.levels[0].notes.len(), 0);
 }
 
 #[test]
-#[ignore = "not yet implemented"]
 fn removes_harmonic_mask_from_notes() {
-    // HarmonicFixer.improve not implemented in Rust
-    panic!("HarmonicFixer not implemented");
+    use rocksmith2014_xml_processing::improvers::improver::remove_harmonic_mask;
+    let notes = vec![
+        Note { time: 1000, fret: 7, slide_to: 9, mask: NoteMask::HARMONIC, ..Default::default() },
+        Note { time: 1500, fret: 7, mask: NoteMask::HARMONIC, ..Default::default() },
+    ];
+    let mut arr = InstrumentalArrangement {
+        levels: vec![Level { notes, ..Default::default() }],
+        ..Default::default()
+    };
+    remove_harmonic_mask(&mut arr);
+    assert!(!arr.levels[0].notes[0].mask.contains(NoteMask::HARMONIC));
+    assert!(arr.levels[0].notes[1].mask.contains(NoteMask::HARMONIC));
 }
