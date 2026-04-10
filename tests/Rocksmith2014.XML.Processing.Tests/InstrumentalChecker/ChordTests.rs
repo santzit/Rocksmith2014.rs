@@ -1,5 +1,5 @@
 use rocksmith2014_xml::{
-    BendValue, Chord, ChordMask, ChordNote, ChordTemplate, InstrumentalArrangement, Level,
+    Anchor, BendValue, Chord, ChordMask, ChordNote, ChordTemplate, InstrumentalArrangement, Level,
     MetaData, Note, NoteMask, Phrase, PhraseIteration, Section, ToneChange,
 };
 use rocksmith2014_xml_processing::checkers::checker::check_chords;
@@ -291,4 +291,69 @@ fn detects_chords_with_techniques_that_require_sustain() {
     let results = check_chords(&arr, &level);
     assert!(!results.is_empty());
     assert!(results.iter().all(|r| matches!(r.issue_type(), IssueType::TechniqueNoteWithoutSustain)));
+}
+
+#[test]
+fn detects_incorrect_linknext_on_chord_note() {
+    let notes = vec![
+        Note { string: 1, time: 1100, ..Default::default() },
+        Note { string: 2, time: 1500, ..Default::default() },
+    ];
+    let cn = vec![
+        ChordNote { string: 1, sustain: 100, mask: NoteMask::LINK_NEXT, ..Default::default() },
+        ChordNote { string: 2, sustain: 100, mask: NoteMask::LINK_NEXT, ..Default::default() },
+    ];
+    let chords = vec![Chord { time: 1000, chord_notes: cn, mask: ChordMask::LINK_NEXT, ..Default::default() }];
+    let level = Level { notes, chords, ..Default::default() };
+    let arr = test_arr();
+    let results = check_chords(&arr, &level);
+    assert_eq!(results.len(), 1);
+    assert!(matches!(results[0].issue_type(), IssueType::IncorrectLinkNext));
+}
+
+#[test]
+fn does_not_produce_false_positive_for_chord_note_without_linknext() {
+    let notes = vec![
+        Note { string: 1, time: 1100, ..Default::default() },
+        Note { string: 2, time: 1500, ..Default::default() },
+    ];
+    let cn = vec![
+        ChordNote { string: 1, sustain: 100, mask: NoteMask::LINK_NEXT, ..Default::default() },
+        ChordNote { string: 2, sustain: 100, ..Default::default() },
+    ];
+    let chords = vec![Chord { time: 1000, chord_notes: cn, mask: ChordMask::LINK_NEXT, ..Default::default() }];
+    let level = Level { notes, chords, ..Default::default() };
+    let arr = test_arr();
+    let results = check_chords(&arr, &level);
+    assert!(results.is_empty());
+}
+
+#[test]
+fn detects_position_shift_into_pull_off_double_stops() {
+    let cn1 = vec![
+        ChordNote { string: 4, fret: 12, ..Default::default() },
+        ChordNote { string: 5, fret: 12, ..Default::default() },
+    ];
+    let cn2 = vec![
+        ChordNote { string: 4, fret: 10, mask: NoteMask::PULL_OFF, ..Default::default() },
+        ChordNote { string: 5, fret: 10, mask: NoteMask::PULL_OFF, ..Default::default() },
+    ];
+    let chords = vec![
+        Chord { time: 1000, chord_notes: cn1, ..Default::default() },
+        Chord { time: 1500, chord_notes: cn2, ..Default::default() },
+    ];
+    let anchors = vec![
+        Anchor { fret: 12, time: 1000, width: 4, end_time: 0 },
+        Anchor { fret: 10, time: 1500, width: 4, end_time: 0 },
+    ];
+    let level = Level { chords, anchors, ..Default::default() };
+    let arr = InstrumentalArrangement {
+        levels: vec![level.clone()],
+        phrases: vec![Phrase { name: "mover6.700".into(), ..Default::default() }],
+        meta: MetaData { song_length: 500_000, ..Default::default() },
+        ..Default::default()
+    };
+    let results = check_chords(&arr, &level);
+    assert_eq!(results.len(), 1);
+    assert!(matches!(results[0].issue_type(), IssueType::PositionShiftIntoPullOff));
 }

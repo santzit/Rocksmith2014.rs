@@ -1,5 +1,11 @@
-use rocksmith2014_xml::{Anchor, ArrangementEvent, Ebeat, InstrumentalArrangement, Level, Note, ChordTemplate};
-use rocksmith2014_xml_processing::improvers::improver::{add_crowd_events, process_chord_names, remove_extra_beats};
+use rocksmith2014_xml::{
+    Anchor, ArrangementEvent, Chord, ChordNote, ChordMask, ChordTemplate, Ebeat,
+    HandShape, InstrumentalArrangement, Level, MetaData, Note, NoteMask,
+    Phrase, PhraseIteration,
+};
+use rocksmith2014_xml_processing::improvers::improver::{
+    add_crowd_events, apply_all_improvements, process_chord_names, remove_extra_beats,
+};
 use rocksmith2014_xml_processing::improvers::custom_events::improve as improve_custom_events;
 
 #[test]
@@ -122,4 +128,212 @@ fn fixes_minor_chord_names() {
     process_chord_names(&mut arr);
     assert!(!arr.chord_templates[0].name.contains("min"));
     assert!(!arr.chord_templates[1].name.contains("min"));
+}
+
+#[test]
+fn anchor_width_3_event_can_change_fret() {
+    let anchor = Anchor { fret: 21, time: 180, width: 4, end_time: 0 };
+    let mut arr = InstrumentalArrangement {
+        events: vec![ArrangementEvent { code: "w3-22".into(), time: 100 }],
+        levels: vec![Level { anchors: vec![anchor], ..Default::default() }],
+        ..Default::default()
+    };
+    improve_custom_events(&mut arr);
+    assert_eq!(arr.levels[0].anchors[0].width, 3);
+    assert_eq!(arr.levels[0].anchors[0].fret, 22);
+}
+
+#[test]
+#[ignore = "not yet implemented"]
+fn slide_out_event_works_for_normal_chord() {
+    let templates = vec![ChordTemplate {
+        name: "".into(), display_name: "".into(),
+        fingers: [1, 3, -1, -1, -1, -1],
+        frets: [1, 3, -1, -1, -1, -1],
+    }];
+    let cn = vec![
+        ChordNote { string: 0, fret: 1, sustain: 1000, slide_unpitch_to: 7, ..Default::default() },
+        ChordNote { string: 1, fret: 3, sustain: 1000, slide_unpitch_to: 9, ..Default::default() },
+    ];
+    let chords = vec![Chord { chord_notes: cn, ..Default::default() }];
+    let hs = HandShape { chord_id: 0, start_time: 0, end_time: 1000 };
+    let _arr = InstrumentalArrangement {
+        chord_templates: templates,
+        phrases: vec![Phrase { name: "".into(), ..Default::default() }],
+        phrase_iterations: vec![PhraseIteration { time: 0, phrase_id: 0, ..Default::default() }],
+        events: vec![ArrangementEvent { code: "so".into(), time: 0 }],
+        levels: vec![Level { chords, hand_shapes: vec![hs], ..Default::default() }],
+        ..Default::default()
+    };
+    // CustomEvents.improve not implemented for slide-out events
+    panic!("slide-out event not implemented");
+}
+
+#[test]
+#[ignore = "not yet implemented"]
+fn slide_out_event_works_for_link_next_chord() {
+    let templates = vec![ChordTemplate {
+        name: "".into(), display_name: "".into(),
+        fingers: [-1, -1, 2, 2, -1, -1],
+        frets: [-1, -1, 5, 5, -1, -1],
+    }];
+    let cn = vec![
+        ChordNote { string: 2, fret: 5, sustain: 1000, mask: NoteMask::LINK_NEXT, ..Default::default() },
+        ChordNote { string: 3, fret: 5, sustain: 1000, mask: NoteMask::LINK_NEXT, ..Default::default() },
+    ];
+    let chords = vec![Chord { chord_notes: cn, mask: ChordMask::LINK_NEXT, ..Default::default() }];
+    let notes = vec![
+        Note { time: 1000, string: 2, fret: 5, sustain: 500, slide_unpitch_to: 12, ..Default::default() },
+        Note { time: 1000, string: 3, fret: 5, sustain: 500, slide_unpitch_to: 12, ..Default::default() },
+    ];
+    let hs = HandShape { chord_id: 0, start_time: 0, end_time: 1500 };
+    let _arr = InstrumentalArrangement {
+        chord_templates: templates,
+        phrases: vec![Phrase { name: "".into(), ..Default::default() }],
+        phrase_iterations: vec![PhraseIteration { time: 0, phrase_id: 0, ..Default::default() }],
+        events: vec![ArrangementEvent { code: "so".into(), time: 1000 }],
+        levels: vec![Level { notes, chords, hand_shapes: vec![hs], ..Default::default() }],
+        ..Default::default()
+    };
+    // CustomEvents.improve not implemented for slide-out events
+    panic!("slide-out event not implemented");
+}
+
+#[test]
+#[ignore = "not yet implemented"]
+fn anchor_before_note_is_moved() {
+    // AnchorMover.improve not implemented in Rust
+    let _anchors = vec![Anchor { fret: 1, time: 99, width: 4, end_time: 0 }];
+    let _notes = vec![Note { time: 100, fret: 1, ..Default::default() }];
+    panic!("AnchorMover not implemented");
+}
+
+#[test]
+#[ignore = "not yet implemented"]
+fn anchor_after_note_by_5ms_is_moved() {
+    // AnchorMover.improve not implemented in Rust
+    let _anchors = vec![Anchor { fret: 1, time: 105, width: 4, end_time: 0 }];
+    let _notes = vec![Note { time: 100, fret: 1, ..Default::default() }];
+    panic!("AnchorMover not implemented");
+}
+
+#[test]
+#[ignore = "not yet implemented"]
+fn anchor_after_note_by_6ms_is_not_moved() {
+    // AnchorMover.improve not implemented in Rust
+    let _anchors = vec![Anchor { fret: 1, time: 106, width: 4, end_time: 0 }];
+    let _notes = vec![Note { time: 100, fret: 1, ..Default::default() }];
+    panic!("AnchorMover not implemented");
+}
+
+#[test]
+#[ignore = "not yet implemented"]
+fn anchor_after_chord_is_moved() {
+    // AnchorMover.improve not implemented in Rust
+    let _anchors = vec![Anchor { fret: 1, time: 102, width: 4, end_time: 0 }];
+    let _chords = vec![Chord { time: 100, ..Default::default() }];
+    panic!("AnchorMover not implemented");
+}
+
+#[test]
+#[ignore = "not yet implemented"]
+fn anchor_on_note_that_is_very_close_to_another_note_is_not_moved() {
+    // AnchorMover.improve not implemented in Rust
+    let _anchors = vec![Anchor { fret: 1, time: 100, width: 4, end_time: 0 }];
+    let _notes = vec![
+        Note { time: 100, fret: 1, ..Default::default() },
+        Note { time: 103, fret: 3, ..Default::default() },
+    ];
+    panic!("AnchorMover not implemented");
+}
+
+#[test]
+#[ignore = "not yet implemented"]
+fn anchor_at_the_end_of_a_slide_that_is_very_close_to_another_note_is_not_moved() {
+    // AnchorMover.improve not implemented in Rust
+    let _anchors = vec![
+        Anchor { fret: 1, time: 100, width: 4, end_time: 0 },
+        Anchor { fret: 3, time: 300, width: 4, end_time: 0 },
+    ];
+    let _notes = vec![
+        Note { time: 100, sustain: 200, fret: 1, slide_to: 3, ..Default::default() },
+        Note { time: 303, fret: 3, ..Default::default() },
+    ];
+    panic!("AnchorMover not implemented");
+}
+
+#[test]
+fn extra_anchors_are_not_created_when_moving_phrases() {
+    let beats = vec![
+        Ebeat { time: 900, measure: 0 },
+        Ebeat { time: 1000, measure: -1 },
+        Ebeat { time: 1200, measure: -1 },
+    ];
+    let phrases = vec![
+        Phrase { name: "mover2".into(), ..Default::default() },
+        Phrase { name: "END".into(), ..Default::default() },
+    ];
+    let iterations = vec![
+        PhraseIteration { time: 1000, phrase_id: 0, ..Default::default() },
+        PhraseIteration { time: 1900, phrase_id: 1, ..Default::default() },
+    ];
+    let notes = vec![
+        Note { time: 1000, ..Default::default() },
+        Note { time: 1200, ..Default::default() },
+    ];
+    let anchors = vec![Anchor { fret: 1, time: 1200, width: 4, end_time: 0 }];
+    let level = Level { notes, anchors, ..Default::default() };
+    let mut arr = InstrumentalArrangement {
+        phrases,
+        phrase_iterations: iterations,
+        levels: vec![level],
+        ebeats: beats,
+        meta: MetaData { song_length: 2000, ..Default::default() },
+        ..Default::default()
+    };
+    apply_all_improvements(&mut arr);
+    assert_eq!(arr.levels[0].anchors.len(), 1);
+    assert_eq!(arr.levels[0].anchors[0].time, 1200);
+}
+
+#[test]
+#[ignore = "not yet implemented"]
+fn removes_notes_without_sustain_after_a_linknext_note() {
+    // ArrangementImprover.removeUnnecessaryNotes not implemented in Rust
+    panic!("removeUnnecessaryNotes not implemented");
+}
+
+#[test]
+#[ignore = "not yet implemented"]
+fn does_not_remove_note_with_sustain_after_a_linknext_note() {
+    // ArrangementImprover.removeUnnecessaryNotes not implemented in Rust
+    panic!("removeUnnecessaryNotes not implemented");
+}
+
+#[test]
+#[ignore = "not yet implemented"]
+fn removes_note_without_sustain_after_a_chord() {
+    // ArrangementImprover.removeUnnecessaryNotes not implemented in Rust
+    panic!("removeUnnecessaryNotes not implemented");
+}
+
+#[test]
+#[ignore = "not yet implemented"]
+fn removes_note_without_sustain_after_a_chord_slide() {
+    // ArrangementImprover.removeUnnecessaryNotes not implemented in Rust
+    panic!("removeUnnecessaryNotes not implemented");
+}
+
+#[test]
+#[ignore = "not yet implemented"]
+fn removes_all_notes_without_sustain_after_a_chord_slide() {
+    // ArrangementImprover.removeUnnecessaryNotes not implemented in Rust
+    panic!("removeUnnecessaryNotes not implemented");
+}
+
+#[test]
+#[ignore = "not yet implemented"]
+fn removes_harmonic_mask_from_notes() {
+    // HarmonicFixer.improve not implemented in Rust
+    panic!("HarmonicFixer not implemented");
 }

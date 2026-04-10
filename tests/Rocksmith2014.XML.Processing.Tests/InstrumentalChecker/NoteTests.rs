@@ -1,5 +1,5 @@
 use rocksmith2014_xml::{
-    BendValue, Chord, ChordNote, ChordTemplate, InstrumentalArrangement, Level, MetaData,
+    Anchor, BendValue, Chord, ChordNote, ChordTemplate, InstrumentalArrangement, Level, MetaData,
     Note, NoteMask, Phrase, PhraseIteration, Section, ToneChange,
 };
 use rocksmith2014_xml_processing::checkers::checker::check_notes;
@@ -315,4 +315,298 @@ fn invalid_strings_on_bass_arrangement_are_detected() {
     let results = check_notes(&arr, &level);
     assert_eq!(results.len(), 2);
     assert!(results.iter().all(|r| matches!(r.issue_type(), IssueType::InvalidBassArrangementString)));
+}
+
+#[test]
+#[ignore = "not yet implemented"]
+fn detects_phrase_on_linknext_notes_sustain() {
+    let notes = vec![
+        Note { fret: 1, time: 1300, sustain: 500, mask: NoteMask::LINK_NEXT, ..Default::default() },
+        Note { fret: 1, time: 1800, sustain: 100, ..Default::default() },
+    ];
+    let level = Level { notes, ..Default::default() };
+    let phrases = vec![
+        Phrase { name: "default".into(), ..Default::default() },
+        Phrase { name: "first".into(), ..Default::default() },
+        Phrase { name: "bad".into(), ..Default::default() },
+    ];
+    let iterations = vec![
+        PhraseIteration { time: 0, phrase_id: 0, ..Default::default() },
+        PhraseIteration { time: 1000, phrase_id: 1, ..Default::default() },
+        PhraseIteration { time: 1500, phrase_id: 2, ..Default::default() },
+    ];
+    let arr = InstrumentalArrangement {
+        phrases,
+        phrase_iterations: iterations,
+        levels: vec![level.clone()],
+        meta: MetaData { song_length: 500_000, ..Default::default() },
+        ..Default::default()
+    };
+    let results = check_notes(&arr, &level);
+    assert_eq!(results.len(), 1);
+    assert!(matches!(results[0].issue_type(), IssueType::PhraseChangeOnLinkNextNote));
+}
+
+#[test]
+#[ignore = "not yet implemented"]
+fn mover_phrase_on_linknext_notes_sustain_is_ignored() {
+    let notes = vec![
+        Note { fret: 1, time: 1300, sustain: 500, mask: NoteMask::LINK_NEXT, ..Default::default() },
+        Note { fret: 1, time: 1800, sustain: 100, ..Default::default() },
+    ];
+    let level = Level { notes, ..Default::default() };
+    let phrases = vec![
+        Phrase { name: "default".into(), ..Default::default() },
+        Phrase { name: "first".into(), ..Default::default() },
+        Phrase { name: "mover1".into(), ..Default::default() },
+    ];
+    let iterations = vec![
+        PhraseIteration { time: 0, phrase_id: 0, ..Default::default() },
+        PhraseIteration { time: 1000, phrase_id: 1, ..Default::default() },
+        PhraseIteration { time: 1500, phrase_id: 2, ..Default::default() },
+    ];
+    let arr = InstrumentalArrangement {
+        phrases,
+        phrase_iterations: iterations,
+        levels: vec![level.clone()],
+        meta: MetaData { song_length: 500_000, ..Default::default() },
+        ..Default::default()
+    };
+    let results = check_notes(&arr, &level);
+    assert!(results.is_empty());
+}
+
+#[test]
+#[ignore = "not yet implemented"]
+fn no_false_positive_for_hammer_on_from_nowhere() {
+    // Hammer-on from nowhere: no note on the same string immediately preceding
+    let notes = vec![
+        Note { fret: 5, string: 2, time: 1000, ..Default::default() },
+        Note { fret: 3, string: 3, time: 1100, ..Default::default() },
+        Note { fret: 5, string: 3, time: 1200, ..Default::default() },
+        Note { fret: 3, string: 3, time: 1300, mask: NoteMask::PULL_OFF, ..Default::default() },
+        Note { fret: 5, string: 2, time: 1400, mask: NoteMask::HAMMER_ON, ..Default::default() },
+    ];
+    let level = Level { notes, ..Default::default() };
+    let arr = test_arr();
+    let results = check_notes(&arr, &level);
+    assert!(results.is_empty());
+}
+
+#[test]
+fn detects_pull_off_into_same_fret() {
+    let notes = vec![
+        Note { fret: 1, time: 1300, ..Default::default() },
+        Note { fret: 1, time: 1800, mask: NoteMask::PULL_OFF, ..Default::default() },
+    ];
+    let level = Level { notes, ..Default::default() };
+    let arr = test_arr();
+    let results = check_notes(&arr, &level);
+    assert_eq!(results.len(), 1);
+    assert!(matches!(results[0].issue_type(), IssueType::HopoIntoSameNote));
+}
+
+#[test]
+#[ignore = "not yet implemented"]
+fn detects_pull_off_into_same_fret_from_chord() {
+    let notes = vec![Note { fret: 1, time: 2000, mask: NoteMask::PULL_OFF, ..Default::default() }];
+    let chords = vec![Chord { time: 1000, chord_id: 0, ..Default::default() }];
+    let templates = vec![
+        ChordTemplate { name: "".into(), display_name: "".into(), fingers: [1; 6], frets: [1; 6] },
+    ];
+    let level = Level { notes, chords, ..Default::default() };
+    let arr = InstrumentalArrangement {
+        chord_templates: templates,
+        phrases: vec![Phrase { name: "mover6.700".into(), ..Default::default() }],
+        phrase_iterations: vec![PhraseIteration { time: 6500, phrase_id: 0, ..Default::default() }],
+        levels: vec![level.clone()],
+        meta: MetaData { song_length: 500_000, ..Default::default() },
+        ..Default::default()
+    };
+    let results = check_notes(&arr, &level);
+    assert_eq!(results.len(), 1);
+    assert!(matches!(results[0].issue_type(), IssueType::HopoIntoSameNote));
+}
+
+#[test]
+#[ignore = "not yet implemented"]
+fn no_false_positive_for_hopo_into_same_fret_for_pull_off_from_chord() {
+    let notes = vec![
+        Note { fret: 1, time: 1300, ..Default::default() },
+        Note { fret: 1, time: 3000, mask: NoteMask::PULL_OFF, ..Default::default() },
+    ];
+    let chords = vec![Chord { time: 2000, chord_id: 0, ..Default::default() }];
+    let templates = vec![
+        ChordTemplate { name: "".into(), display_name: "".into(), fingers: [3; 6], frets: [3; 6] },
+    ];
+    let level = Level { notes, chords, ..Default::default() };
+    let arr = InstrumentalArrangement {
+        chord_templates: templates,
+        phrases: vec![Phrase { name: "mover6.700".into(), ..Default::default() }],
+        phrase_iterations: vec![PhraseIteration { time: 6500, phrase_id: 0, ..Default::default() }],
+        levels: vec![level.clone()],
+        meta: MetaData { song_length: 500_000, ..Default::default() },
+        ..Default::default()
+    };
+    let results = check_notes(&arr, &level);
+    assert!(results.is_empty());
+}
+
+#[test]
+#[ignore = "not yet implemented"]
+fn no_false_positive_for_hopo_into_same_fret_for_pull_off_after_slide() {
+    let notes = vec![
+        Note { fret: 3, slide_to: 5, sustain: 300, time: 1300, ..Default::default() },
+        Note { fret: 3, time: 2000, mask: NoteMask::PULL_OFF, ..Default::default() },
+    ];
+    let anchors = vec![
+        Anchor { fret: 1, time: 1300, width: 4, end_time: 0 },
+        Anchor { fret: 3, time: 1800, width: 4, end_time: 0 },
+    ];
+    let level = Level { notes, anchors, ..Default::default() };
+    let arr = test_arr();
+    let results = check_notes(&arr, &level);
+    assert!(results.is_empty());
+}
+
+#[test]
+#[ignore = "not yet implemented"]
+fn no_false_positive_for_hopo_into_same_fret_for_pull_off_after_chord_slide() {
+    let notes = vec![Note { fret: 3, time: 3000, mask: NoteMask::PULL_OFF, ..Default::default() }];
+    let cn = vec![
+        ChordNote { fret: 3, slide_to: 5, ..Default::default() },
+        ChordNote { string: 1, fret: 3, slide_to: 5, ..Default::default() },
+    ];
+    let chords = vec![Chord { time: 2000, chord_id: 0, chord_notes: cn, ..Default::default() }];
+    let templates = vec![
+        ChordTemplate {
+            name: "".into(), display_name: "".into(),
+            fingers: [3, 3, -1, -1, -1, -1],
+            frets: [3, 3, -1, -1, -1, -1],
+        },
+    ];
+    let level = Level { notes, chords, ..Default::default() };
+    let arr = InstrumentalArrangement {
+        chord_templates: templates,
+        phrases: vec![Phrase { name: "mover6.700".into(), ..Default::default() }],
+        phrase_iterations: vec![PhraseIteration { time: 6500, phrase_id: 0, ..Default::default() }],
+        levels: vec![level.clone()],
+        meta: MetaData { song_length: 500_000, ..Default::default() },
+        ..Default::default()
+    };
+    let results = check_notes(&arr, &level);
+    assert!(results.is_empty());
+}
+
+#[test]
+#[ignore = "not yet implemented"]
+fn detects_finger_change_during_slide() {
+    let notes = vec![
+        Note { fret: 3, slide_to: 5, sustain: 500, time: 1300, mask: NoteMask::LINK_NEXT, ..Default::default() },
+        Note { fret: 5, time: 1800, ..Default::default() },
+    ];
+    let anchors = vec![
+        Anchor { fret: 1, time: 1300, width: 4, end_time: 0 },
+        Anchor { fret: 5, time: 1800, width: 4, end_time: 0 },
+    ];
+    let level = Level { notes, anchors, ..Default::default() };
+    let arr = test_arr();
+    let results = check_notes(&arr, &level);
+    assert_eq!(results.len(), 1);
+    assert!(matches!(results[0].issue_type(), IssueType::FingerChangeDuringSlide));
+}
+
+#[test]
+#[ignore = "not yet implemented"]
+fn detects_finger_change_during_slide_no_linknext() {
+    let notes = vec![
+        Note { fret: 3, slide_to: 5, sustain: 500, time: 1300, ..Default::default() },
+    ];
+    let anchors = vec![
+        Anchor { fret: 3, time: 1000, width: 4, end_time: 0 },
+        Anchor { fret: 4, time: 1800, width: 4, end_time: 0 },
+    ];
+    let level = Level { notes, anchors, ..Default::default() };
+    let arr = test_arr();
+    let results = check_notes(&arr, &level);
+    assert_eq!(results.len(), 1);
+    assert!(matches!(results[0].issue_type(), IssueType::FingerChangeDuringSlide));
+}
+
+#[test]
+#[ignore = "not yet implemented"]
+fn ignores_slide_from_low_position_where_finger_cannot_be_determined_from_anchor() {
+    let notes = vec![
+        Note { fret: 1, slide_to: 9, sustain: 500, time: 1000, ..Default::default() },
+        Note { fret: 2, slide_to: 9, sustain: 500, time: 3000, ..Default::default() },
+        Note { fret: 2, slide_to: 9, sustain: 500, time: 4000, ..Default::default() },
+    ];
+    let anchors = vec![
+        Anchor { fret: 1, time: 1000, width: 4, end_time: 0 },
+        Anchor { fret: 8, time: 1800, width: 4, end_time: 0 },
+        Anchor { fret: 1, time: 3000, width: 4, end_time: 0 },
+        Anchor { fret: 7, time: 3500, width: 4, end_time: 0 },
+        Anchor { fret: 2, time: 4000, width: 4, end_time: 0 },
+        Anchor { fret: 7, time: 4500, width: 4, end_time: 0 },
+    ];
+    let level = Level { notes, anchors, ..Default::default() };
+    let arr = test_arr();
+    let results = check_notes(&arr, &level);
+    assert_eq!(results.len(), 1);
+    assert!(matches!(results[0].issue_type(), IssueType::FingerChangeDuringSlide));
+    assert_eq!(results[0].time_code(), Some(4000));
+}
+
+#[test]
+#[ignore = "not yet implemented"]
+fn detects_position_shift_into_pull_off() {
+    let notes = vec![
+        Note { fret: 10, time: 1300, ..Default::default() },
+        Note { fret: 5, time: 1800, mask: NoteMask::PULL_OFF, ..Default::default() },
+    ];
+    let anchors = vec![
+        Anchor { fret: 10, time: 1300, width: 4, end_time: 0 },
+        Anchor { fret: 5, time: 1800, width: 4, end_time: 0 },
+    ];
+    let level = Level { notes, anchors, ..Default::default() };
+    let arr = test_arr();
+    let results = check_notes(&arr, &level);
+    assert_eq!(results.len(), 1);
+    assert!(matches!(results[0].issue_type(), IssueType::PositionShiftIntoPullOff));
+}
+
+#[test]
+#[ignore = "not yet implemented"]
+fn position_shift_into_open_string_pull_off_is_ignored() {
+    let notes = vec![
+        Note { fret: 3, slide_unpitch_to: 1, sustain: 300, time: 1300, ..Default::default() },
+        Note { fret: 0, time: 1800, mask: NoteMask::PULL_OFF, ..Default::default() },
+    ];
+    let anchors = vec![
+        Anchor { fret: 3, time: 1300, width: 4, end_time: 0 },
+        Anchor { fret: 1, time: 1800, width: 4, end_time: 0 },
+    ];
+    let level = Level { notes, anchors, ..Default::default() };
+    let arr = test_arr();
+    let results = check_notes(&arr, &level);
+    assert!(results.is_empty());
+}
+
+#[test]
+#[ignore = "not yet implemented"]
+fn detects_position_shift_into_pull_off_after_slide() {
+    let notes = vec![
+        Note { fret: 3, slide_to: 5, sustain: 300, time: 1300, ..Default::default() },
+        Note { fret: 3, time: 2000, mask: NoteMask::PULL_OFF, ..Default::default() },
+    ];
+    let anchors = vec![
+        Anchor { fret: 3, time: 1300, width: 4, end_time: 0 },
+        Anchor { fret: 5, time: 1800, width: 4, end_time: 0 },
+        Anchor { fret: 3, time: 2000, width: 4, end_time: 0 },
+    ];
+    let level = Level { notes, anchors, ..Default::default() };
+    let arr = test_arr();
+    let results = check_notes(&arr, &level);
+    assert_eq!(results.len(), 1);
+    assert!(matches!(results[0].issue_type(), IssueType::PositionShiftIntoPullOff));
 }

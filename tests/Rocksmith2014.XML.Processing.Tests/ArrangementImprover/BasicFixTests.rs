@@ -1,5 +1,5 @@
 use rocksmith2014_xml::{
-    Anchor, BendValue, Chord, ChordNote, ChordTemplate, InstrumentalArrangement, Level, Note,
+    Anchor, BendValue, Chord, ChordMask, ChordNote, ChordTemplate, InstrumentalArrangement, Level, Note,
     NoteMask, Phrase, PhraseIteration,
 };
 use rocksmith2014_xml_processing::improvers::improver::{
@@ -178,4 +178,88 @@ fn muted_strings_are_removed_from_non_muted_chords() {
     remove_muted_notes_from_chords(&mut arr);
     assert_eq!(arr.levels[0].chords[0].chord_notes.len(), 2);
     assert_eq!(arr.levels[0].chords[1].chord_notes.len(), 3);
+}
+
+#[test]
+fn ignore_is_added_to_chord_with_23rd_and_24th_fret_notes() {
+    let no_fingers = [-1i8; 6];
+    let templates = vec![
+        ChordTemplate { name: "".into(), display_name: "".into(), fingers: no_fingers, frets: [-1, 0, 23, -1, -1, -1] },
+        ChordTemplate { name: "".into(), display_name: "".into(), fingers: no_fingers, frets: [-1, -1, -1, -1, 22, 24] },
+    ];
+    let chords = vec![
+        Chord { time: 1000, chord_id: 0, ..Default::default() },
+        Chord { time: 1200, chord_id: 1, ..Default::default() },
+    ];
+    let mut arr = InstrumentalArrangement {
+        levels: vec![Level { chords, ..Default::default() }],
+        chord_templates: templates,
+        ..Default::default()
+    };
+    add_ignores(&mut arr);
+    assert!(arr.levels[0].chords[0].mask.contains(ChordMask::IGNORE));
+    assert!(arr.levels[0].chords[1].mask.contains(ChordMask::IGNORE));
+}
+
+#[test]
+#[ignore = "not yet implemented"]
+fn ignore_is_added_to_chord_with_7th_fret_harmonic_with_sustain() {
+    let no_fingers = [-1i8; 6];
+    let templates = vec![
+        ChordTemplate { name: "".into(), display_name: "".into(), fingers: no_fingers, frets: [-1, 7, 7, -1, -1, -1] },
+    ];
+    let cn = vec![
+        ChordNote { string: 1, fret: 7, sustain: 500, mask: NoteMask::HARMONIC, ..Default::default() },
+        ChordNote { string: 2, fret: 7, sustain: 500, mask: NoteMask::HARMONIC, ..Default::default() },
+    ];
+    let chords = vec![Chord { time: 1000, chord_id: 0, chord_notes: cn, ..Default::default() }];
+    let mut arr = InstrumentalArrangement {
+        levels: vec![Level { chords, ..Default::default() }],
+        chord_templates: templates,
+        ..Default::default()
+    };
+    add_ignores(&mut arr);
+    assert!(arr.levels[0].chords[0].mask.contains(ChordMask::IGNORE));
+}
+
+#[test]
+fn incorrect_linknext_fret_is_corrected_slide() {
+    let notes = vec![
+        Note { time: 1000, fret: 5, sustain: 500, slide_to: 9, mask: NoteMask::LINK_NEXT, ..Default::default() },
+        Note { time: 1500, fret: 10, ..Default::default() },
+    ];
+    let mut arr = InstrumentalArrangement {
+        levels: vec![Level { notes, ..Default::default() }],
+        ..Default::default()
+    };
+    fix_link_nexts(&mut arr);
+    assert!(arr.levels[0].notes[0].mask.contains(NoteMask::LINK_NEXT));
+    assert_eq!(arr.levels[0].notes[1].fret, 9);
+}
+
+#[test]
+fn incorrect_linknext_fret_is_corrected_unpitched_slide() {
+    let notes = vec![
+        Note { time: 1000, fret: 5, sustain: 500, slide_unpitch_to: 9, mask: NoteMask::LINK_NEXT, ..Default::default() },
+        Note { time: 1500, fret: 10, ..Default::default() },
+    ];
+    let mut arr = InstrumentalArrangement {
+        levels: vec![Level { notes, ..Default::default() }],
+        ..Default::default()
+    };
+    fix_link_nexts(&mut arr);
+    assert!(arr.levels[0].notes[0].mask.contains(NoteMask::LINK_NEXT));
+    assert_eq!(arr.levels[0].notes[1].fret, 9);
+}
+
+#[test]
+#[ignore = "not yet implemented"]
+fn incorrect_linknext_fret_is_corrected_bend() {
+    // fix_link_nexts does not handle the bend case (propagating bend values to next note)
+    let _bv = vec![BendValue { time: 1200, step: 2.0, ..Default::default() }];
+    let _notes = vec![
+        Note { time: 1000, fret: 5, sustain: 500, mask: NoteMask::LINK_NEXT, bend_values: _bv, ..Default::default() },
+        Note { time: 1500, fret: 10, ..Default::default() },
+    ];
+    panic!("fix_link_nexts bend propagation not implemented");
 }

@@ -3,6 +3,7 @@ use rocksmith2014_xml::{
 };
 use rocksmith2014_xml_processing::improvers::eof_fixes::{
     fix_chord_notes as eof_fix_chord_notes,
+    fix_chord_slide_handshapes as eof_fix_chord_slide_handshapes,
     fix_crowd_events as eof_fix_crowd_events,
     remove_invalid_chord_note_link_nexts as eof_remove_invalid_chord_note_link_nexts,
 };
@@ -98,4 +99,66 @@ fn does_not_change_correct_crowd_events() {
     assert_eq!(arr.events[1].code, "E13");
     assert_eq!(arr.events[2].code, "D3");
     assert_eq!(arr.events[3].code, "E13");
+}
+
+#[test]
+fn fixes_incorrect_handshape_lengths() {
+    use rocksmith2014_xml::{HandShape, ChordMask};
+    let cn = vec![ChordNote { slide_to: 5, sustain: 1000, mask: NoteMask::LINK_NEXT, ..Default::default() }];
+    let chord = Chord { chord_notes: cn, mask: ChordMask::LINK_NEXT, ..Default::default() };
+    let hs = HandShape { chord_id: 0, start_time: 0, end_time: 1500 };
+    let mut arr = InstrumentalArrangement {
+        levels: vec![Level { chords: vec![chord], hand_shapes: vec![hs], ..Default::default() }],
+        ..Default::default()
+    };
+    eof_fix_chord_slide_handshapes(&mut arr);
+    assert_eq!(arr.levels[0].hand_shapes[0].end_time, 1000);
+}
+
+#[test]
+#[ignore = "not yet implemented"]
+fn moves_anchor_to_the_beginning_of_phrase() {
+    // fix_phrase_start_anchors moves anchors backward (not implemented as MOVE, only COPY)
+    use rocksmith2014_xml::{Anchor, PhraseIteration};
+    let anchor = Anchor { fret: 5, time: 700, width: 4, end_time: 0 };
+    let phrase_iterations = vec![
+        PhraseIteration { time: 100, phrase_id: 0, ..Default::default() },
+        PhraseIteration { time: 650, phrase_id: 0, ..Default::default() },
+        PhraseIteration { time: 1000, phrase_id: 1, ..Default::default() },
+    ];
+    let mut arr = InstrumentalArrangement {
+        levels: vec![Level { anchors: vec![anchor], ..Default::default() }],
+        phrase_iterations,
+        ..Default::default()
+    };
+    use rocksmith2014_xml_processing::improvers::eof_fixes::fix_phrase_start_anchors;
+    fix_phrase_start_anchors(&mut arr);
+    assert_eq!(arr.levels[0].anchors.len(), 1);
+    assert_eq!(arr.levels[0].anchors[0].time, 650);
+}
+
+#[test]
+#[ignore = "not yet implemented"]
+fn copies_active_anchor_to_the_beginning_of_phrase() {
+    // fix_phrase_start_anchors copies anchors to ALL phrase times, not just the next one
+    use rocksmith2014_xml::{Anchor, PhraseIteration};
+    let anchor = Anchor { fret: 5, time: 400, width: 7, end_time: 0 };
+    let phrase_iterations = vec![
+        PhraseIteration { time: 100, phrase_id: 0, ..Default::default() },
+        PhraseIteration { time: 400, phrase_id: 0, ..Default::default() },
+        PhraseIteration { time: 650, phrase_id: 0, ..Default::default() },
+        PhraseIteration { time: 1000, phrase_id: 1, ..Default::default() },
+    ];
+    let mut arr = InstrumentalArrangement {
+        levels: vec![Level { anchors: vec![anchor], ..Default::default() }],
+        phrase_iterations,
+        ..Default::default()
+    };
+    use rocksmith2014_xml_processing::improvers::eof_fixes::fix_phrase_start_anchors;
+    fix_phrase_start_anchors(&mut arr);
+    assert_eq!(arr.levels[0].anchors.len(), 2);
+    assert_eq!(arr.levels[0].anchors[0].time, 400);
+    assert_eq!(arr.levels[0].anchors[1].time, 650);
+    assert_eq!(arr.levels[0].anchors[1].fret, 5);
+    assert_eq!(arr.levels[0].anchors[1].width, 7);
 }
