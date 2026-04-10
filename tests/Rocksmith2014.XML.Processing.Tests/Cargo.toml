@@ -46,11 +46,11 @@ path = "ArrangementImprover/PhraseMoverTests.rs"
 
 [[test]]
 name = "PhraseGeneratorTests"
-path = "Improvers/PhraseGeneratorTests.rs"
+path = "PhraseGeneratorTests.rs"
 
 [[test]]
 name = "ShowLightsCheckerTests"
-path = "Checkers/ShowLightsCheckerTests.rs"
+path = "ShowLightsCheckerTests.rs"
 
 [[test]]
 name = "UtilsTests"
@@ -58,4 +58,4 @@ path = "UtilsTests.rs"
 
 [[test]]
 name = "VocalsCheckerTests"
-path = "Checkers/VocalsCheckerTests.rs"
+path = "VocalsCheckerTests.rs"
