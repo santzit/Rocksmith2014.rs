@@ -38,9 +38,9 @@ pub fn improve(arr: &mut InstrumentalArrangement) {
         if !phrase_name.to_lowercase().starts_with("mover") {
             continue;
         }
-        let move_by: usize = phrase_name["mover".len()..]
-            .parse()
-            .unwrap_or_else(|_| panic!("Unable to parse mover number from phrase name '{phrase_name}'"));
+        let move_by: usize = phrase_name["mover".len()..].parse().unwrap_or_else(|_| {
+            panic!("Unable to parse mover number from phrase name '{phrase_name}'")
+        });
 
         let pi_indices: Vec<usize> = arr
             .phrase_iterations

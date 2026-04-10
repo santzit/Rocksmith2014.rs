@@ -22,9 +22,13 @@ pub fn improve(arr: &mut InstrumentalArrangement) {
     arr.events.retain(|e| !e.code.starts_with("w3"));
 
     // Remove beats event
-    if let Some(ev) = events.iter().find(|e| e.code.eq_ignore_ascii_case("removebeats")) {
+    if let Some(ev) = events
+        .iter()
+        .find(|e| e.code.eq_ignore_ascii_case("removebeats"))
+    {
         arr.ebeats.retain(|b| b.time < ev.time);
-        arr.events.retain(|e| !e.code.eq_ignore_ascii_case("removebeats"));
+        arr.events
+            .retain(|e| !e.code.eq_ignore_ascii_case("removebeats"));
     }
 
     // Slide-out ("so") events: adjust handshape end times and remove the event

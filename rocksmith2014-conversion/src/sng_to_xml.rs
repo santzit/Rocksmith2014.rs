@@ -46,7 +46,7 @@ pub fn convert_chord_template(chord: &SngChord) -> ChordTemplate {
         name.clone()
     };
     ChordTemplate {
-        name: name,
+        name,
         display_name,
         fingers: chord.fingers,
         frets: chord.frets,

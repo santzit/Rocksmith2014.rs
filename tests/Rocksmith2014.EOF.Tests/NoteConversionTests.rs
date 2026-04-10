@@ -1,21 +1,41 @@
 //! Tests mirroring Rocksmith2014.EOF.Tests/NoteConversionTests.fs
 
-use rocksmith2014_eof::{
-    note_converter::convert_notes,
-    prepare_notes,
-};
+use rocksmith2014_eof::{note_converter::convert_notes, prepare_notes};
 use rocksmith2014_xml::{InstrumentalArrangement, Level, MetaData, Note};
 
 #[test]
 fn capo_fret_is_reduced_from_notes() {
     let notes = vec![
-        Note { time: 100, fret: 0, ..Default::default() },
-        Note { time: 200, fret: 5, ..Default::default() },
-        Note { time: 300, fret: 8, ..Default::default() },
-        Note { time: 300, fret: 7, string: 2, ..Default::default() },
+        Note {
+            time: 100,
+            fret: 0,
+            ..Default::default()
+        },
+        Note {
+            time: 200,
+            fret: 5,
+            ..Default::default()
+        },
+        Note {
+            time: 300,
+            fret: 8,
+            ..Default::default()
+        },
+        Note {
+            time: 300,
+            fret: 7,
+            string: 2,
+            ..Default::default()
+        },
     ];
-    let level = Level { notes, ..Default::default() };
-    let meta = MetaData { capo: 2, ..Default::default() };
+    let level = Level {
+        notes,
+        ..Default::default()
+    };
+    let meta = MetaData {
+        capo: 2,
+        ..Default::default()
+    };
     let inst = InstrumentalArrangement {
         meta,
         levels: vec![level],

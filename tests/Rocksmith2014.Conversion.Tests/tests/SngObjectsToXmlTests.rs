@@ -108,7 +108,11 @@ fn phrase() {
 
 #[test]
 fn bend_value() {
-    let bv = BendValue { time: 11.111, step: 2.5, unused: 0 };
+    let bv = BendValue {
+        time: 11.111,
+        step: 2.5,
+        unused: 0,
+    };
 
     let xml = sng_convert_bend_value(&bv);
 
@@ -176,7 +180,10 @@ fn new_linked_difficulty() {}
 
 #[test]
 fn event() {
-    let e = Event { time: 1750.735, name: make_name_bytes::<256>("wedge_cutoff") };
+    let e = Event {
+        time: 1750.735,
+        name: make_name_bytes::<256>("wedge_cutoff"),
+    };
 
     let xml = sng_convert_event(&e);
 
@@ -186,7 +193,10 @@ fn event() {
 
 #[test]
 fn tone() {
-    let t = Tone { time: 4568.0, tone_id: 2 };
+    let t = Tone {
+        time: 4568.0,
+        tone_id: 2,
+    };
     // ToneId=2 means Tone_C; pass tone names indexed by id
     let tone_names = &["", "", "tone_c"];
 
@@ -290,7 +300,11 @@ fn note() {
         vibrato: 120,
         sustain: 15.0,
         max_bend: 1.0,
-        bend_data: vec![BendValue { time: 55.661, step: 1.0, unused: 0 }],
+        bend_data: vec![BendValue {
+            time: 55.661,
+            step: 1.0,
+            unused: 0,
+        }],
     };
 
     let xml = sng_convert_note(&n);
@@ -301,24 +315,49 @@ fn note() {
     assert_eq!(xml.sustain, 15_000, "Sustain is same");
     assert_eq!(xml.vibrato, n.vibrato as i8, "Vibrato is same");
     assert_eq!(xml.slide_to, n.slide_to, "Slide is same");
-    assert_eq!(xml.slide_unpitch_to, n.slide_unpitch_to, "Unpitched slide is same");
+    assert_eq!(
+        xml.slide_unpitch_to, n.slide_unpitch_to,
+        "Unpitched slide is same"
+    );
     assert_eq!(xml.left_hand, n.left_hand, "Left hand is same");
     assert_eq!(xml.tap, n.tap, "Tap is same");
     assert!(xml.slap >= 0, "Slap is same");
     assert!(xml.pluck >= 0, "Pluck is same");
-    assert!(xml.mask.contains(XmlNoteMask::HAMMER_ON), "Hammer-on is same");
+    assert!(
+        xml.mask.contains(XmlNoteMask::HAMMER_ON),
+        "Hammer-on is same"
+    );
     assert!(xml.mask.contains(XmlNoteMask::PULL_OFF), "Pull-off is same");
     assert!(xml.mask.contains(XmlNoteMask::ACCENT), "Accent is same");
-    assert!(xml.mask.contains(XmlNoteMask::FRET_HAND_MUTE), "Fret-hand mute is same");
+    assert!(
+        xml.mask.contains(XmlNoteMask::FRET_HAND_MUTE),
+        "Fret-hand mute is same"
+    );
     assert!(xml.mask.contains(XmlNoteMask::HARMONIC), "Harmonic is same");
     assert!(xml.mask.contains(XmlNoteMask::IGNORE), "Ignore is same");
-    assert!(xml.mask.contains(XmlNoteMask::LINK_NEXT), "Link-next is same");
-    assert!(xml.mask.contains(XmlNoteMask::PALM_MUTE), "Palm-mute is same");
-    assert!(xml.mask.contains(XmlNoteMask::PINCH_HARMONIC), "Pinch harmonic is same");
+    assert!(
+        xml.mask.contains(XmlNoteMask::LINK_NEXT),
+        "Link-next is same"
+    );
+    assert!(
+        xml.mask.contains(XmlNoteMask::PALM_MUTE),
+        "Palm-mute is same"
+    );
+    assert!(
+        xml.mask.contains(XmlNoteMask::PINCH_HARMONIC),
+        "Pinch harmonic is same"
+    );
     assert!(xml.mask.contains(XmlNoteMask::TREMOLO), "Tremolo is same");
-    assert!(xml.mask.contains(XmlNoteMask::RIGHT_HAND), "Right hand is same");
+    assert!(
+        xml.mask.contains(XmlNoteMask::RIGHT_HAND),
+        "Right hand is same"
+    );
     assert_eq!(xml.max_bend, n.max_bend as f64, "Max bend is same");
-    assert_eq!(xml.bend_values.len(), n.bend_data.len(), "Bend value count is same");
+    assert_eq!(
+        xml.bend_values.len(),
+        n.bend_data.len(),
+        "Bend value count is same"
+    );
 }
 
 #[test]
@@ -369,17 +408,28 @@ fn chord_note() {
         xml.mask.contains(rocksmith2014_xml::ChordMask::LINK_NEXT),
         "Link-next is same"
     );
-    assert!(xml.mask.contains(rocksmith2014_xml::ChordMask::ACCENT), "Accent is same");
     assert!(
-        xml.mask.contains(rocksmith2014_xml::ChordMask::FRET_HAND_MUTE),
+        xml.mask.contains(rocksmith2014_xml::ChordMask::ACCENT),
+        "Accent is same"
+    );
+    assert!(
+        xml.mask
+            .contains(rocksmith2014_xml::ChordMask::FRET_HAND_MUTE),
         "Fret-hand mute is same"
     );
     assert!(
-        xml.mask.contains(rocksmith2014_xml::ChordMask::HIGH_DENSITY),
+        xml.mask
+            .contains(rocksmith2014_xml::ChordMask::HIGH_DENSITY),
         "High density is same"
     );
-    assert!(xml.mask.contains(rocksmith2014_xml::ChordMask::IGNORE), "Ignore is same");
-    assert!(xml.mask.contains(rocksmith2014_xml::ChordMask::PALM_MUTE), "Palm-mute is same");
+    assert!(
+        xml.mask.contains(rocksmith2014_xml::ChordMask::IGNORE),
+        "Ignore is same"
+    );
+    assert!(
+        xml.mask.contains(rocksmith2014_xml::ChordMask::PALM_MUTE),
+        "Palm-mute is same"
+    );
     // Template has frets [-1,0,2,2,2,0] → 5 non-(-1) entries
     assert_eq!(xml.chord_notes.len(), 5, "Chord notes were created");
 }

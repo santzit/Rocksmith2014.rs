@@ -1,4 +1,6 @@
-use rocksmith2014_xml::{ChordMask, Ebeat, InstrumentalArrangement, Level, NoteMask, Phrase, PhraseIteration, Section};
+use rocksmith2014_xml::{
+    ChordMask, Ebeat, InstrumentalArrangement, Level, NoteMask, Phrase, PhraseIteration, Section,
+};
 
 const MIN_PHRASE_SEP: i32 = 2000;
 
@@ -81,7 +83,11 @@ fn note_link_chain_end(level: &Level, note_time: i32) -> i32 {
                     continue;
                 }
             }
-            let end = if cur.sustain == 0 { cur.time + 100 } else { cur.time + cur.sustain };
+            let end = if cur.sustain == 0 {
+                cur.time + 100
+            } else {
+                cur.time + cur.sustain
+            };
             return end;
         } else {
             return cur_time;
@@ -117,15 +123,16 @@ fn adjust_for_link_next(level: &Level, t: i32) -> i32 {
         // Chain end: chord note sustain + linked note sustain
         let chord_note_sustain = chord.chord_notes.first().map(|cn| cn.sustain).unwrap_or(0);
         let link_target_time = chord.time + chord_note_sustain;
-        let chain_end = if let Some(linked) = level.notes.iter().find(|n| n.time == link_target_time) {
-            if linked.sustain == 0 {
-                linked.time + 100
+        let chain_end =
+            if let Some(linked) = level.notes.iter().find(|n| n.time == link_target_time) {
+                if linked.sustain == 0 {
+                    linked.time + 100
+                } else {
+                    linked.time + linked.sustain
+                }
             } else {
-                linked.time + linked.sustain
-            }
-        } else {
-            link_target_time
-        };
+                link_target_time
+            };
         if chain_start <= t && t < chain_end {
             if (t - chain_start).abs() <= (chain_end - t).abs() {
                 return chain_start;

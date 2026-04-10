@@ -1,6 +1,6 @@
 use rocksmith2014_xml::{ChordTemplate, InstrumentalArrangement};
-use rocksmith2014_xml_processing::improvers::improver::process_chord_names;
 use rocksmith2014_xml_processing::improvers::double_stop_name_remover::improve as improve_double_stop_names;
+use rocksmith2014_xml_processing::improvers::improver::process_chord_names;
 
 fn template(name: &str) -> ChordTemplate {
     ChordTemplate {
@@ -31,7 +31,10 @@ fn fixes_minor_chord_names() {
     process_chord_names(&mut arr);
     assert_eq!(arr.chord_templates[0].name, "Em");
     assert_eq!(arr.chord_templates[0].display_name, "Em");
-    assert!(!arr.chord_templates.iter().any(|c| c.name.contains("min") || c.display_name.contains("min")));
+    assert!(!arr
+        .chord_templates
+        .iter()
+        .any(|c| c.name.contains("min") || c.display_name.contains("min")));
 }
 
 #[test]

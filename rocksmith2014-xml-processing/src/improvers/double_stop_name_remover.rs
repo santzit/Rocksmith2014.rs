@@ -14,8 +14,7 @@ fn is_power_chord(tuning: &[i16; 6], frets: &[i8; 6]) -> bool {
     let (f1, f2) = (frets[s1], frets[s2]);
 
     // Adjacent strings and interval is a fifth
-    s1 + 1 == s2
-        && (tuning[s1] as i32 + f1 as i32) + 2 == (tuning[s2] as i32 + f2 as i32)
+    s1 + 1 == s2 && (tuning[s1] as i32 + f1 as i32) + 2 == (tuning[s2] as i32 + f2 as i32)
 }
 
 /// Removes names from double stops (excluding the common power chord shape).

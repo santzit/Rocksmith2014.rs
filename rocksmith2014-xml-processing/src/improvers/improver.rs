@@ -191,7 +191,11 @@ pub fn remove_extra_beats(arr: &mut InstrumentalArrangement) {
 /// Mirrors ChordNameProcessor.improve in the .NET implementation.
 pub fn process_chord_names(arr: &mut InstrumentalArrangement) {
     fn empty_or_else(s: &str, f: impl Fn(&str) -> String) -> String {
-        if s.trim().is_empty() { String::new() } else { f(s) }
+        if s.trim().is_empty() {
+            String::new()
+        } else {
+            f(s)
+        }
     }
     for template in &mut arr.chord_templates {
         template.name = empty_or_else(&template.name, |name| {
@@ -263,7 +267,9 @@ pub fn remove_muted_notes_from_chords(arr: &mut InstrumentalArrangement) {
         for chord in &mut level.chords {
             if seen_ids.contains(&chord.chord_id)
                 || chord.chord_notes.is_empty()
-                || chord.mask.contains(rocksmith2014_xml::ChordMask::FRET_HAND_MUTE)
+                || chord
+                    .mask
+                    .contains(rocksmith2014_xml::ChordMask::FRET_HAND_MUTE)
             {
                 continue;
             }
@@ -277,7 +283,9 @@ pub fn remove_muted_notes_from_chords(arr: &mut InstrumentalArrangement) {
             if muted_strings.is_empty() || muted_strings.len() == chord.chord_notes.len() {
                 continue;
             }
-            chord.chord_notes.retain(|cn| !cn.mask.contains(NoteMask::FRET_HAND_MUTE));
+            chord
+                .chord_notes
+                .retain(|cn| !cn.mask.contains(NoteMask::FRET_HAND_MUTE));
             template_updates.insert(chord.chord_id, muted_strings);
         }
     }

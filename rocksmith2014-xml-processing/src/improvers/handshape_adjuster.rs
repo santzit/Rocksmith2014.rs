@@ -43,11 +43,36 @@ pub fn lengthen_handshapes(arr: &mut InstrumentalArrangement) {
             // Find limiting time (next content, anchor, phrase)
             let next_content = {
                 let level = &arr.levels[level_idx];
-                let note_t = level.notes.iter().filter(|n| n.time > chord_time).map(|n| n.time).min();
-                let chord_t = level.chords.iter().filter(|c| c.time > chord_time).map(|c| c.time).min();
-                let hs_t = level.hand_shapes.iter().filter(|h| h.start_time > chord_time).map(|h| h.start_time).min();
-                let anchor_t = level.anchors.iter().filter(|a| a.time > chord_time).map(|a| a.time).min();
-                let phrase_t = arr.phrase_iterations.iter().filter(|p| p.time > chord_time).map(|p| p.time).min();
+                let note_t = level
+                    .notes
+                    .iter()
+                    .filter(|n| n.time > chord_time)
+                    .map(|n| n.time)
+                    .min();
+                let chord_t = level
+                    .chords
+                    .iter()
+                    .filter(|c| c.time > chord_time)
+                    .map(|c| c.time)
+                    .min();
+                let hs_t = level
+                    .hand_shapes
+                    .iter()
+                    .filter(|h| h.start_time > chord_time)
+                    .map(|h| h.start_time)
+                    .min();
+                let anchor_t = level
+                    .anchors
+                    .iter()
+                    .filter(|a| a.time > chord_time)
+                    .map(|a| a.time)
+                    .min();
+                let phrase_t = arr
+                    .phrase_iterations
+                    .iter()
+                    .filter(|p| p.time > chord_time)
+                    .map(|p| p.time)
+                    .min();
                 [note_t, chord_t, hs_t, anchor_t, phrase_t]
                     .iter()
                     .filter_map(|x| *x)
@@ -59,8 +84,7 @@ pub fn lengthen_handshapes(arr: &mut InstrumentalArrangement) {
                 _ => new_end,
             };
 
-            arr.levels[level_idx].hand_shapes[hs_idx].end_time =
-                final_end.max(hs_start + 1);
+            arr.levels[level_idx].hand_shapes[hs_idx].end_time = final_end.max(hs_start + 1);
         }
     }
 }
@@ -74,7 +98,12 @@ pub fn shorten_handshapes(arr: &mut InstrumentalArrangement) {
             let (preceding_start, preceding_end, following_start, following_end) = {
                 let prev = &arr.levels[level_idx].hand_shapes[i - 1];
                 let curr = &arr.levels[level_idx].hand_shapes[i];
-                (prev.start_time, prev.end_time, curr.start_time, curr.end_time)
+                (
+                    prev.start_time,
+                    prev.end_time,
+                    curr.start_time,
+                    curr.end_time,
+                )
             };
 
             // Ignore nested handshapes

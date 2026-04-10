@@ -5,17 +5,72 @@ use crate::types::{Issue, IssueType};
 const MAX_LYRIC_BYTES: usize = 47;
 
 fn is_valid_default_char(c: char) -> bool {
-    if c.is_ascii()
-        && (c.is_alphanumeric()
-            || " !\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~".contains(c))
-    {
+    if c.is_ascii() && (c.is_alphanumeric() || " !\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~".contains(c)) {
         return true;
     }
-    matches!(c,
-        'À'|'Á'|'Â'|'Ã'|'Ä'|'Å'|'Æ'|'Ç'|'È'|'É'|'Ê'|'Ë'|'Ì'|'Í'|'Î'|'Ï'|
-        'Ð'|'Ñ'|'Ò'|'Ó'|'Ô'|'Õ'|'Ö'|'Ø'|'Ù'|'Ú'|'Û'|'Ü'|'Ý'|'Þ'|'ß'|
-        'à'|'á'|'â'|'ã'|'ä'|'å'|'æ'|'ç'|'è'|'é'|'ê'|'ë'|'ì'|'í'|'î'|'ï'|
-        'ð'|'ñ'|'ò'|'ó'|'ô'|'õ'|'ö'|'ø'|'ù'|'ú'|'û'|'ü'|'ý'|'þ'|'ÿ'
+    matches!(
+        c,
+        'À' | 'Á'
+            | 'Â'
+            | 'Ã'
+            | 'Ä'
+            | 'Å'
+            | 'Æ'
+            | 'Ç'
+            | 'È'
+            | 'É'
+            | 'Ê'
+            | 'Ë'
+            | 'Ì'
+            | 'Í'
+            | 'Î'
+            | 'Ï'
+            | 'Ð'
+            | 'Ñ'
+            | 'Ò'
+            | 'Ó'
+            | 'Ô'
+            | 'Õ'
+            | 'Ö'
+            | 'Ø'
+            | 'Ù'
+            | 'Ú'
+            | 'Û'
+            | 'Ü'
+            | 'Ý'
+            | 'Þ'
+            | 'ß'
+            | 'à'
+            | 'á'
+            | 'â'
+            | 'ã'
+            | 'ä'
+            | 'å'
+            | 'æ'
+            | 'ç'
+            | 'è'
+            | 'é'
+            | 'ê'
+            | 'ë'
+            | 'ì'
+            | 'í'
+            | 'î'
+            | 'ï'
+            | 'ð'
+            | 'ñ'
+            | 'ò'
+            | 'ó'
+            | 'ô'
+            | 'õ'
+            | 'ö'
+            | 'ø'
+            | 'ù'
+            | 'ú'
+            | 'û'
+            | 'ü'
+            | 'ý'
+            | 'þ'
+            | 'ÿ'
     )
 }
 
@@ -65,10 +120,7 @@ pub fn check(font: Option<&GlyphDefinitions>, vocals: &[Vocal]) -> Vec<Issue> {
                             continue;
                         }
                     }
-                    let in_font = gd
-                        .glyphs
-                        .iter()
-                        .any(|g| g.symbol.chars().next() == Some(c));
+                    let in_font = gd.glyphs.iter().any(|g| g.symbol.starts_with(c));
                     if !in_font {
                         issues.push(Issue::General(IssueType::LyricWithInvalidChar {
                             invalid_char: c,

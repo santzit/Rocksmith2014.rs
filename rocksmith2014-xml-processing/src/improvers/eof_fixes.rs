@@ -6,11 +6,20 @@ use rocksmith2014_xml::{Anchor, ChordMask, InstrumentalArrangement, NoteMask};
 pub fn fix_chord_notes(arr: &mut InstrumentalArrangement) {
     for level in &mut arr.levels {
         for chord in &mut level.chords {
-            if chord.chord_notes.iter().any(|cn| cn.mask.contains(NoteMask::LINK_NEXT)) {
+            if chord
+                .chord_notes
+                .iter()
+                .any(|cn| cn.mask.contains(NoteMask::LINK_NEXT))
+            {
                 chord.mask |= ChordMask::LINK_NEXT;
             }
             if !chord.chord_notes.is_empty() {
-                let max_sustain = chord.chord_notes.iter().map(|cn| cn.sustain).max().unwrap_or(0);
+                let max_sustain = chord
+                    .chord_notes
+                    .iter()
+                    .map(|cn| cn.sustain)
+                    .max()
+                    .unwrap_or(0);
                 for cn in &mut chord.chord_notes {
                     cn.sustain = max_sustain;
                 }
@@ -103,7 +112,11 @@ pub fn fix_phrase_start_anchors(arr: &mut InstrumentalArrangement) {
         let n = phrase_times.len();
         for i in 0..n {
             let pt = phrase_times[i];
-            let next_pt = if i + 1 < n { phrase_times[i + 1] } else { i32::MAX };
+            let next_pt = if i + 1 < n {
+                phrase_times[i + 1]
+            } else {
+                i32::MAX
+            };
 
             if level.anchors.iter().any(|a| a.time == pt) {
                 continue;
