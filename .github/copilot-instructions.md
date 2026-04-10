@@ -31,7 +31,7 @@ Use `/Rocksmith2014.NET` folder/subproject as the primary knowledge base referen
 - Use same public methods, functions names
 - Use same data, structures, enum
 - Keep same file and directory path, eg. `src/Rocksmith2014.Common/Profile` should became `src/rocksmith2014-common/profile`
-- Do not use generic/consolidated lib.rs, use separated files segregation like .NET implementation.
+- Do not use generic/consolidated `lib.rs`, use separated files segregation like .NET implementation. Use `lib.rs` only for  `pub mod`.
 
 The .NET project is in **`F#`** and this is the **`Rust`** implementation. Translate `F#` idioms to idiomatic `Rust` (e.g., `F# discriminated unions` → `Rust enums`, `F# records` → `Rust structs`, `F# modules` → `Rust modules`).
 
