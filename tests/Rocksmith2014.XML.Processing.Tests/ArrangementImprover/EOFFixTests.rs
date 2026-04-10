@@ -116,9 +116,7 @@ fn fixes_incorrect_handshape_lengths() {
 }
 
 #[test]
-#[ignore = "not yet implemented"]
 fn moves_anchor_to_the_beginning_of_phrase() {
-    // fix_phrase_start_anchors moves anchors backward (not implemented as MOVE, only COPY)
     use rocksmith2014_xml::{Anchor, PhraseIteration};
     let anchor = Anchor { fret: 5, time: 700, width: 4, end_time: 0 };
     let phrase_iterations = vec![
@@ -138,9 +136,7 @@ fn moves_anchor_to_the_beginning_of_phrase() {
 }
 
 #[test]
-#[ignore = "not yet implemented"]
 fn copies_active_anchor_to_the_beginning_of_phrase() {
-    // fix_phrase_start_anchors copies anchors to ALL phrase times, not just the next one
     use rocksmith2014_xml::{Anchor, PhraseIteration};
     let anchor = Anchor { fret: 5, time: 400, width: 7, end_time: 0 };
     let phrase_iterations = vec![

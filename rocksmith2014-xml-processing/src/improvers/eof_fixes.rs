@@ -85,23 +85,44 @@ pub fn fix_chord_slide_handshapes(arr: &mut InstrumentalArrangement) {
 }
 
 /// Ensures anchors exist at phrase start times.
+/// Anchors that fall within a phrase section are moved to the phrase start.
+/// Phrase sections without an anchor at the start get a copy of the preceding active anchor.
+/// The last phrase iteration (END phrase) is excluded from processing.
 /// Mirrors EOFFixes.fixPhraseStartAnchors in the .NET implementation.
 pub fn fix_phrase_start_anchors(arr: &mut InstrumentalArrangement) {
-    let phrase_times: Vec<i32> = arr.phrase_iterations.iter().map(|pi| pi.time).collect();
+    if arr.phrase_iterations.len() < 2 {
+        return;
+    }
+    // Exclude the last phrase iteration (END phrase marker)
+    let phrase_times: Vec<i32> = arr.phrase_iterations[..arr.phrase_iterations.len() - 1]
+        .iter()
+        .map(|pi| pi.time)
+        .collect();
+
     for level in &mut arr.levels {
-        for &pt in &phrase_times {
+        let n = phrase_times.len();
+        for i in 0..n {
+            let pt = phrase_times[i];
+            let next_pt = if i + 1 < n { phrase_times[i + 1] } else { i32::MAX };
+
             if level.anchors.iter().any(|a| a.time == pt) {
                 continue;
             }
-            if let Some(active) = level.anchors.iter().rev().find(|a| a.time < pt).cloned() {
-                let new_anchor = Anchor {
-                    time: pt,
-                    end_time: active.end_time,
-                    fret: active.fret,
-                    width: active.width,
-                };
-                let pos = level.anchors.partition_point(|a| a.time <= pt);
-                level.anchors.insert(pos, new_anchor);
+
+            // Find first anchor in [pt, next_pt): move it to pt
+            if let Some(pos) = level
+                .anchors
+                .iter()
+                .position(|a| a.time >= pt && a.time < next_pt)
+            {
+                level.anchors[pos].time = pt;
+            } else {
+                // No anchor in this phrase section — copy from last anchor before pt
+                if let Some(active) = level.anchors.iter().rev().find(|a| a.time < pt).cloned() {
+                    let new_anchor = Anchor { time: pt, ..active };
+                    let ins_pos = level.anchors.partition_point(|a| a.time <= pt);
+                    level.anchors.insert(ins_pos, new_anchor);
+                }
             }
         }
     }
