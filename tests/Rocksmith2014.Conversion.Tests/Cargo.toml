@@ -24,3 +24,11 @@ path = "tests/InstrumentalConversion.rs"
 [[test]]
 name = "VocalsConversion"
 path = "tests/VocalsConversion.rs"
+
+[[test]]
+name = "SngObjectsToXmlTests"
+path = "tests/SngObjectsToXmlTests.rs"
+
+[[test]]
+name = "XmlObjectsToSngTests"
+path = "tests/XmlObjectsToSngTests.rs"
