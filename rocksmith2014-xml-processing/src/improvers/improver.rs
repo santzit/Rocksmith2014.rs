@@ -44,6 +44,14 @@ pub fn add_ignores(arr: &mut InstrumentalArrangement) {
                     chord.mask |= rocksmith2014_xml::ChordMask::IGNORE;
                 }
             }
+            // Add ignore to chords that have chord notes with 7th fret harmonic + sustain
+            if chord
+                .chord_notes
+                .iter()
+                .any(|cn| cn.fret == 7 && cn.sustain > 0 && cn.mask.contains(NoteMask::HARMONIC))
+            {
+                chord.mask |= rocksmith2014_xml::ChordMask::IGNORE;
+            }
         }
     }
 }

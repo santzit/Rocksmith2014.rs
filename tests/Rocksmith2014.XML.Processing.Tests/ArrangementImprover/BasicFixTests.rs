@@ -202,7 +202,6 @@ fn ignore_is_added_to_chord_with_23rd_and_24th_fret_notes() {
 }
 
 #[test]
-#[ignore = "not yet implemented"]
 fn ignore_is_added_to_chord_with_7th_fret_harmonic_with_sustain() {
     let no_fingers = [-1i8; 6];
     let templates = vec![
@@ -253,13 +252,17 @@ fn incorrect_linknext_fret_is_corrected_unpitched_slide() {
 }
 
 #[test]
-#[ignore = "not yet implemented"]
 fn incorrect_linknext_fret_is_corrected_bend() {
-    // fix_link_nexts does not handle the bend case (propagating bend values to next note)
-    let _bv = vec![BendValue { time: 1200, step: 2.0, ..Default::default() }];
-    let _notes = vec![
-        Note { time: 1000, fret: 5, sustain: 500, mask: NoteMask::LINK_NEXT, bend_values: _bv, ..Default::default() },
+    let bv = vec![BendValue { time: 1200, step: 2.0, ..Default::default() }];
+    let notes = vec![
+        Note { time: 1000, fret: 5, sustain: 500, mask: NoteMask::LINK_NEXT, bend_values: bv, ..Default::default() },
         Note { time: 1500, fret: 10, ..Default::default() },
     ];
-    panic!("fix_link_nexts bend propagation not implemented");
+    let mut arr = InstrumentalArrangement {
+        levels: vec![Level { notes, ..Default::default() }],
+        ..Default::default()
+    };
+    fix_link_nexts(&mut arr);
+    assert!(arr.levels[0].notes[0].mask.contains(NoteMask::LINK_NEXT));
+    assert_eq!(arr.levels[0].notes[1].fret, 5);
 }
