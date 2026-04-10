@@ -1,5 +1,5 @@
 use rocksmith2014_xml::{Anchor, Chord, InstrumentalArrangement, Level, Note, Phrase, PhraseIteration, Section};
-use rocksmith2014_xml_processing::phrase_mover::improve as improve_phrase_mover;
+use rocksmith2014_xml_processing::improvers::phrase_mover::improve as improve_phrase_mover;
 
 #[test]
 fn can_move_phrase_to_next_note() {

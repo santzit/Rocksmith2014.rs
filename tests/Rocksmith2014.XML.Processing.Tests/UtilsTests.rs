@@ -1,5 +1,5 @@
 use rocksmith2014_xml::{Chord, InstrumentalArrangement, Level, Note, Phrase, PhraseIteration};
-use rocksmith2014_xml_processing::improver::get_first_note_time;
+use rocksmith2014_xml_processing::improvers::improver::get_first_note_time;
 
 #[test]
 fn get_first_note_time_does_not_fail_when_there_are_no_phrase_iterations() {

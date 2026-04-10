@@ -2,7 +2,7 @@ use rocksmith2014_xml::{
     Anchor, ArrangementEvent as Event, HandShape, InstrumentalArrangement, Level, MetaData,
     Note, Phrase, PhraseIteration, Section, ToneChange,
 };
-use rocksmith2014_xml_processing::checker::{check_anchors, check_crowd_events, check_handshapes, check_phrases};
+use rocksmith2014_xml_processing::checkers::checker::{check_anchors, check_crowd_events, check_handshapes, check_phrases};
 use rocksmith2014_xml_processing::issue::IssueType;
 
 fn test_arr() -> InstrumentalArrangement {
@@ -298,7 +298,7 @@ fn detects_more_than_100_phrases() {
 
 #[test]
 fn does_not_throw_for_arrangement_without_notes() {
-    use rocksmith2014_xml_processing::checker::check_instrumental;
+    use rocksmith2014_xml_processing::checkers::checker::check_instrumental;
     let arr = InstrumentalArrangement {
         phrases: vec![
             Phrase { name: "A".into(), ..Default::default() },

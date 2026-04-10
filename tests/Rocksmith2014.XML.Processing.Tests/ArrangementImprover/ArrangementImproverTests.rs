@@ -1,6 +1,6 @@
 use rocksmith2014_xml::{Anchor, ArrangementEvent, Ebeat, InstrumentalArrangement, Level, Note, ChordTemplate};
-use rocksmith2014_xml_processing::improver::{add_crowd_events, process_chord_names, remove_extra_beats};
-use rocksmith2014_xml_processing::custom_events::improve as improve_custom_events;
+use rocksmith2014_xml_processing::improvers::improver::{add_crowd_events, process_chord_names, remove_extra_beats};
+use rocksmith2014_xml_processing::improvers::custom_events::improve as improve_custom_events;
 
 #[test]
 fn creates_crowd_events() {

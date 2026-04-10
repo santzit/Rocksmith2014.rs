@@ -1,7 +1,7 @@
 use rocksmith2014_xml::{
     ArrangementEvent, Chord, ChordMask, ChordNote, InstrumentalArrangement, Level, Note, NoteMask,
 };
-use rocksmith2014_xml_processing::eof_fixes::{
+use rocksmith2014_xml_processing::improvers::eof_fixes::{
     fix_chord_notes as eof_fix_chord_notes,
     fix_crowd_events as eof_fix_crowd_events,
     remove_invalid_chord_note_link_nexts as eof_remove_invalid_chord_note_link_nexts,

@@ -2,7 +2,7 @@ use rocksmith2014_xml::{
     BendValue, Chord, ChordNote, ChordTemplate, InstrumentalArrangement, Level, MetaData,
     Note, NoteMask, Phrase, PhraseIteration, Section, ToneChange,
 };
-use rocksmith2014_xml_processing::checker::check_notes;
+use rocksmith2014_xml_processing::checkers::checker::check_notes;
 use rocksmith2014_xml_processing::issue::IssueType;
 
 fn test_arr() -> InstrumentalArrangement {

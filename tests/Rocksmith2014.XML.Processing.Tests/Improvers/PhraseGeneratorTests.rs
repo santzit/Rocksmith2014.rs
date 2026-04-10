@@ -1,5 +1,5 @@
 use rocksmith2014_xml::{Anchor, Ebeat, InstrumentalArrangement, Level, Note};
-use rocksmith2014_xml_processing::phrase_gen::generate_phrases;
+use rocksmith2014_xml_processing::improvers::phrase_gen::generate_phrases;
 
 fn beats() -> Vec<Ebeat> {
     (0..15).map(|i| Ebeat { time: (i + 1) * 1000, measure: i as i16 }).collect()

@@ -2,7 +2,7 @@ use rocksmith2014_xml::{GlyphDefinitions, Vocal};
 
 use crate::issue::{Issue, IssueType};
 
-const MAX_LYRIC_BYTES: usize = 48;
+const MAX_LYRIC_BYTES: usize = 47;
 
 fn is_valid_default_char(c: char) -> bool {
     if c.is_ascii()
@@ -55,9 +55,15 @@ pub fn check(font: Option<&GlyphDefinitions>, vocals: &[Vocal]) -> Vec<Issue> {
                 }
             }
             Some(gd) => {
-                for c in lyric.chars() {
-                    if c == '+' || c == '-' {
-                        continue;
+                let last_char = lyric.chars().next_back();
+                let is_special_last = matches!(last_char, Some('+') | Some('-'));
+                for (i, c) in lyric.char_indices() {
+                    // Skip the trailing special character (+/-) but not if it appears earlier
+                    if is_special_last && (c == '+' || c == '-') {
+                        let is_last = i + c.len_utf8() == lyric.len();
+                        if is_last {
+                            continue;
+                        }
                     }
                     let in_font = gd
                         .glyphs
