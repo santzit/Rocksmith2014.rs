@@ -1,3 +1,3 @@
 pub mod checkers;
 pub mod improvers;
-pub mod issue;
+pub mod types;

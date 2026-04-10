@@ -1,6 +1,6 @@
 use rocksmith2014_xml::{InstrumentalArrangement, Level, NoteMask};
 
-use crate::issue::{Issue, IssueType};
+use crate::types::{Issue, IssueType};
 
 fn at(kind: IssueType, time: i32) -> Issue {
     Issue::WithTimeCode(kind, time)

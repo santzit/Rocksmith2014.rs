@@ -3,7 +3,7 @@ use rocksmith2014_xml::{
     Note, NoteMask, Phrase, PhraseIteration, Section, ToneChange,
 };
 use rocksmith2014_xml_processing::checkers::checker::check_notes;
-use rocksmith2014_xml_processing::issue::IssueType;
+use rocksmith2014_xml_processing::types::IssueType;
 
 fn test_arr() -> InstrumentalArrangement {
     InstrumentalArrangement {

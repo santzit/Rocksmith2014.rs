@@ -1,6 +1,6 @@
 use rocksmith2014_xml::ShowLight;
 
-use crate::issue::IssueType;
+use crate::types::IssueType;
 
 /// Checks show lights for validity.
 /// Mirrors ShowLightsChecker.check in the .NET implementation.

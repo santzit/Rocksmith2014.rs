@@ -1,6 +1,6 @@
 use rocksmith2014_xml::{GlyphDefinition, GlyphDefinitions, Vocal};
 use rocksmith2014_xml_processing::checkers::vocals_checker::check as check_vocals;
-use rocksmith2014_xml_processing::issue::IssueType;
+use rocksmith2014_xml_processing::types::IssueType;
 
 #[test]
 fn no_issues_for_empty_vocals() {
