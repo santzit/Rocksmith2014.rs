@@ -47,7 +47,6 @@ src/
    rocksmith2014-conversion/   — XML ↔ SNG conversion
    rocksmith2014-dlcproject/   — DLC project types
    rocksmith2014-eof/          — EOF project writer
-   rocksmith2014-fsharp-extensions/ — F#-inspired extension traits
    rocksmith2014-psarc/        — PSARC archive reader/writer
    rocksmith2014-sng/          — SNG binary format reader/writer
    rocksmith2014-xml/          — Rocksmith XML types
