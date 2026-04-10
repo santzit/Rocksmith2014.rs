@@ -1,4 +1,4 @@
-use rocksmith2014_xml::{Ebeat, InstrumentalArrangement, Level, Phrase, PhraseIteration, Section};
+use rocksmith2014_xml::{ChordMask, Ebeat, InstrumentalArrangement, Level, NoteMask, Phrase, PhraseIteration, Section};
 
 const MIN_PHRASE_SEP: i32 = 2000;
 
@@ -53,6 +53,88 @@ fn end_phrase_time(level: &Level, arr: &InstrumentalArrangement) -> i32 {
             .map(|b| b.time)
             .unwrap_or_else(|| (no_more + 100).min(arr.meta.song_length.saturating_sub(100)))
     }
+}
+
+/// If `t` falls inside a handshape, return the handshape's end time; otherwise return `t`.
+fn adjust_for_handshape(level: &Level, t: i32) -> i32 {
+    level
+        .hand_shapes
+        .iter()
+        .find(|h| h.start_time <= t && t < h.end_time)
+        .map(|h| h.end_time)
+        .unwrap_or(t)
+}
+
+/// Returns the end time of the LINK_NEXT chain starting at `note_time` in `level`.
+/// The chain end is: last linked note's time + sustain (or + 100 if sustain == 0).
+fn note_link_chain_end(level: &Level, note_time: i32) -> i32 {
+    let mut cur_time = note_time;
+    loop {
+        if let Some(cur) = level.notes.iter().find(|n| n.time == cur_time) {
+            if cur.mask.contains(NoteMask::LINK_NEXT) {
+                let next_time = cur.time + cur.sustain;
+                if let Some(next) = level.notes.iter().find(|n| n.time == next_time) {
+                    if next.sustain == 0 {
+                        return next.time + 100;
+                    }
+                    cur_time = next_time;
+                    continue;
+                }
+            }
+            let end = if cur.sustain == 0 { cur.time + 100 } else { cur.time + cur.sustain };
+            return end;
+        } else {
+            return cur_time;
+        }
+    }
+}
+
+/// If `t` would fall inside a LINK_NEXT chain (note or chord), pick the chain boundary
+/// (chain start or chain end) that is closest to `t`.
+fn adjust_for_link_next(level: &Level, t: i32) -> i32 {
+    // Check note LINK_NEXT chains
+    for note in &level.notes {
+        if !note.mask.contains(NoteMask::LINK_NEXT) {
+            continue;
+        }
+        let chain_start = note.time;
+        let chain_end = note_link_chain_end(level, chain_start);
+        if chain_start <= t && t < chain_end {
+            // Pick whichever boundary is closest to original t
+            if (t - chain_start).abs() <= (chain_end - t).abs() {
+                return chain_start;
+            } else {
+                return chain_end;
+            }
+        }
+    }
+    // Check chord LINK_NEXT chains
+    for chord in &level.chords {
+        if !chord.mask.contains(ChordMask::LINK_NEXT) {
+            continue;
+        }
+        let chain_start = chord.time;
+        // Chain end: chord note sustain + linked note sustain
+        let chord_note_sustain = chord.chord_notes.first().map(|cn| cn.sustain).unwrap_or(0);
+        let link_target_time = chord.time + chord_note_sustain;
+        let chain_end = if let Some(linked) = level.notes.iter().find(|n| n.time == link_target_time) {
+            if linked.sustain == 0 {
+                linked.time + 100
+            } else {
+                linked.time + linked.sustain
+            }
+        } else {
+            link_target_time
+        };
+        if chain_start <= t && t < chain_end {
+            if (t - chain_start).abs() <= (chain_end - t).abs() {
+                return chain_start;
+            } else {
+                return chain_end;
+            }
+        }
+    }
+    t
 }
 
 /// Generates sections and phrases for the arrangement, replacing existing ones.
@@ -133,6 +215,10 @@ pub fn generate_phrases(arr: &mut InstrumentalArrangement) {
             {
                 t = note_start;
             }
+            // If t is inside a handshape, move boundary to handshape end
+            t = adjust_for_handshape(&level, t);
+            // If t would break a LINK_NEXT chain, pick the nearest chain boundary
+            t = adjust_for_link_next(&level, t);
             if t - last_phrase_time > MIN_PHRASE_SEP {
                 last_phrase_time = t;
                 let pid = arr.phrases.len() as u32;

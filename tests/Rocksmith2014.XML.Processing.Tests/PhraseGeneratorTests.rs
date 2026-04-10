@@ -57,7 +57,6 @@ fn does_not_create_end_phrase_on_the_last_note() {
 }
 
 #[test]
-#[ignore = "not yet implemented"]
 fn does_not_create_a_phrase_in_the_middle_of_a_handshape() {
     let mut arr = base_arr();
     arr.levels[0].notes.push(Note { time: 2_000, ..Default::default() });
@@ -72,7 +71,6 @@ fn does_not_create_a_phrase_in_the_middle_of_a_handshape() {
 }
 
 #[test]
-#[ignore = "not yet implemented"]
 fn does_not_create_a_phrase_that_breaks_note_link_next() {
     let mut arr = base_arr();
     arr.levels[0].notes.push(Note { time: 2_000, ..Default::default() });
@@ -86,7 +84,6 @@ fn does_not_create_a_phrase_that_breaks_note_link_next() {
 }
 
 #[test]
-#[ignore = "not yet implemented"]
 fn does_not_create_a_phrase_that_breaks_note_link_next_no_sustain_on_linknext_target_note() {
     let mut arr = base_arr();
     arr.levels[0].notes.push(Note { time: 2_000, ..Default::default() });
@@ -100,7 +97,6 @@ fn does_not_create_a_phrase_that_breaks_note_link_next_no_sustain_on_linknext_ta
 }
 
 #[test]
-#[ignore = "not yet implemented"]
 fn does_not_create_a_phrase_that_breaks_note_link_next_multiple_link_next_notes() {
     let mut arr = base_arr();
     arr.levels[0].notes.push(Note { time: 2_000, ..Default::default() });
@@ -115,7 +111,6 @@ fn does_not_create_a_phrase_that_breaks_note_link_next_multiple_link_next_notes(
 }
 
 #[test]
-#[ignore = "not yet implemented"]
 fn does_not_create_a_phrase_that_breaks_chord_link_next() {
     let mut arr = base_arr();
     arr.chord_templates.push(ChordTemplate {
