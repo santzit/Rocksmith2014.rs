@@ -4,8 +4,27 @@ use quick_xml::Reader;
 use crate::types::*;
 use crate::Result;
 
+/// Mirrors .NET `Utils.TimeCodeFromFloatString`: truncates (does not round)
+/// the fractional part to at most 3 decimal digits, then returns the combined
+/// integer millisecond value.
 pub(crate) fn time_from_str(s: &str) -> i32 {
-    (s.parse::<f64>().unwrap_or(0.0) * 1000.0).round() as i32
+    match s.find('.') {
+        None => s.parse::<i32>().unwrap_or(0) * 1000,
+        Some(dot) => {
+            let whole: i32 = s[..dot].parse().unwrap_or(0);
+            // Take at most 3 characters after the dot, pad with '0' on the right
+            let frac_src = &s[dot + 1..];
+            let mut frac_chars = [b'0'; 3];
+            for (i, b) in frac_src.bytes().take(3).enumerate() {
+                frac_chars[i] = b;
+            }
+            let frac: i32 = std::str::from_utf8(&frac_chars)
+                .ok()
+                .and_then(|f| f.parse().ok())
+                .unwrap_or(0);
+            whole * 1000 + frac
+        }
+    }
 }
 
 pub(crate) fn time_to_str(ms: i32) -> String {
@@ -318,6 +337,13 @@ fn parse_chord(reader: &mut Reader<&[u8]>, e: &BytesStart, is_start: bool) -> Re
                     chord_notes = parse_chord_notes_list(reader)?;
                 }
                 XmlEvent::Empty(ce) if ce.name().as_ref() == b"chordNotes" => {}
+                // Direct <chordNote> children (some XML variants omit the wrapper)
+                XmlEvent::Empty(ce) if ce.name().as_ref() == b"chordNote" => {
+                    chord_notes.push(parse_chord_note(reader, &ce, false)?);
+                }
+                XmlEvent::Start(ce) if ce.name().as_ref() == b"chordNote" => {
+                    chord_notes.push(parse_chord_note(reader, &ce, true)?);
+                }
                 XmlEvent::End(ce) if ce.name().as_ref() == b"chord" => break,
                 XmlEvent::Eof => break,
                 _ => {}
@@ -738,7 +764,7 @@ fn parse_chord_templates(reader: &mut Reader<&[u8]>, end_tag: &[u8]) -> Result<V
 
 fn parse_chord_template_from_elem(e: &BytesStart) -> ChordTemplate {
     ChordTemplate {
-        chord_name: get_attr(e, b"chordName").unwrap_or_default(),
+        name: get_attr(e, b"chordName").unwrap_or_default(),
         display_name: get_attr(e, b"displayName").unwrap_or_default(),
         fingers: [
             get_attr(e, b"finger0")

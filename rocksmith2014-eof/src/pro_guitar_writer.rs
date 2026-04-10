@@ -76,7 +76,7 @@ fn get_arrangement_type(inst: &InstrumentalArrangement) -> u8 {
     }
 }
 
-fn prepare_notes(
+pub fn prepare_notes(
     hand_shape_result: &[HsResult],
     inst: &InstrumentalArrangement,
     mut notes: Vec<EofNote>,

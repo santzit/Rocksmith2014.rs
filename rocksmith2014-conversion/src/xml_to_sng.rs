@@ -132,7 +132,7 @@ pub fn convert_chord_template(arr: &InstrumentalArrangement, ct: &ChordTemplate)
         frets: ct.frets,
         fingers: ct.fingers,
         notes,
-        name: string_to_bytes::<32>(&ct.chord_name),
+        name: string_to_bytes::<32>(&ct.name),
     }
 }
 

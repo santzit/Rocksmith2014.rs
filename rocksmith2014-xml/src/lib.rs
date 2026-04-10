@@ -68,6 +68,7 @@
 //! assert!(roundtripped.contains("<title>Test</title>"));
 //! ```
 
+pub mod glyph_definitions;
 mod parser;
 pub mod show_light;
 mod types;
@@ -75,6 +76,7 @@ pub mod utils;
 pub mod vocal;
 mod writer;
 
+pub use glyph_definitions::{GlyphDefinition, GlyphDefinitions};
 pub use show_light::ShowLight;
 pub use types::{
     Anchor, ArrangementEvent, ArrangementProperties, BendValue, Chord, ChordMask, ChordNote,
@@ -128,6 +130,19 @@ impl InstrumentalArrangement {
         writer::write_arrangement(self, &mut w)?;
         w.write_event(XmlEvent::End(BytesEnd::new("song")))?;
         Ok(String::from_utf8(w.into_inner())?)
+    }
+
+    /// Removes Dynamic Difficulty, keeping only the highest difficulty level.
+    ///
+    /// Mirrors `InstrumentalArrangement.RemoveDD` in Rocksmith2014.NET.
+    pub fn remove_dd(&mut self) {
+        if self.levels.len() > 1 {
+            let max_diff = self.levels.iter().map(|l| l.difficulty).max().unwrap_or(0);
+            self.levels.retain(|l| l.difficulty == max_diff);
+        }
+        if let Some(level) = self.levels.first_mut() {
+            level.difficulty = 0;
+        }
     }
 }
 

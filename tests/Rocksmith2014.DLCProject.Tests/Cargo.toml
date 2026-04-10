@@ -24,3 +24,43 @@ path = "UtilsTests.rs"
 [[test]]
 name = "PhraseLevelComparerTests"
 path = "PhraseLevelComparerTests.rs"
+
+[[test]]
+name = "AggregateGraphTests"
+path = "AggregateGraphTests.rs"
+
+[[test]]
+name = "ArrangementTests"
+path = "ArrangementTests.rs"
+
+[[test]]
+name = "AttributesTechniquesTests"
+path = "AttributesTechniquesTests.rs"
+
+[[test]]
+name = "AttributesTests"
+path = "AttributesTests.rs"
+
+[[test]]
+name = "DLCProjectTests"
+path = "DLCProjectTests.rs"
+
+[[test]]
+name = "ManifestTests"
+path = "ManifestTests.rs"
+
+[[test]]
+name = "ShowlightGeneratorTests"
+path = "ShowlightGeneratorTests.rs"
+
+[[test]]
+name = "SoundBankTests"
+path = "SoundBankTests.rs"
+
+[[test]]
+name = "ToolkitImportTests"
+path = "ToolkitImportTests.rs"
+
+[[test]]
+name = "XblockTests"
+path = "XblockTests.rs"

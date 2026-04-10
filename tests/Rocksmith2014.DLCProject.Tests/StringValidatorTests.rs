@@ -33,6 +33,12 @@ fn invalid_characters_are_removed_from_filenames() {
 }
 
 #[test]
+fn ampersand_and_single_quotes_are_removed_from_filenames() {
+    let result = string_validator::file_name("'A' & B");
+    assert_eq!(result, "A-B");
+}
+
+#[test]
 fn english_articles_are_removed_correctly() {
     let the = string_validator::remove_articles("The The");
     let a = string_validator::remove_articles("A Name");

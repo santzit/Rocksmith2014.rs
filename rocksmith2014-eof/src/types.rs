@@ -158,7 +158,7 @@ pub struct IniString {
     pub value: String,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum TimeSignature {
     TS2_4,
     TS3_4,

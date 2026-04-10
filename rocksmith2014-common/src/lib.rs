@@ -4,9 +4,12 @@ pub mod binary_readers;
 pub mod binary_writers;
 pub mod compression;
 pub mod json_options;
+pub mod manifest;
 pub mod memory_stream_pool;
 pub mod platform;
+pub mod profile;
 pub mod random_generator;
+pub mod tone_descriptor;
 pub mod types;
 
 pub use platform::Platform;

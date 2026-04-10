@@ -6,3 +6,27 @@ publish = false
 
 [dev-dependencies]
 rocksmith2014-common = { path = "../../rocksmith2014-common" }
+
+[[test]]
+name = "BigEndianBinaryReadWrite"
+path = "BigEndianBinaryReadWrite.rs"
+
+[[test]]
+name = "LittleEndianBinaryReadWrite"
+path = "LittleEndianBinaryReadWrite.rs"
+
+[[test]]
+name = "SlowStreamTests"
+path = "SlowStreamTests.rs"
+
+[[test]]
+name = "PlatformTests"
+path = "PlatformTests.rs"
+
+[[test]]
+name = "ToneDescriptorTests"
+path = "ToneDescriptorTests.rs"
+
+[[test]]
+name = "ToneTests"
+path = "ToneTests.rs"

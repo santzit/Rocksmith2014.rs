@@ -153,7 +153,7 @@ pub struct PhraseProperty {
 
 #[derive(Debug, Clone)]
 pub struct ChordTemplate {
-    pub chord_name: String,
+    pub name: String,
     pub display_name: String,
     pub fingers: [i8; 6],
     pub frets: [i8; 6],
@@ -161,7 +161,7 @@ pub struct ChordTemplate {
 impl Default for ChordTemplate {
     fn default() -> Self {
         Self {
-            chord_name: String::new(),
+            name: String::new(),
             display_name: String::new(),
             fingers: [-1; 6],
             frets: [-1; 6],

@@ -45,6 +45,25 @@ pub mod types;
 pub use cryptography::{decrypt_sng, encrypt_sng};
 pub use types::*;
 
+/// Writes a zero-terminated UTF-8 string into a fixed-length buffer of `length` bytes.
+///
+/// Always reserves at least 1 byte for the null terminator, so the maximum
+/// number of UTF-8 bytes copied is `length - 1`. The buffer is zero-initialized
+/// before copying, so the last byte is always `0`.
+///
+/// Mirrors `BinaryHelpers.writeZeroTerminatedUTF8String` from Rocksmith2014.NET.
+pub fn write_zero_terminated_utf8_string<W: std::io::Write>(
+    w: &mut W,
+    length: usize,
+    s: &str,
+) -> std::io::Result<()> {
+    let mut arr = vec![0u8; length];
+    let utf8 = s.as_bytes();
+    let copy_len = utf8.len().min(length - 1);
+    arr[..copy_len].copy_from_slice(&utf8[..copy_len]);
+    w.write_all(&arr)
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Platform {
     Pc,
