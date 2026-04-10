@@ -137,11 +137,13 @@ fn test_bend_data32_roundtrip() {
 
 #[test]
 fn test_chord_notes_roundtrip() {
-    let mut cn = ChordNotes::default();
-    cn.mask = [1, 2, 3, 4, 5, 6];
-    cn.slide_to = [0, 1, 2, 3, 4, 5];
-    cn.slide_unpitch_to = [-1; 6];
-    cn.vibrato = [0, 80, 0, 0, 0, 0];
+    let cn = ChordNotes {
+        mask: [1, 2, 3, 4, 5, 6],
+        slide_to: [0, 1, 2, 3, 4, 5],
+        slide_unpitch_to: [-1; 6],
+        vibrato: [0, 80, 0, 0, 0, 0],
+        ..Default::default()
+    };
     let mut sng = Sng::default();
     sng.chord_notes.push(cn);
     let sng2 = sng_roundtrip(sng);
@@ -568,8 +570,10 @@ fn test_metadata_roundtrip() {
         first_note_time: 15.0,
         max_difficulty: 22,
     };
-    let mut sng = Sng::default();
-    sng.metadata = metadata;
+    let sng = Sng {
+        metadata,
+        ..Default::default()
+    };
     let sng2 = sng_roundtrip(sng);
     assert_eq!(sng2.metadata.max_score, 100000.0);
     assert_eq!(sng2.metadata.capo_fret_id, -1);

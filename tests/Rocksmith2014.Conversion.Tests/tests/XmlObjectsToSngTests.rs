@@ -3,20 +3,19 @@
 //! Mirrors `XmlObjectsToSngTests.fs` in Rocksmith2014.Conversion.Tests (.NET).
 
 use rocksmith2014_conversion::{
-    flag_on_anchor_change, make_beat_converter, map_to_midi_notes, xml_convert_bend_value,
-    xml_convert_chord_template, xml_convert_event, xml_convert_handshape, xml_convert_level,
-    xml_convert_phrase, xml_convert_phrase_iteration, xml_convert_section, xml_convert_tone,
+    flag_on_anchor_change, make_beat_converter, xml_convert_bend_value, xml_convert_chord_template,
+    xml_convert_level, xml_convert_phrase, xml_convert_phrase_iteration, xml_convert_section,
     AccuData, NoteConverter, XmlEntity,
 };
 use rocksmith2014_xml::{
-    Anchor, ArrangementEvent, BendValue, ChordTemplate, Ebeat, HandShape, InstrumentalArrangement,
-    Level, Note, PhraseIteration, Section, ToneChange,
+    Anchor, ArrangementEvent, BendValue, ChordTemplate, Ebeat, InstrumentalArrangement, Level,
+    Note, PhraseIteration, Section,
 };
-use rocksmith2014_xml::{Chord, ChordMask, MetaData, Phrase as XmlPhrase};
+use rocksmith2014_xml::{Chord, Phrase as XmlPhrase};
 
 fn create_test_arr() -> InstrumentalArrangement {
     let mut arr = InstrumentalArrangement::default();
-    arr.meta.song_length = 4784_455;
+    arr.meta.song_length = 4_784_455;
 
     let f1 = [1i8; 6];
     let f2 = [1i8, 1, -1, -1, -1, -1];
@@ -49,12 +48,12 @@ fn create_test_arr() -> InstrumentalArrangement {
         ..Default::default()
     });
     arr.phrase_iterations.push(PhraseIteration {
-        time: 7554_100,
+        time: 7_554_100,
         phrase_id: 2,
         ..Default::default()
     });
     arr.phrase_iterations.push(PhraseIteration {
-        time: 7555_000,
+        time: 7_555_000,
         phrase_id: 3,
         ..Default::default()
     });
@@ -73,7 +72,7 @@ fn create_test_arr() -> InstrumentalArrangement {
     });
     arr.sections.push(Section {
         name: "3".into(),
-        start_time: 8000_000,
+        start_time: 8_000_000,
         ..Default::default()
     });
 
@@ -215,9 +214,9 @@ fn beats() {
         },
     ];
     let test_arr = create_test_arr();
-    let mut convert = make_beat_converter(&test_arr);
+    let convert = make_beat_converter(&test_arr);
 
-    let sng: Vec<_> = beats.iter().map(|b| convert(b)).collect();
+    let sng: Vec<_> = beats.iter().map(convert).collect();
 
     assert!(
         sng[0]
@@ -295,8 +294,10 @@ fn chord_template_conversion() {
 
 #[test]
 fn chord_template_midi_notes() {
-    let mut ct = ChordTemplate::default();
-    ct.frets = [1, 2, 3, 4, 5, 6];
+    let ct = ChordTemplate {
+        frets: [1, 2, 3, 4, 5, 6],
+        ..Default::default()
+    };
     let test_arr = create_test_arr();
 
     let sng = xml_convert_chord_template(&test_arr, &ct);

@@ -115,7 +115,7 @@ fn closest_beat_is_found_correctly() {
             measure: -1,
         },
     ];
-    let times = vec![3900, 4100, 4800, 6750, 8000];
+    let times = [3900, 4100, 4800, 6750, 8000];
 
     let closest_beat_numbers: Vec<_> = times.iter().map(|&t| get_closest_beat(&beats, t)).collect();
 

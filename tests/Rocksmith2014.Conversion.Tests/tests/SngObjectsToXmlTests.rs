@@ -48,7 +48,7 @@ fn beat() {
 
     let xml = sng_convert_beat(&b);
 
-    assert_eq!(xml.time, 5468_422, "Time is same");
+    assert_eq!(xml.time, 5_468_422, "Time is same");
     assert_eq!(xml.measure, b.measure, "Measure is same");
 }
 
@@ -198,7 +198,7 @@ fn event() {
     let xml = sng_convert_event(&e);
 
     assert_eq!(xml.code, "wedge_cutoff", "Code/name is same");
-    assert_eq!(xml.time, 1750_735, "Time code is same");
+    assert_eq!(xml.time, 1_750_735, "Time code is same");
 }
 
 #[test]
@@ -213,7 +213,7 @@ fn tone() {
     let xml = sng_convert_tone(&t, tone_names);
 
     assert_eq!(xml.id, t.tone_id, "Tone ID is same");
-    assert_eq!(xml.time, 4568_000, "Time code is same");
+    assert_eq!(xml.time, 4_568_000, "Time code is same");
     assert_eq!(xml.name, "tone_c", "Tone name is correct");
 }
 
@@ -267,7 +267,7 @@ fn finger_print_hand_shape() {
 
     assert_eq!(xml.chord_id, fp.chord_id, "Chord ID is same");
     assert_eq!(xml.start_time, 999_999, "Start time is same");
-    assert_eq!(xml.end_time, 1001_001, "End time is same");
+    assert_eq!(xml.end_time, 1_001_001, "End time is same");
 }
 
 #[test]

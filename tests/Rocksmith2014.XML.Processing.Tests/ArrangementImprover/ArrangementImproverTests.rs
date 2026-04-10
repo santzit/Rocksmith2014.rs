@@ -241,7 +241,6 @@ fn anchor_width_3_event_can_change_fret() {
 
 #[test]
 fn slide_out_event_works_for_normal_chord() {
-    use rocksmith2014_xml_processing::improvers::improver::move_anchors as _move_anchors;
     let templates = vec![ChordTemplate {
         name: "".into(),
         display_name: "".into(),
