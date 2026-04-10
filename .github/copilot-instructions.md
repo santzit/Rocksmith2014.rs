@@ -20,6 +20,7 @@ Update this table at each commit/unit tests
 ## Knowledge Base Reference
 
 Use `/Rocksmith2014.NET` folder/subproject as the primary knowledge base reference for understanding:
+- Use the tag/v3.5.0
 - The data structures and binary formats for SNG, PSARC, and other file formats
 - The expected behavior of reading/writing operations
 - The naming conventions for types and functions
