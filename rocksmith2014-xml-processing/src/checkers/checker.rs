@@ -379,16 +379,109 @@ fn check_notes_inner(arr: &InstrumentalArrangement, level: &Level, issues: &mut 
             issues.push(at(IssueType::InvalidBassArrangementString, t));
         }
         // HOPO into same fret
-        let is_hopo =
-            note.mask.contains(NoteMask::HAMMER_ON) || note.mask.contains(NoteMask::PULL_OFF);
-        if is_hopo {
-            if let Some(prev) = level.notes[..i]
-                .iter()
-                .rev()
-                .find(|p| p.string == note.string)
-            {
-                if prev.fret == note.fret {
+        let is_pull_off = note.mask.contains(NoteMask::PULL_OFF);
+        let is_hammer_on = note.mask.contains(NoteMask::HAMMER_ON);
+        if is_pull_off || is_hammer_on {
+            // Find the effective previous fret on the same string.
+            // For HAMMER_ON: only check if note[i-1] is on the same string (hammer-on from nowhere otherwise).
+            // For PULL_OFF: also consider chords and slides.
+            let effective_prev_fret = if is_hammer_on {
+                // Only check immediate predecessor
+                if i > 0 && level.notes[i - 1].string == note.string {
+                    Some(level.notes[i - 1].fret)
+                } else {
+                    None
+                }
+            } else {
+                // PULL_OFF: find most recent note or chord on same string
+                let last_note = level.notes[..i]
+                    .iter()
+                    .rev()
+                    .find(|p| p.string == note.string);
+                let last_chord = level
+                    .chords
+                    .iter()
+                    .rev()
+                    .find(|c| c.time < t);
+                // Pick whichever is more recent
+                match (last_note, last_chord) {
+                    (Some(n), Some(c)) if c.time > n.time => {
+                        // Chord is more recent; get fret from chord_notes or template
+                        let cn_fret = c.chord_notes.iter()
+                            .find(|cn| cn.string == note.string)
+                            .map(|cn| if cn.slide_to >= 0 { cn.slide_to as i8 } else { cn.fret });
+                        if let Some(f) = cn_fret {
+                            Some(f)
+                        } else {
+                            arr.chord_templates.get(c.chord_id as usize)
+                                .map(|tmpl| tmpl.frets[note.string as usize])
+                        }
+                    }
+                    (Some(n), _) => {
+                        Some(if n.slide_to >= 0 { n.slide_to as i8 } else { n.fret })
+                    }
+                    (None, Some(c)) => {
+                        let cn_fret = c.chord_notes.iter()
+                            .find(|cn| cn.string == note.string)
+                            .map(|cn| if cn.slide_to >= 0 { cn.slide_to as i8 } else { cn.fret });
+                        if let Some(f) = cn_fret {
+                            Some(f)
+                        } else {
+                            arr.chord_templates.get(c.chord_id as usize)
+                                .map(|tmpl| tmpl.frets[note.string as usize])
+                        }
+                    }
+                    (None, None) => None,
+                }
+            };
+            if let Some(pf) = effective_prev_fret {
+                if pf == note.fret {
                     issues.push(at(IssueType::HopoIntoSameNote, t));
+                }
+            }
+        }
+        // PositionShiftIntoPullOff for notes
+        if is_pull_off && note.fret > 0 {
+            // Check if there is an anchor starting exactly at this note's time
+            if let Some(cur_anchor) = level.anchors.iter().find(|a| a.time == t) {
+                // Find the previous anchor (any anchor with time < t)
+                if let Some(prev_anchor) = level.anchors.iter().rev().find(|a| a.time < t) {
+                    if cur_anchor.fret != prev_anchor.fret {
+                        issues.push(at(IssueType::PositionShiftIntoPullOff, t));
+                    }
+                }
+            }
+        }
+        // PhraseChangeOnLinkNextNote
+        if link_next && note.sustain > 0 {
+            let sustain_end = t + note.sustain;
+            for pi in &arr.phrase_iterations {
+                if pi.time > t && pi.time < sustain_end {
+                    // Ignore mover phrases
+                    let is_mover = arr.phrases.get(pi.phrase_id as usize)
+                        .map_or(false, |p| p.name.to_lowercase().starts_with("mover"));
+                    if !is_mover {
+                        issues.push(at(IssueType::PhraseChangeOnLinkNextNote, t));
+                        break;
+                    }
+                }
+            }
+        }
+        // FingerChangeDuringSlide
+        if is_slide && note.sustain > 0 {
+            let slide_end = t + note.sustain;
+            let start_anchor = level.anchors.iter().rev().find(|a| a.time <= t);
+            let end_anchor = level.anchors.iter().find(|a| a.time >= slide_end);
+            if let (Some(sa), Some(ea)) = (start_anchor, end_anchor) {
+                // Skip slides from low position where finger cannot be determined from anchor:
+                // when sa.fret == 1 and note is at most 1 fret above anchor (finger 1 or 2)
+                let offset = note.fret - sa.fret;
+                if sa.fret > 1 || offset > 1 {
+                    let finger_start = offset + 1;
+                    let finger_end = note.slide_to as i8 - ea.fret + 1;
+                    if finger_start != finger_end {
+                        issues.push(at(IssueType::FingerChangeDuringSlide, t));
+                    }
                 }
             }
         }

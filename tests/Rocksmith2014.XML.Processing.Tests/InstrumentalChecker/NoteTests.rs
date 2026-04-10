@@ -318,7 +318,6 @@ fn invalid_strings_on_bass_arrangement_are_detected() {
 }
 
 #[test]
-#[ignore = "not yet implemented"]
 fn detects_phrase_on_linknext_notes_sustain() {
     let notes = vec![
         Note { fret: 1, time: 1300, sustain: 500, mask: NoteMask::LINK_NEXT, ..Default::default() },
@@ -348,7 +347,6 @@ fn detects_phrase_on_linknext_notes_sustain() {
 }
 
 #[test]
-#[ignore = "not yet implemented"]
 fn mover_phrase_on_linknext_notes_sustain_is_ignored() {
     let notes = vec![
         Note { fret: 1, time: 1300, sustain: 500, mask: NoteMask::LINK_NEXT, ..Default::default() },
@@ -377,7 +375,6 @@ fn mover_phrase_on_linknext_notes_sustain_is_ignored() {
 }
 
 #[test]
-#[ignore = "not yet implemented"]
 fn no_false_positive_for_hammer_on_from_nowhere() {
     // Hammer-on from nowhere: no note on the same string immediately preceding
     let notes = vec![
@@ -407,7 +404,6 @@ fn detects_pull_off_into_same_fret() {
 }
 
 #[test]
-#[ignore = "not yet implemented"]
 fn detects_pull_off_into_same_fret_from_chord() {
     let notes = vec![Note { fret: 1, time: 2000, mask: NoteMask::PULL_OFF, ..Default::default() }];
     let chords = vec![Chord { time: 1000, chord_id: 0, ..Default::default() }];
@@ -429,7 +425,6 @@ fn detects_pull_off_into_same_fret_from_chord() {
 }
 
 #[test]
-#[ignore = "not yet implemented"]
 fn no_false_positive_for_hopo_into_same_fret_for_pull_off_from_chord() {
     let notes = vec![
         Note { fret: 1, time: 1300, ..Default::default() },
@@ -453,7 +448,6 @@ fn no_false_positive_for_hopo_into_same_fret_for_pull_off_from_chord() {
 }
 
 #[test]
-#[ignore = "not yet implemented"]
 fn no_false_positive_for_hopo_into_same_fret_for_pull_off_after_slide() {
     let notes = vec![
         Note { fret: 3, slide_to: 5, sustain: 300, time: 1300, ..Default::default() },
@@ -470,7 +464,6 @@ fn no_false_positive_for_hopo_into_same_fret_for_pull_off_after_slide() {
 }
 
 #[test]
-#[ignore = "not yet implemented"]
 fn no_false_positive_for_hopo_into_same_fret_for_pull_off_after_chord_slide() {
     let notes = vec![Note { fret: 3, time: 3000, mask: NoteMask::PULL_OFF, ..Default::default() }];
     let cn = vec![
@@ -499,7 +492,6 @@ fn no_false_positive_for_hopo_into_same_fret_for_pull_off_after_chord_slide() {
 }
 
 #[test]
-#[ignore = "not yet implemented"]
 fn detects_finger_change_during_slide() {
     let notes = vec![
         Note { fret: 3, slide_to: 5, sustain: 500, time: 1300, mask: NoteMask::LINK_NEXT, ..Default::default() },
@@ -517,7 +509,6 @@ fn detects_finger_change_during_slide() {
 }
 
 #[test]
-#[ignore = "not yet implemented"]
 fn detects_finger_change_during_slide_no_linknext() {
     let notes = vec![
         Note { fret: 3, slide_to: 5, sustain: 500, time: 1300, ..Default::default() },
@@ -534,7 +525,6 @@ fn detects_finger_change_during_slide_no_linknext() {
 }
 
 #[test]
-#[ignore = "not yet implemented"]
 fn ignores_slide_from_low_position_where_finger_cannot_be_determined_from_anchor() {
     let notes = vec![
         Note { fret: 1, slide_to: 9, sustain: 500, time: 1000, ..Default::default() },
@@ -558,7 +548,6 @@ fn ignores_slide_from_low_position_where_finger_cannot_be_determined_from_anchor
 }
 
 #[test]
-#[ignore = "not yet implemented"]
 fn detects_position_shift_into_pull_off() {
     let notes = vec![
         Note { fret: 10, time: 1300, ..Default::default() },
@@ -576,7 +565,6 @@ fn detects_position_shift_into_pull_off() {
 }
 
 #[test]
-#[ignore = "not yet implemented"]
 fn position_shift_into_open_string_pull_off_is_ignored() {
     let notes = vec![
         Note { fret: 3, slide_unpitch_to: 1, sustain: 300, time: 1300, ..Default::default() },
@@ -593,7 +581,6 @@ fn position_shift_into_open_string_pull_off_is_ignored() {
 }
 
 #[test]
-#[ignore = "not yet implemented"]
 fn detects_position_shift_into_pull_off_after_slide() {
     let notes = vec![
         Note { fret: 3, slide_to: 5, sustain: 300, time: 1300, ..Default::default() },
