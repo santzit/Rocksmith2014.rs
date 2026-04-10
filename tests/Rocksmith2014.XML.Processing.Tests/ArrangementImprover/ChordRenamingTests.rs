@@ -108,3 +108,29 @@ fn does_not_remove_name_from_full_chord() {
     improve_double_stop_names(&standard_tuning, &mut arr);
     assert_eq!(arr.chord_templates[0].name, "Em");
 }
+
+#[test]
+fn does_not_remove_name_from_common_power_chord() {
+    let c1 = template_with_frets("E5", [0, 2, -1, -1, -1, -1]);
+    let mut arr = InstrumentalArrangement {
+        chord_templates: vec![c1],
+        ..Default::default()
+    };
+    let standard_tuning = [0i16; 6];
+    improve_double_stop_names(&standard_tuning, &mut arr);
+    assert_eq!(arr.chord_templates[0].name, "E5");
+    assert_eq!(arr.chord_templates[0].display_name, "E5");
+}
+
+#[test]
+fn does_not_remove_name_from_common_power_chord_drop_d_tuning() {
+    let c1 = template_with_frets("D5", [0, 0, -1, -1, -1, -1]);
+    let mut arr = InstrumentalArrangement {
+        chord_templates: vec![c1],
+        ..Default::default()
+    };
+    let drop_d_tuning = [-2i16, 0, 0, 0, 0, 0];
+    improve_double_stop_names(&drop_d_tuning, &mut arr);
+    assert_eq!(arr.chord_templates[0].name, "D5");
+    assert_eq!(arr.chord_templates[0].display_name, "D5");
+}
