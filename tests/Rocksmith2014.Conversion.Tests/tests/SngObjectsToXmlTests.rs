@@ -23,10 +23,12 @@ fn make_name_bytes<const N: usize>(s: &str) -> [u8; N] {
 }
 
 fn test_sng() -> Sng {
-    let mut chord = Chord::default();
-    chord.frets = [-1, 0, 2, 2, 2, 0];
-    chord.fingers = [-1, -1, 1, 2, 3, -1];
-    chord.name = make_name_bytes::<32>("A");
+    let chord = Chord {
+        frets: [-1, 0, 2, 2, 2, 0],
+        fingers: [-1, -1, 1, 2, 3, -1],
+        name: make_name_bytes::<32>("A"),
+        ..Default::default()
+    };
 
     let mut sng = Sng::default();
     sng.chords.push(chord);
@@ -52,10 +54,12 @@ fn beat() {
 
 #[test]
 fn chord_template() {
-    let mut c = Chord::default();
-    c.name = make_name_bytes::<32>("Eb9/A#");
-    c.fingers = [-1, 4, 3, 2, 1, -1];
-    c.frets = [-1, 5, 6, 7, 8, -1];
+    let c = Chord {
+        name: make_name_bytes::<32>("Eb9/A#"),
+        fingers: [-1, 4, 3, 2, 1, -1],
+        frets: [-1, 5, 6, 7, 8, -1],
+        ..Default::default()
+    };
 
     let xml = sng_convert_chord_template(&c);
 
@@ -67,9 +71,11 @@ fn chord_template() {
 
 #[test]
 fn chord_template_arpeggio() {
-    let mut c = Chord::default();
-    c.name = make_name_bytes::<32>("Eb9/A#");
-    c.mask = ChordMask::ARPEGGIO;
+    let c = Chord {
+        name: make_name_bytes::<32>("Eb9/A#"),
+        mask: ChordMask::ARPEGGIO,
+        ..Default::default()
+    };
 
     let xml = sng_convert_chord_template(&c);
 
@@ -78,9 +84,11 @@ fn chord_template_arpeggio() {
 
 #[test]
 fn chord_template_nop() {
-    let mut c = Chord::default();
-    c.name = make_name_bytes::<32>("Eb9/A#");
-    c.mask = ChordMask::NOP;
+    let c = Chord {
+        name: make_name_bytes::<32>("Eb9/A#"),
+        mask: ChordMask::NOP,
+        ..Default::default()
+    };
 
     let xml = sng_convert_chord_template(&c);
 
@@ -90,12 +98,14 @@ fn chord_template_nop() {
 #[test]
 fn phrase() {
     use rocksmith2014_sng::Phrase;
-    let mut p = Phrase::default();
-    p.solo = 1;
-    p.disparity = 1;
-    p.ignore = 1;
-    p.max_difficulty = 25;
-    p.name = make_name_bytes::<32>("thelittleguitarthatcould");
+    let p = Phrase {
+        solo: 1,
+        disparity: 1,
+        ignore: 1,
+        max_difficulty: 25,
+        name: make_name_bytes::<32>("thelittleguitarthatcould"),
+        ..Default::default()
+    };
 
     let xml = sng_convert_phrase(&p);
 
@@ -209,11 +219,13 @@ fn tone() {
 
 #[test]
 fn section() {
-    let mut s = Section::default();
-    s.name = make_name_bytes::<32>("chorus");
-    s.number = 3;
-    s.start_time = 123.456;
-    s.end_time = 789.012;
+    let s = Section {
+        name: make_name_bytes::<32>("chorus"),
+        number: 3,
+        start_time: 123.456,
+        end_time: 789.012,
+        ..Default::default()
+    };
 
     let xml = sng_convert_section(&s);
 

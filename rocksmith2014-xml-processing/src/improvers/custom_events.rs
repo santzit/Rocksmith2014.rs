@@ -1,4 +1,4 @@
-use rocksmith2014_xml::{ArrangementEvent, ChordMask, InstrumentalArrangement};
+use rocksmith2014_xml::{ArrangementEvent, InstrumentalArrangement};
 
 /// Processes custom events in the arrangement.
 /// Handles "w3", "w3-XX", "removebeats", and "so" (slide-out) events.
@@ -39,24 +39,24 @@ pub fn improve(arr: &mut InstrumentalArrangement) {
         .collect();
     for so_time in so_times {
         for level in &mut arr.levels {
-            // Find the chord or chord notes at this time and get max sustain
-            let max_sustain = level
+            // Check for a chord exactly at so_time first
+            let chord_sustain = level
                 .chords
                 .iter()
-                .filter(|c| c.time == so_time || c.mask.contains(ChordMask::LINK_NEXT))
+                .filter(|c| c.time == so_time)
                 .flat_map(|c| c.chord_notes.iter())
                 .map(|cn| cn.sustain)
                 .max();
-            // Also check notes at this time
-            let note_max_sustain = level
+            // Fall back to notes at so_time (link-next case: notes follow a LINK_NEXT chord)
+            let note_sustain = level
                 .notes
                 .iter()
                 .filter(|n| n.time == so_time)
                 .map(|n| n.sustain)
                 .max();
-            let effective_sustain = max_sustain.or(note_max_sustain);
+            let effective_sustain = chord_sustain.or(note_sustain);
             if let Some(sustain) = effective_sustain {
-                // Adjust handshape that starts at or before so_time to end at so_time + sustain
+                // Adjust handshape that contains so_time to end at so_time + sustain
                 if let Some(hs) = level
                     .hand_shapes
                     .iter_mut()
