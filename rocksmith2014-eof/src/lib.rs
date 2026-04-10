@@ -15,3 +15,5 @@ mod write_utils;
 pub use eof_project_writer::{
     write_eof_project, EofProTracks, ImportedArrangement, ImportedVocals, Vocal,
 };
+pub use pro_guitar_writer::prepare_notes;
+pub use types::HsResult;

@@ -553,6 +553,7 @@ name = "rocksmith2014-eof-tests"
 version = "0.1.0"
 dependencies = [
  "rocksmith2014-eof",
+ "rocksmith2014-xml",
 ]
 
 [[package]]
