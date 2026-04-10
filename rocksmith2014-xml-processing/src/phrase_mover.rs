@@ -38,7 +38,9 @@ pub fn improve(arr: &mut InstrumentalArrangement) {
         if !phrase_name.to_lowercase().starts_with("mover") {
             continue;
         }
-        let move_by: usize = phrase_name["mover".len()..].parse().unwrap_or(1);
+        let move_by: usize = phrase_name["mover".len()..]
+            .parse()
+            .unwrap_or_else(|_| panic!("Unable to parse mover number from phrase name '{phrase_name}'"));
 
         let pi_indices: Vec<usize> = arr
             .phrase_iterations
@@ -57,6 +59,13 @@ pub fn improve(arr: &mut InstrumentalArrangement) {
                     for section in &mut arr.sections {
                         if section.start_time == pi_time {
                             section.start_time = new_time;
+                        }
+                    }
+                    for level in &mut arr.levels {
+                        for anchor in &mut level.anchors {
+                            if anchor.time == pi_time {
+                                anchor.time = new_time;
+                            }
                         }
                     }
                 }
