@@ -703,7 +703,10 @@ fn section_last() {
         (sng.end_time - ms_to_sec(test_arr.meta.song_length)).abs() < 1e-3,
         "End time uses song length for the last section"
     );
-    assert_eq!(sng.start_phrase_iteration_id, 4, "Start PI index is correct");
+    assert_eq!(
+        sng.start_phrase_iteration_id, 4,
+        "Start PI index is correct"
+    );
     assert_eq!(sng.end_phrase_iteration_id, 4, "End PI index is correct");
 }
 
@@ -716,13 +719,27 @@ fn section_phrase_iteration_start_end_1_iteration() {
 
     let sng = xml_convert_section(&string_masks, &test_arr, 0, section);
 
-    assert_eq!(sng.start_phrase_iteration_id, 0, "Start PI index is correct");
+    assert_eq!(
+        sng.start_phrase_iteration_id, 0,
+        "Start PI index is correct"
+    );
     assert_eq!(sng.end_phrase_iteration_id, 0, "End PI index is correct");
 }
 
 #[test]
-#[ignore = "Parity placeholder: Section phrase iteration start/end (3) not implemented yet"]
-fn section_phrase_iteration_start_end_3_phrase_iterations() {}
+fn section_phrase_iteration_start_end_3_phrase_iterations() {
+    let test_arr = create_test_arr();
+    let section = &test_arr.sections[0];
+    let string_masks: Vec<Vec<i8>> = vec![vec![]; test_arr.sections.len()];
+
+    let sng = xml_convert_section(&string_masks, &test_arr, 0, section);
+
+    assert_eq!(
+        sng.start_phrase_iteration_id, 0,
+        "Start PI index is correct"
+    );
+    assert_eq!(sng.end_phrase_iteration_id, 2, "End PI index is correct");
+}
 
 #[test]
 #[ignore = "Parity placeholder: Anchor conversion variant not implemented yet"]
