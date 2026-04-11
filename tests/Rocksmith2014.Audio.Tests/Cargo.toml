@@ -6,6 +6,9 @@ publish = false
 
 [dev-dependencies]
 rocksmith2014-audio = { path = "../../rocksmith2014-audio" }
+rocksmith2014-psarc = { path = "../../rocksmith2014-psarc" }
+tempfile = "3"
+hound = "3.5.1"
 
 [[test]]
 name = "UtilsTests"
@@ -26,3 +29,7 @@ path = "ConversionTests.rs"
 [[test]]
 name = "WwiseTests"
 path = "WwiseTests.rs"
+
+[[test]]
+name = "DlcWemLengthTests"
+path = "DlcWemLengthTests.rs"

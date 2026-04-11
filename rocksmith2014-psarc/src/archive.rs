@@ -170,31 +170,34 @@ impl<R: Read + Seek> Psarc<R> {
 
         while (result.len() as u64) < entry.length {
             let remaining = (entry.length - result.len() as u64) as usize;
+            let uncompressed_block_size = block_size.min(remaining);
             let compressed_size = self.block_sizes[z_index] as usize;
-
-            if compressed_size == 0 {
-                // Raw full block; never exceeds `entry.length` because we stop early.
-                let to_read = block_size.min(remaining);
-                let mut buf = vec![0u8; to_read];
-                self.source.read_exact(&mut buf)?;
-                result.extend_from_slice(&buf);
+            let stored_size = if compressed_size == 0 {
+                uncompressed_block_size
             } else {
-                let mut buf = vec![0u8; compressed_size];
-                self.source.read_exact(&mut buf)?;
+                compressed_size
+            };
+            let mut buf = vec![0u8; stored_size];
+            self.source.read_exact(&mut buf)?;
 
-                if has_zlib_header(&buf) {
-                    let mut decoder = ZlibDecoder::new(Cursor::new(&buf));
-                    let mut decompressed = Vec::new();
-                    if decoder.read_to_end(&mut decompressed).is_ok() {
-                        result.extend_from_slice(&decompressed);
-                    } else {
-                        // Edge case: a .wem block may start with zlib-like bytes
-                        // but is not actually compressed.
-                        result.extend_from_slice(&buf);
-                    }
+            if has_zlib_header(&buf) {
+                let mut decoder = ZlibDecoder::new(Cursor::new(&buf));
+                let mut decompressed = Vec::new();
+                if decoder.read_to_end(&mut decompressed).is_ok()
+                    && decoder.into_inner().position() as usize == buf.len()
+                    && decompressed.len() == uncompressed_block_size
+                {
+                    result.extend_from_slice(&decompressed);
                 } else {
-                    result.extend_from_slice(&buf);
+                    // Edge case: a block may start with zlib-like bytes but is
+                    // not actually zlib-compressed (decode failed, consumed only
+                    // part of the buffer, or decompressed to an unexpected size).
+                    let take = remaining.min(buf.len());
+                    result.extend_from_slice(&buf[..take]);
                 }
+            } else {
+                let take = remaining.min(buf.len());
+                result.extend_from_slice(&buf[..take]);
             }
 
             z_index += 1;
