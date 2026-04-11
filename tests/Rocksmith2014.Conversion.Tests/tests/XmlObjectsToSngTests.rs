@@ -1001,8 +1001,50 @@ fn note_hand_shape_id() {
 }
 
 #[test]
-#[ignore = "Parity placeholder: Note hand shape id arpeggio behavior not implemented yet"]
-fn note_hand_shape_id_arpeggio() {}
+fn note_hand_shape_id_arpeggio() {
+    let note = Note {
+        time: 1500,
+        string: 1,
+        fret: 5,
+        ..Default::default()
+    };
+    let arpeggios = vec![rocksmith2014_sng::FingerPrint {
+        chord_id: 3,
+        start_time: 1.4,
+        end_time: 1.8,
+        first_note_time: 1.5,
+        last_note_time: 1.5,
+    }];
+
+    let mut test_arr = create_test_arr();
+    test_arr.levels[0].notes.push(note.clone());
+
+    let note_times = note_times_from_level(&test_arr.levels[0]);
+    let pi_times = test_pi_times(&test_arr);
+    let mut accu = AccuData::init(&test_arr);
+    let mut converter = NoteConverter::new(
+        &note_times,
+        &pi_times,
+        &[],
+        &arpeggios,
+        &mut accu,
+        flag_on_anchor_change,
+        &test_arr,
+        0,
+    );
+
+    let sng = converter.call(0, XmlEntity::Note(note));
+
+    assert_eq!(sng.finger_print_id[0], -1, "Hand shape ID remains unset");
+    assert_eq!(
+        sng.finger_print_id[1], 0,
+        "Arpeggio ID references the first fingerprint (index 0)"
+    );
+    assert!(
+        sng.mask.contains(rocksmith2014_sng::NoteMask::ARPEGGIO),
+        "Arpeggio flag is set when arpeggio fingerprint is assigned"
+    );
+}
 
 #[test]
 #[ignore = "Parity placeholder: Chord double stop/arpeggio/no chord notes not implemented yet"]
