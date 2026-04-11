@@ -1047,8 +1047,55 @@ fn note_hand_shape_id_arpeggio() {
 }
 
 #[test]
-#[ignore = "Parity placeholder: Chord double stop/arpeggio/no chord notes not implemented yet"]
-fn chord_double_stop_arpeggio_no_chord_notes() {}
+fn chord_double_stop_arpeggio_no_chord_notes() {
+    let chord = Chord {
+        time: 1_250,
+        chord_id: 1,
+        chord_notes: vec![rocksmith2014_xml::ChordNote {
+            string: 0,
+            fret: 3,
+            sustain: 200,
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+
+    let mut test_arr = create_test_arr();
+    test_arr.levels[0].chords.push(chord.clone());
+
+    let note_times = note_times_from_level(&test_arr.levels[0]);
+    let pi_times = test_pi_times(&test_arr);
+    let mut accu = AccuData::init(&test_arr);
+    let mut converter = NoteConverter::new(
+        &note_times,
+        &pi_times,
+        &[],
+        &[],
+        &mut accu,
+        flag_on_anchor_change,
+        &test_arr,
+        0,
+    );
+
+    let sng = converter.call(0, XmlEntity::Chord(chord));
+
+    assert!(
+        sng.mask.contains(rocksmith2014_sng::NoteMask::DOUBLE_STOP),
+        "Double-stop flag is set from two-string chord template"
+    );
+    assert!(
+        sng.mask.contains(rocksmith2014_sng::NoteMask::ARPEGGIO),
+        "Arpeggio flag is set from -arp chord template"
+    );
+    assert_eq!(
+        sng.chord_notes_id, -1,
+        "Chord notes entry is not created for double-stop/arpeggio chords"
+    );
+    assert!(
+        !sng.mask.contains(rocksmith2014_sng::NoteMask::CHORD_NOTES),
+        "CHORD_NOTES flag is not set for double-stop/arpeggio chords"
+    );
+}
 
 #[test]
 fn chord_mask() {
