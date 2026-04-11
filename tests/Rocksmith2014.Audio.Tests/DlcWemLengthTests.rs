@@ -1,6 +1,6 @@
 //! DLC WEM duration checks.
 //!
-//! Verifies that all non-preview WEM files contained in `tests/DLC/*.psarc`
+//! Verifies that all WEM files contained in `tests/DLC/*.psarc`
 //! decode to at least one minute of audio.
 
 use rocksmith2014_audio::conversion;
@@ -8,12 +8,7 @@ use rocksmith2014_psarc::Psarc;
 use std::fs;
 use std::path::{Path, PathBuf};
 
-const MIN_EXPECTED_DURATION_SECS: f64 = 15.0;
-
-fn is_preview_wem(path: &str) -> bool {
-    let lower = path.to_ascii_lowercase();
-    lower.ends_with("_preview.wem") || lower.contains("/preview/")
-}
+const MIN_REQUIRED_DURATION_SECS: f64 = 60.0;
 
 fn sanitize_filename(name: &str) -> String {
     name.chars()
@@ -22,6 +17,14 @@ fn sanitize_filename(name: &str) -> String {
             _ => c,
         })
         .collect()
+}
+
+fn header_hex(data: &[u8], take: usize) -> String {
+    data.iter()
+        .take(take)
+        .map(|b| format!("{:02X}", b))
+        .collect::<Vec<_>>()
+        .join(" ")
 }
 
 #[test]
@@ -38,10 +41,12 @@ fn all_dlc_main_wem_files_are_at_least_one_minute() {
         .collect();
     psarc_files.sort();
 
-    assert!(!psarc_files.is_empty(), "no DLC psarc files found in tests/DLC");
+    assert!(
+        !psarc_files.is_empty(),
+        "no DLC psarc files found in tests/DLC"
+    );
 
     let mut checked = 0usize;
-    let mut skipped_preview = 0usize;
     let mut failures = Vec::new();
 
     for psarc_path in psarc_files {
@@ -49,15 +54,18 @@ fn all_dlc_main_wem_files_are_at_least_one_minute() {
         let wem_entries: Vec<String> = psarc
             .manifest()
             .iter()
-            .filter(|name| name.ends_with(".wem") && !is_preview_wem(name))
+            .filter(|name| name.ends_with(".wem"))
             .cloned()
             .collect();
 
-        let mut psarc_wem_results = Vec::new();
-
         for (index, wem_entry) in wem_entries.into_iter().enumerate() {
-
             let wem_data = psarc.inflate_file(&wem_entry).expect("inflate wem");
+            let wem_size_bytes = wem_data.len();
+            let wem_magic = if wem_data.len() >= 4 {
+                std::str::from_utf8(&wem_data[0..4]).unwrap_or("????")
+            } else {
+                "????"
+            };
             let psarc_name = psarc_path
                 .file_stem()
                 .and_then(|s| s.to_str())
@@ -74,7 +82,7 @@ fn all_dlc_main_wem_files_are_at_least_one_minute() {
                 sanitize_filename(wem_file_name)
             );
             let wem_path = temp_dir.path().join(base_name);
-            fs::write(&wem_path, wem_data).expect("write temp wem");
+            fs::write(&wem_path, &wem_data).expect("write temp wem");
 
             conversion::wem_to_wav(&wem_path).expect("convert wem to wav");
             // `wem_to_wav` writes output by swapping extension to `.wav`.
@@ -85,43 +93,36 @@ fn all_dlc_main_wem_files_are_at_least_one_minute() {
             let duration_secs = total_samples as f64 / spec.sample_rate as f64;
 
             println!("=== WEM: {} ===", wem_entry);
+            println!("  Track/package:    {}", psarc_name);
+            println!("  File name:        {}", wem_file_name);
+            println!("  WEM bytes:        {}", wem_size_bytes);
+            println!("  Header magic:     {}", wem_magic);
+            println!("  Header bytes:     {}", header_hex(&wem_data, 16));
             println!("  Sample rate:      {} Hz", spec.sample_rate);
             println!("  Channels:         {}", spec.channels);
             println!("  Total samples:    {}", total_samples);
             println!("  Duration:         {:.2} s", duration_secs);
 
-            psarc_wem_results.push((wem_entry, duration_secs));
-        }
-
-        let psarc_has_long_track = psarc_wem_results
-            .iter()
-            .any(|(_, duration)| *duration >= MIN_EXPECTED_DURATION_SECS);
-
-        for (wem_entry, duration_secs) in psarc_wem_results {
             checked += 1;
 
-            if duration_secs < MIN_EXPECTED_DURATION_SECS {
-                if psarc_has_long_track {
-                    skipped_preview += 1;
-                    println!("  PREVIEW (ignored for 60-second check)");
-                } else {
-                    println!("  FAIL");
-                    failures.push(format!(
-                        "{} :: {} ({:.2}s)",
-                        psarc_path.display(),
-                        wem_entry,
-                        duration_secs
-                    ));
-                }
+            if duration_secs < MIN_REQUIRED_DURATION_SECS {
+                println!("  FAIL");
+                failures.push(format!(
+                    "{} :: {} ({:.2}s)",
+                    psarc_path.display(),
+                    wem_entry,
+                    duration_secs
+                ));
             } else {
                 println!("  SUCCESS");
             }
         }
     }
 
-    assert!(checked > 0, "no non-preview WEM files were found in tests/DLC");
-    // Informational only: preview counts vary by DLC package composition.
-    println!("Skipped short preview-like WEM files: {}", skipped_preview);
+    assert!(
+        checked > 0,
+        "no WEM files were found in any PSARC archives under tests/DLC"
+    );
     assert!(
         failures.is_empty(),
         "WEM duration check failed for:\n{}",
