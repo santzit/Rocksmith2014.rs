@@ -688,8 +688,24 @@ fn tone_conversion() {
 }
 
 #[test]
-#[ignore = "Parity placeholder: Section (Last) not implemented yet"]
-fn section_last() {}
+fn section_last() {
+    let test_arr = create_test_arr();
+    let section = &test_arr.sections[2];
+    let string_masks: Vec<Vec<i8>> = vec![vec![]; test_arr.sections.len()];
+
+    let sng = xml_convert_section(&string_masks, &test_arr, 2, section);
+
+    assert!(
+        (sng.start_time - ms_to_sec(section.start_time)).abs() < 1e-3,
+        "Start time is same"
+    );
+    assert!(
+        (sng.end_time - ms_to_sec(test_arr.meta.song_length)).abs() < 1e-3,
+        "End time uses song length for the last section"
+    );
+    assert_eq!(sng.start_phrase_iteration_id, 4, "Start PI index is correct");
+    assert_eq!(sng.end_phrase_iteration_id, 4, "End PI index is correct");
+}
 
 #[test]
 #[ignore = "Parity placeholder: Section phrase iteration start/end (1) not implemented yet"]
