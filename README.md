@@ -22,7 +22,7 @@ A port of the [Rocksmith2014.NET](https://github.com/iminashi/Rocksmith2014.NET)
 | PSARC | 9 | 10 | 10 | 0 | 0 |
 | SNG | 32 | 34 | 34 | 0 | 0 |
 | XML | 45 | 50 | 50 | 0 | 0 |
-| XML Processing | 176 | 168 | 168 | 0 | 0 |
+| XML Processing | 176 | 176 | 176 | 0 | 0 |
 
 ## Libraries
 

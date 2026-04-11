@@ -4,7 +4,8 @@ use rocksmith2014_xml::{
 };
 use rocksmith2014_xml_processing::improvers::custom_events::improve as improve_custom_events;
 use rocksmith2014_xml_processing::improvers::improver::{
-    add_crowd_events, apply_all_improvements, process_chord_names, remove_extra_beats,
+    add_crowd_events, apply_all_improvements, apply_minimum_improvements, process_chord_names,
+    remove_extra_beats,
 };
 
 #[test]
@@ -845,4 +846,203 @@ fn removes_harmonic_mask_from_notes() {
     remove_harmonic_mask(&mut arr);
     assert!(!arr.levels[0].notes[0].mask.contains(NoteMask::HARMONIC));
     assert!(arr.levels[0].notes[1].mask.contains(NoteMask::HARMONIC));
+}
+
+#[test]
+fn adds_phrase_start_anchor_from_previous_active_anchor() {
+    let mut arr = InstrumentalArrangement {
+        phrase_iterations: vec![PhraseIteration {
+            time: 1000,
+            phrase_id: 0,
+            ..Default::default()
+        }],
+        levels: vec![Level {
+            anchors: vec![Anchor {
+                time: 900,
+                fret: 5,
+                width: 3,
+                end_time: 0,
+            }],
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+    apply_minimum_improvements(&mut arr);
+    assert_eq!(arr.levels[0].anchors.len(), 2);
+    assert_eq!(arr.levels[0].anchors[1].time, 1000);
+    assert_eq!(arr.levels[0].anchors[1].fret, 5);
+    assert_eq!(arr.levels[0].anchors[1].width, 3);
+}
+
+#[test]
+fn does_not_add_phrase_start_anchor_when_anchor_already_exists() {
+    let mut arr = InstrumentalArrangement {
+        phrase_iterations: vec![PhraseIteration {
+            time: 1000,
+            phrase_id: 0,
+            ..Default::default()
+        }],
+        levels: vec![Level {
+            anchors: vec![
+                Anchor {
+                    time: 900,
+                    fret: 5,
+                    width: 3,
+                    end_time: 0,
+                },
+                Anchor {
+                    time: 1000,
+                    fret: 7,
+                    width: 4,
+                    end_time: 0,
+                },
+            ],
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+    apply_minimum_improvements(&mut arr);
+    assert_eq!(arr.levels[0].anchors.len(), 2);
+    assert_eq!(arr.levels[0].anchors[1].fret, 7);
+}
+
+#[test]
+fn does_not_add_phrase_start_anchor_without_previous_anchor() {
+    let mut arr = InstrumentalArrangement {
+        phrase_iterations: vec![PhraseIteration {
+            time: 1000,
+            phrase_id: 0,
+            ..Default::default()
+        }],
+        levels: vec![Level {
+            anchors: vec![Anchor {
+                time: 1200,
+                fret: 5,
+                width: 3,
+                end_time: 0,
+            }],
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+    apply_minimum_improvements(&mut arr);
+    assert_eq!(arr.levels[0].anchors.len(), 1);
+    assert_eq!(arr.levels[0].anchors[0].time, 1200);
+}
+
+#[test]
+fn phrase_start_anchor_is_inserted_in_sorted_order() {
+    let mut arr = InstrumentalArrangement {
+        phrase_iterations: vec![PhraseIteration {
+            time: 150,
+            phrase_id: 0,
+            ..Default::default()
+        }],
+        levels: vec![Level {
+            anchors: vec![
+                Anchor {
+                    time: 100,
+                    fret: 3,
+                    width: 4,
+                    end_time: 0,
+                },
+                Anchor {
+                    time: 200,
+                    fret: 7,
+                    width: 4,
+                    end_time: 0,
+                },
+            ],
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+    apply_minimum_improvements(&mut arr);
+    assert_eq!(arr.levels[0].anchors.iter().map(|a| a.time).collect::<Vec<_>>(), vec![100, 150, 200]);
+}
+
+#[test]
+fn creates_crowd_events_using_start_beat_when_no_notes_or_chords() {
+    let mut arr = InstrumentalArrangement {
+        meta: MetaData {
+            start_beat: 4000,
+            song_length: 120_000,
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+    add_crowd_events(&mut arr);
+    assert_eq!(arr.events[0].code, "E3");
+    assert_eq!(arr.events[0].time, 4000);
+}
+
+#[test]
+fn crowd_events_are_inserted_in_sorted_order() {
+    let mut arr = InstrumentalArrangement {
+        levels: vec![Level {
+            notes: vec![Note {
+                time: 10_000,
+                ..Default::default()
+            }],
+            ..Default::default()
+        }],
+        events: vec![ArrangementEvent {
+            code: "existing".into(),
+            time: 500,
+        }],
+        meta: MetaData {
+            song_length: 120_000,
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+    add_crowd_events(&mut arr);
+    let times: Vec<i32> = arr.events.iter().map(|e| e.time).collect();
+    assert!(times.windows(2).all(|w| w[0] <= w[1]));
+}
+
+#[test]
+fn remove_extra_beats_does_nothing_when_only_one_beat_exists() {
+    let mut arr = InstrumentalArrangement {
+        ebeats: vec![Ebeat {
+            time: 1000,
+            measure: 1,
+        }],
+        meta: MetaData {
+            song_length: 500,
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+    remove_extra_beats(&mut arr);
+    assert_eq!(arr.ebeats.len(), 1);
+    assert_eq!(arr.ebeats[0].time, 1000);
+}
+
+#[test]
+fn remove_extra_beats_removes_multiple_beats_past_audio_end() {
+    let mut arr = InstrumentalArrangement {
+        ebeats: vec![
+            Ebeat {
+                time: 1000,
+                measure: 1,
+            },
+            Ebeat {
+                time: 2000,
+                measure: 1,
+            },
+            Ebeat {
+                time: 3000,
+                measure: 1,
+            },
+        ],
+        meta: MetaData {
+            song_length: 1500,
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+    remove_extra_beats(&mut arr);
+    assert_eq!(arr.ebeats.len(), 1);
+    assert_eq!(arr.ebeats[0].time, 1500);
 }
