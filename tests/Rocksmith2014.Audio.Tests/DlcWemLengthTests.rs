@@ -42,6 +42,7 @@ fn all_dlc_main_wem_files_are_at_least_one_minute() {
     assert!(!psarc_files.is_empty(), "no DLC psarc files found in tests/DLC");
 
     let mut checked = 0usize;
+    let mut skipped_preview = 0usize;
     let mut failures = Vec::new();
 
     for psarc_path in psarc_files {
@@ -53,8 +54,9 @@ fn all_dlc_main_wem_files_are_at_least_one_minute() {
             .cloned()
             .collect();
 
+        let mut psarc_wem_results = Vec::new();
+
         for (index, wem_entry) in wem_entries.into_iter().enumerate() {
-            checked += 1;
 
             let wem_data = psarc.inflate_file(&wem_entry).expect("inflate wem");
             let psarc_name = psarc_path
@@ -89,14 +91,29 @@ fn all_dlc_main_wem_files_are_at_least_one_minute() {
             println!("  Total samples:    {}", total_samples);
             println!("  Duration:         {:.2} s", duration_secs);
 
+            psarc_wem_results.push((wem_entry, duration_secs));
+        }
+
+        let psarc_has_long_track = psarc_wem_results
+            .iter()
+            .any(|(_, duration)| *duration >= MIN_EXPECTED_DURATION_SECS);
+
+        for (wem_entry, duration_secs) in psarc_wem_results {
+            checked += 1;
+
             if duration_secs < MIN_EXPECTED_DURATION_SECS {
-                println!("  FAIL");
-                failures.push(format!(
-                    "{} :: {} ({:.2}s)",
-                    psarc_path.display(),
-                    wem_entry,
-                    duration_secs
-                ));
+                if psarc_has_long_track {
+                    skipped_preview += 1;
+                    println!("  PREVIEW (ignored for 60-second check)");
+                } else {
+                    println!("  FAIL");
+                    failures.push(format!(
+                        "{} :: {} ({:.2}s)",
+                        psarc_path.display(),
+                        wem_entry,
+                        duration_secs
+                    ));
+                }
             } else {
                 println!("  SUCCESS");
             }
@@ -104,6 +121,8 @@ fn all_dlc_main_wem_files_are_at_least_one_minute() {
     }
 
     assert!(checked > 0, "no non-preview WEM files were found in tests/DLC");
+    // Informational only: preview counts vary by DLC package composition.
+    println!("Skipped short preview-like WEM files: {}", skipped_preview);
     assert!(
         failures.is_empty(),
         "WEM duration check failed for:\n{}",

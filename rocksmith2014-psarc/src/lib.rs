@@ -79,6 +79,7 @@ pub use header::Header;
 mod tests {
     use super::*;
     use crate::archive::{has_zlib_header, z_type};
+    use flate2::{write::ZlibEncoder, Compression};
     use std::io::Cursor;
 
     /// Creates a small in-memory PSARC and reads it back.
@@ -174,6 +175,29 @@ mod tests {
         }];
         let mut psarc = round_trip(entries, false);
         assert_eq!(psarc.inflate_file("song.sng").unwrap(), sng_data);
+    }
+
+    #[test]
+    fn test_plain_wem_with_zlib_like_prefix_not_inflated() {
+        let mut encoded = Vec::new();
+        {
+            let mut z = ZlibEncoder::new(&mut encoded, Compression::best());
+            use std::io::Write;
+            z.write_all(b"short").unwrap();
+            z.finish().unwrap();
+        }
+        encoded.extend_from_slice(b"__trailing_plain_wem_bytes__");
+
+        let entries = vec![NamedEntry {
+            name: "audio/windows/test.wem".to_string(),
+            data: encoded.clone(),
+        }];
+        let mut psarc = round_trip(entries, false);
+
+        assert_eq!(
+            psarc.inflate_file("audio/windows/test.wem").unwrap(),
+            encoded
+        );
     }
 
     #[test]
