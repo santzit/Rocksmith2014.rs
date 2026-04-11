@@ -4,8 +4,9 @@
 
 use rocksmith2014_conversion::{
     flag_on_anchor_change, make_beat_converter, xml_convert_bend_value, xml_convert_chord_template,
-    xml_convert_level, xml_convert_phrase, xml_convert_phrase_iteration, xml_convert_section,
-    xml_convert_vocal, xml_create_dnas, xml_create_meta_data, AccuData, NoteConverter, XmlEntity,
+    xml_convert_event, xml_convert_level, xml_convert_phrase, xml_convert_phrase_iteration,
+    xml_convert_section, xml_convert_vocal, xml_create_dnas, xml_create_meta_data, AccuData,
+    NoteConverter, XmlEntity,
 };
 use rocksmith2014_xml::{
     Anchor, ArrangementEvent, BendValue, ChordTemplate, Ebeat, InstrumentalArrangement, Level,
@@ -634,3 +635,99 @@ fn level_conversion() {
         "Anchor count is same"
     );
 }
+
+#[test]
+#[ignore = "Parity placeholder: Phrase Iteration (Last) not implemented yet"]
+fn phrase_iteration_last() {}
+
+#[test]
+#[ignore = "Parity placeholder: New Linked Difficulty conversion not implemented yet"]
+fn new_linked_difficulty() {}
+
+#[test]
+fn event_conversion() {
+    let e = ArrangementEvent {
+        time: 1_750_735,
+        code: "wedge_cutoff".into(),
+    };
+
+    let sng = xml_convert_event(&e);
+    assert!((sng.time - ms_to_sec(e.time)).abs() < 1e-3, "Time is same");
+    assert_eq!(&sng.name[..12], b"wedge_cutoff", "Code/name is same");
+}
+
+#[test]
+#[ignore = "Parity placeholder: Tone conversion test variant not implemented yet"]
+fn tone_conversion() {}
+
+#[test]
+#[ignore = "Parity placeholder: Section (Last) not implemented yet"]
+fn section_last() {}
+
+#[test]
+#[ignore = "Parity placeholder: Section phrase iteration start/end (1) not implemented yet"]
+fn section_phrase_iteration_start_end_1_iteration() {}
+
+#[test]
+#[ignore = "Parity placeholder: Section phrase iteration start/end (3) not implemented yet"]
+fn section_phrase_iteration_start_end_3_phrase_iterations() {}
+
+#[test]
+#[ignore = "Parity placeholder: Anchor conversion variant not implemented yet"]
+fn anchor_conversion() {}
+
+#[test]
+#[ignore = "Parity placeholder: Hand Shape conversion variant not implemented yet"]
+fn hand_shape_conversion() {}
+
+#[test]
+#[ignore = "Parity placeholder: Hand Shape last note time behavior not implemented yet"]
+fn hand_shape_last_note_time_for_sustained_chord() {}
+
+#[test]
+#[ignore = "Parity placeholder: Note conversion coverage not implemented yet"]
+fn note_conversion() {}
+
+#[test]
+#[ignore = "Parity placeholder: Note next/previous IDs behavior not implemented yet"]
+fn note_next_previous_note_ids() {}
+
+#[test]
+#[ignore = "Parity placeholder: Note link next behavior not implemented yet"]
+fn note_link_next() {}
+
+#[test]
+#[ignore = "Parity placeholder: Note hand shape id behavior not implemented yet"]
+fn note_hand_shape_id() {}
+
+#[test]
+#[ignore = "Parity placeholder: Note hand shape id arpeggio behavior not implemented yet"]
+fn note_hand_shape_id_arpeggio() {}
+
+#[test]
+#[ignore = "Parity placeholder: Chord double stop/arpeggio/no chord notes not implemented yet"]
+fn chord_double_stop_arpeggio_no_chord_notes() {}
+
+#[test]
+#[ignore = "Parity placeholder: Chord mask behavior not implemented yet"]
+fn chord_mask() {}
+
+#[test]
+#[ignore = "Parity placeholder: Chord link next behavior not implemented yet"]
+fn chord_link_next() {}
+
+#[test]
+#[ignore = "Parity placeholder: Chord notes creation behavior not implemented yet"]
+fn chord_notes_are_created_when_needed() {}
+
+#[test]
+#[ignore = "Parity placeholder: Chord notes omission behavior not implemented yet"]
+fn chord_notes_are_not_created_when_not_needed() {}
+
+#[test]
+#[ignore = "Parity placeholder: Anchor extensions for slide notes not implemented yet"]
+fn anchor_extensions_are_created_for_slide_notes() {}
+
+#[test]
+#[ignore = "Parity placeholder: Section string mask behavior not implemented yet"]
+fn section_string_mask() {}
