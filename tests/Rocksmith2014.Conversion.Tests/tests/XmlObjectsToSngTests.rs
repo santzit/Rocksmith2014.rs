@@ -5,7 +5,7 @@
 use rocksmith2014_conversion::{
     flag_on_anchor_change, make_beat_converter, xml_convert_bend_value, xml_convert_chord_template,
     xml_convert_level, xml_convert_phrase, xml_convert_phrase_iteration, xml_convert_section,
-    AccuData, NoteConverter, XmlEntity,
+    xml_convert_vocal, xml_create_dnas, xml_create_meta_data, AccuData, NoteConverter, XmlEntity,
 };
 use rocksmith2014_xml::{
     Anchor, ArrangementEvent, BendValue, ChordTemplate, Ebeat, InstrumentalArrangement, Level,
@@ -16,6 +16,7 @@ use rocksmith2014_xml::{Chord, Phrase as XmlPhrase};
 fn create_test_arr() -> InstrumentalArrangement {
     let mut arr = InstrumentalArrangement::default();
     arr.meta.song_length = 4_784_455;
+    arr.meta.start_beat = 1000;
 
     let f1 = [1i8; 6];
     let f2 = [1i8, 1, -1, -1, -1, -1];
@@ -244,8 +245,20 @@ fn beats() {
 }
 
 #[test]
-#[ignore = "convert_vocal (single) is not publicly exported from rocksmith2014-conversion"]
-fn vocal() {}
+fn vocal() {
+    let v = rocksmith2014_xml::Vocal {
+        time: 54_132,
+        length: 22_222,
+        lyric: "Hello".into(),
+        note: 77,
+    };
+
+    let sng = xml_convert_vocal(&v);
+    assert!((sng.time - ms_to_sec(v.time)).abs() < 1e-3, "Time is same");
+    assert!((sng.length - ms_to_sec(v.length)).abs() < 1e-3, "Length is same");
+    assert_eq!(&sng.lyric[..5], b"Hello", "Lyric is same");
+    assert_eq!(sng.note, v.note as i32, "Note is same");
+}
 
 #[test]
 fn phrase() {
@@ -408,12 +421,28 @@ fn section_conversion() {
 }
 
 #[test]
-#[ignore = "create_dnas is not publicly exported from rocksmith2014-conversion"]
-fn events_to_dnas() {}
+fn events_to_dnas() {
+    let test_arr = create_test_arr();
+    let dnas = xml_create_dnas(&test_arr);
+    assert_eq!(dnas.len(), 4, "DNA count is correct");
+    assert_eq!(dnas[3].dna_id, 2, "Last DNA ID is correct");
+}
 
 #[test]
-#[ignore = "create_meta_data is not publicly exported from rocksmith2014-conversion"]
-fn meta_data() {}
+fn meta_data() {
+    let test_arr = create_test_arr();
+    let accu = AccuData::init(&test_arr);
+    let md = xml_create_meta_data(&accu, 10.0, &test_arr);
+    assert_eq!(md.max_score, 100_000.0, "Max score is correct");
+    assert_eq!(md.start_time, 1.0, "Start time is correct");
+    assert_eq!(md.capo_fret_id, -1, "Capo fret is correct");
+    assert_eq!(md.part, test_arr.meta.part as i16, "Part is same");
+    assert!(
+        (md.song_length - ms_to_sec(test_arr.meta.song_length)).abs() < 1e-3,
+        "Song length is same"
+    );
+    assert_eq!(md.tuning, test_arr.meta.tuning.strings.to_vec(), "Tuning is same");
+}
 
 #[test]
 fn note_mask_1() {

@@ -4,13 +4,15 @@
 
 use rocksmith2014_conversion::{
     sng_convert_anchor, sng_convert_beat, sng_convert_bend_value, sng_convert_chord,
-    sng_convert_chord_template, sng_convert_event, sng_convert_hand_shape, sng_convert_level,
-    sng_convert_note, sng_convert_phrase, sng_convert_phrase_extra_info,
+    sng_convert_bend_data32, sng_convert_chord_template, sng_convert_event, sng_convert_hand_shape,
+    sng_convert_level, sng_convert_note, sng_convert_phrase, sng_convert_phrase_extra_info,
     sng_convert_phrase_iteration, sng_convert_section, sng_convert_tone,
+    sng_convert_symbol_definition, sng_convert_vocal,
 };
 use rocksmith2014_sng::{
-    Anchor, Beat, BeatMask, BendValue, Chord, ChordMask, ChordNotes, Event, FingerPrint, Level,
-    Note, NoteMask, PhraseExtraInfo, PhraseIteration, Section, Sng, Tone,
+    Anchor, Beat, BeatMask, BendData32, BendValue, Chord, ChordMask, ChordNotes, Event,
+    FingerPrint, Level, Note, NoteMask, PhraseExtraInfo, PhraseIteration, Rect, Section, Sng,
+    SymbolDefinition, Tone, Vocal,
 };
 use rocksmith2014_xml::NoteMask as XmlNoteMask;
 
@@ -131,20 +133,83 @@ fn bend_value() {
 }
 
 #[test]
-#[ignore = "convert_bend_data32 is not publicly exported from rocksmith2014-conversion"]
-fn bend_data32_empty() {}
+fn bend_data32_empty() {
+    let bd = BendData32::default();
+    let xml = sng_convert_bend_data32(&bd);
+    assert!(xml.is_none(), "None is returned for empty bend data");
+}
 
 #[test]
-#[ignore = "convert_bend_data32 is not publicly exported from rocksmith2014-conversion"]
-fn bend_data32() {}
+fn bend_data32() {
+    let mut bd = BendData32::default();
+    bd.bend_values[0] = BendValue {
+        time: 11.111,
+        step: 2.5,
+        unused: 0,
+    };
+    bd.bend_values[1] = BendValue {
+        time: 22.222,
+        step: 1.5,
+        unused: 0,
+    };
+    bd.used_count = 2;
+
+    let xml = sng_convert_bend_data32(&bd).expect("bend data should be present");
+    assert_eq!(xml.len(), bd.used_count as usize, "Count is same");
+    assert_eq!(xml[0].time, 11_111, "Time code of first bend value is same");
+    assert_eq!(xml[1].step, 1.5, "Step of second bend value is same");
+}
 
 #[test]
-#[ignore = "convert_vocal is not publicly exported from rocksmith2014-conversion"]
-fn vocal() {}
+fn vocal() {
+    let mut lyric = [0u8; 48];
+    lyric[..4].copy_from_slice(b"end+");
+    let v = Vocal {
+        time: 87.999,
+        note: 77,
+        length: 4.654,
+        lyric,
+    };
+
+    let xml = sng_convert_vocal(&v);
+    assert_eq!(xml.lyric, "end+", "Lyric is same");
+    assert_eq!(xml.time, 87_999, "Time code is same");
+    assert_eq!(xml.length, 4_654, "Length is same");
+    assert_eq!(xml.note, 77, "Note is same");
+}
 
 #[test]
-#[ignore = "convert_symbol_definition is not publicly exported from rocksmith2014-conversion"]
-fn symbol_definition() {}
+fn symbol_definition() {
+    let mut symbol = [0u8; 12];
+    let bytes = "轟".as_bytes();
+    symbol[..bytes.len()].copy_from_slice(bytes);
+    let sd = SymbolDefinition {
+        symbol,
+        outer: Rect {
+            ymin: 0.12,
+            ymax: 0.77,
+            xmin: 0.05,
+            xmax: 1.7,
+        },
+        inner: Rect {
+            ymin: 4.7,
+            ymax: 1.11,
+            xmin: 55.5,
+            xmax: 2.8,
+        },
+    };
+
+    let xml = sng_convert_symbol_definition(&sd);
+    assert_eq!(xml.symbol, "轟", "Symbol is same");
+    assert_eq!(xml.outer_y_min, sd.outer.ymin, "Outer Y Min is same");
+    assert_eq!(xml.outer_y_max, sd.outer.ymax, "Outer Y Max is same");
+    assert_eq!(xml.outer_x_min, sd.outer.xmin, "Outer X Min is same");
+    assert_eq!(xml.outer_x_max, sd.outer.xmax, "Outer X Max is same");
+    assert_eq!(xml.inner_y_min, sd.inner.ymin, "Inner Y Min is same");
+    assert_eq!(xml.inner_y_max, sd.inner.ymax, "Inner Y Max is same");
+    assert_eq!(xml.inner_x_min, sd.inner.xmin, "Inner X Min is same");
+    assert_eq!(xml.inner_x_max, sd.inner.xmax, "Inner X Max is same");
+}
 
 #[test]
 fn phrase_iteration() {
@@ -185,7 +250,7 @@ fn phrase_properties() {
 }
 
 #[test]
-#[ignore = "convert_nld is not publicly exported from rocksmith2014-conversion"]
+#[ignore = "NewLinkedDiff XML type is not implemented in rocksmith2014-xml yet"]
 fn new_linked_difficulty() {}
 
 #[test]
