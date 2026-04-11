@@ -3,10 +3,10 @@
 //! Mirrors `XmlObjectsToSngTests.fs` in Rocksmith2014.Conversion.Tests (.NET).
 
 use rocksmith2014_conversion::{
-    flag_on_anchor_change, make_beat_converter, xml_convert_bend_value, xml_convert_chord_template,
-    xml_convert_event, xml_convert_level, xml_convert_phrase, xml_convert_phrase_iteration,
-    xml_convert_section, xml_convert_tone, xml_convert_vocal, xml_create_dnas,
-    xml_create_meta_data, AccuData, NoteConverter, XmlEntity,
+    flag_on_anchor_change, make_beat_converter, xml_convert_anchor, xml_convert_bend_value,
+    xml_convert_chord_template, xml_convert_event, xml_convert_level, xml_convert_phrase,
+    xml_convert_phrase_iteration, xml_convert_section, xml_convert_tone, xml_convert_vocal,
+    xml_create_dnas, xml_create_meta_data, AccuData, NoteConverter, XmlEntity,
 };
 use rocksmith2014_xml::{
     Anchor, ArrangementEvent, BendValue, ChordTemplate, Ebeat, InstrumentalArrangement, Level,
@@ -742,8 +742,45 @@ fn section_phrase_iteration_start_end_3_phrase_iterations() {
 }
 
 #[test]
-#[ignore = "Parity placeholder: Anchor conversion variant not implemented yet"]
-fn anchor_conversion() {}
+fn anchor_conversion() {
+    let mut test_arr = create_test_arr();
+    test_arr.levels[0].notes.push(Note {
+        time: 1_500,
+        sustain: 100,
+        ..Default::default()
+    });
+    test_arr.levels[0].notes.push(Note {
+        time: 1_900,
+        sustain: 50,
+        ..Default::default()
+    });
+    let level = &test_arr.levels[0];
+    let note_times = note_times_from_level(level);
+    let xml_notes = level.notes.clone();
+    let anchor = &level.anchors[0];
+
+    let sng = xml_convert_anchor(&xml_notes, &note_times, level, &test_arr, 0, anchor);
+
+    assert!(
+        (sng.start_time - ms_to_sec(anchor.time)).abs() < 1e-3,
+        "Start time is same"
+    );
+    assert!(
+        (sng.end_time - 2.0).abs() < 1e-3,
+        "End time is next anchor time"
+    );
+    assert!(
+        (sng.first_note_time - 1.5).abs() < 1e-3,
+        "First note time is same"
+    );
+    assert!(
+        (sng.last_note_time - 1.9).abs() < 1e-3,
+        "Last note time is same"
+    );
+    assert_eq!(sng.fret_id, anchor.fret, "Fret is same");
+    assert_eq!(sng.width, anchor.width, "Width is same");
+    assert_eq!(sng.phrase_iteration_id, 0, "Phrase iteration id is same");
+}
 
 #[test]
 #[ignore = "Parity placeholder: Hand Shape conversion variant not implemented yet"]
