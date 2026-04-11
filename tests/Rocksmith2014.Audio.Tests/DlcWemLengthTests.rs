@@ -8,6 +8,8 @@ use rocksmith2014_psarc::Psarc;
 use std::fs;
 use std::path::{Path, PathBuf};
 
+const MIN_EXPECTED_DURATION_SECS: f64 = 60.0;
+
 fn is_preview_wem(path: &str) -> bool {
     let lower = path.to_ascii_lowercase();
     lower.ends_with("_preview.wem") || lower.contains("/preview/")
@@ -51,7 +53,7 @@ fn all_dlc_main_wem_files_are_at_least_one_minute() {
             .cloned()
             .collect();
 
-        for wem_entry in wem_entries {
+        for (index, wem_entry) in wem_entries.into_iter().enumerate() {
             checked += 1;
 
             let wem_data = psarc.inflate_file(&wem_entry).expect("inflate wem");
@@ -63,11 +65,18 @@ fn all_dlc_main_wem_files_are_at_least_one_minute() {
                 .file_name()
                 .and_then(|s| s.to_str())
                 .unwrap_or("audio.wem");
-            let base_name = format!("{}_{}", psarc_name, sanitize_filename(wem_file_name));
+            let base_name = format!(
+                "{}_{}_{}_{}",
+                psarc_name,
+                index,
+                sanitize_filename(&wem_entry),
+                sanitize_filename(wem_file_name)
+            );
             let wem_path = temp_dir.path().join(base_name);
             fs::write(&wem_path, wem_data).expect("write temp wem");
 
             conversion::wem_to_wav(&wem_path).expect("convert wem to wav");
+            // `wem_to_wav` writes output by swapping extension to `.wav`.
             let wav_path = wem_path.with_extension("wav");
             let wav_reader = hound::WavReader::open(&wav_path).expect("open converted wav");
             let spec = wav_reader.spec();
@@ -80,7 +89,7 @@ fn all_dlc_main_wem_files_are_at_least_one_minute() {
             println!("  Total samples:    {}", total_samples);
             println!("  Duration:         {:.2} s", duration_secs);
 
-            if duration_secs < 60.0 {
+            if duration_secs < MIN_EXPECTED_DURATION_SECS {
                 println!("  FAIL");
                 failures.push(format!(
                     "{} :: {} ({:.2}s)",
