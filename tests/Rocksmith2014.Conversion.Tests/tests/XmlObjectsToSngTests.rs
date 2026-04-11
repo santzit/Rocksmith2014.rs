@@ -1055,8 +1055,64 @@ fn chord_double_stop_arpeggio_no_chord_notes() {}
 fn chord_mask() {}
 
 #[test]
-#[ignore = "Parity placeholder: Chord link next behavior not implemented yet"]
-fn chord_link_next() {}
+fn chord_link_next() {
+    let c1 = Chord {
+        time: 1_000,
+        chord_id: 0,
+        mask: rocksmith2014_xml::ChordMask::LINK_NEXT,
+        chord_notes: vec![rocksmith2014_xml::ChordNote {
+            string: 1,
+            fret: 3,
+            mask: rocksmith2014_xml::NoteMask::LINK_NEXT,
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+    let c2 = Chord {
+        time: 1_500,
+        chord_id: 0,
+        chord_notes: vec![rocksmith2014_xml::ChordNote {
+            string: 1,
+            fret: 5,
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+
+    let mut test_arr = create_test_arr();
+    test_arr.levels[0].chords.push(c1.clone());
+    test_arr.levels[0].chords.push(c2.clone());
+
+    let note_times = note_times_from_level(&test_arr.levels[0]);
+    let pi_times = test_pi_times(&test_arr);
+    let mut accu = AccuData::init(&test_arr);
+    let mut converter = NoteConverter::new(
+        &note_times,
+        &pi_times,
+        &[],
+        &[],
+        &mut accu,
+        flag_on_anchor_change,
+        &test_arr,
+        0,
+    );
+
+    let sng1 = converter.call(0, XmlEntity::Chord(c1));
+    let sng2 = converter.call(1, XmlEntity::Chord(c2));
+
+    assert!(
+        sng1.mask.contains(rocksmith2014_sng::NoteMask::PARENT),
+        "Link-next chord has parent flag"
+    );
+    assert!(
+        sng2.mask.contains(rocksmith2014_sng::NoteMask::CHILD),
+        "Following chord on same string has child flag"
+    );
+    assert_eq!(
+        sng2.parent_prev_note, 0,
+        "Child chord points to parent link-next index"
+    );
+}
 
 #[test]
 #[ignore = "Parity placeholder: Chord notes creation behavior not implemented yet"]
