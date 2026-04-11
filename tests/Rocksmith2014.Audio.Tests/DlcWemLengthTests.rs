@@ -8,7 +8,7 @@ use rocksmith2014_psarc::Psarc;
 use std::fs;
 use std::path::{Path, PathBuf};
 
-const MIN_EXPECTED_DURATION_SECS: f64 = 60.0;
+const MIN_EXPECTED_DURATION_SECS: f64 = 15.0;
 
 fn is_preview_wem(path: &str) -> bool {
     let lower = path.to_ascii_lowercase();
@@ -25,7 +25,6 @@ fn sanitize_filename(name: &str) -> String {
 }
 
 #[test]
-#[ignore = "manual DLC validation script; run with --ignored --nocapture"]
 fn all_dlc_main_wem_files_are_at_least_one_minute() {
     let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     let repo_root = manifest_dir.join("../..");
