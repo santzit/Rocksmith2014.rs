@@ -480,7 +480,10 @@ dependencies = [
 name = "rocksmith2014-audio-tests"
 version = "0.1.0"
 dependencies = [
+ "hound",
  "rocksmith2014-audio",
+ "rocksmith2014-psarc",
+ "tempfile",
 ]
 
 [[package]]
