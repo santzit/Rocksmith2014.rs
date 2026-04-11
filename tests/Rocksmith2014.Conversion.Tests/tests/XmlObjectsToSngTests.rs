@@ -1236,8 +1236,49 @@ fn chord_notes_are_not_created_when_not_needed() {
 }
 
 #[test]
-#[ignore = "Parity placeholder: Anchor extensions for slide notes not implemented yet"]
-fn anchor_extensions_are_created_for_slide_notes() {}
+fn anchor_extensions_are_created_for_slide_notes() {
+    let note = Note {
+        time: 1_500,
+        string: 1,
+        fret: 5,
+        slide_to: 9,
+        sustain: 500,
+        ..Default::default()
+    };
+
+    let mut test_arr = create_test_arr();
+    test_arr.levels[0].notes.push(note.clone());
+
+    let note_times = note_times_from_level(&test_arr.levels[0]);
+    let pi_times = test_pi_times(&test_arr);
+    let mut accu = AccuData::init(&test_arr);
+    let mut converter = NoteConverter::new(
+        &note_times,
+        &pi_times,
+        &[],
+        &[],
+        &mut accu,
+        flag_on_anchor_change,
+        &test_arr,
+        0,
+    );
+
+    let _ = converter.call(0, XmlEntity::Note(note));
+
+    assert_eq!(
+        accu.anchor_extensions[0].len(),
+        1,
+        "One anchor extension is created for sustained slide"
+    );
+    assert!(
+        (accu.anchor_extensions[0][0].beat_time - 2.0).abs() < 1e-3,
+        "Anchor extension beat time is note time plus sustain"
+    );
+    assert_eq!(
+        accu.anchor_extensions[0][0].fret_id, 9,
+        "Anchor extension fret id matches slide target"
+    );
+}
 
 #[test]
 fn section_string_mask() {
