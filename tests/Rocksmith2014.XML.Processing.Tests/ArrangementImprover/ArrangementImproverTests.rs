@@ -958,7 +958,8 @@ fn phrase_start_anchor_is_inserted_in_sorted_order() {
         ..Default::default()
     };
     apply_minimum_improvements(&mut arr);
-    assert_eq!(arr.levels[0].anchors.iter().map(|a| a.time).collect::<Vec<_>>(), vec![100, 150, 200]);
+    let times: Vec<i32> = arr.levels[0].anchors.iter().map(|a| a.time).collect();
+    assert_eq!(times, vec![100, 150, 200]);
 }
 
 #[test]
