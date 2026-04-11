@@ -4,13 +4,13 @@
 
 use rocksmith2014_conversion::{
     flag_on_anchor_change, make_beat_converter, xml_convert_anchor, xml_convert_bend_value,
-    xml_convert_chord_template, xml_convert_event, xml_convert_level, xml_convert_phrase,
-    xml_convert_phrase_iteration, xml_convert_section, xml_convert_tone, xml_convert_vocal,
-    xml_create_dnas, xml_create_meta_data, AccuData, NoteConverter, XmlEntity,
+    xml_convert_chord_template, xml_convert_event, xml_convert_handshape, xml_convert_level,
+    xml_convert_phrase, xml_convert_phrase_iteration, xml_convert_section, xml_convert_tone,
+    xml_convert_vocal, xml_create_dnas, xml_create_meta_data, AccuData, NoteConverter, XmlEntity,
 };
 use rocksmith2014_xml::{
-    Anchor, ArrangementEvent, BendValue, ChordTemplate, Ebeat, InstrumentalArrangement, Level,
-    Note, PhraseIteration, Section, ToneChange,
+    Anchor, ArrangementEvent, BendValue, ChordTemplate, Ebeat, HandShape, InstrumentalArrangement,
+    Level, Note, PhraseIteration, Section, ToneChange,
 };
 use rocksmith2014_xml::{Chord, Phrase as XmlPhrase};
 
@@ -783,8 +783,39 @@ fn anchor_conversion() {
 }
 
 #[test]
-#[ignore = "Parity placeholder: Hand Shape conversion variant not implemented yet"]
-fn hand_shape_conversion() {}
+fn hand_shape_conversion() {
+    let hs = HandShape {
+        chord_id: 3,
+        start_time: 1_400,
+        end_time: 1_800,
+    };
+    let n1 = Note {
+        time: 1_500,
+        sustain: 100,
+        ..Default::default()
+    };
+    let n2 = Note {
+        time: 1_700,
+        sustain: 50,
+        ..Default::default()
+    };
+    let note_times = vec![n1.time, n2.time];
+    let entities = vec![XmlEntity::Note(n1), XmlEntity::Note(n2)];
+
+    let fp = xml_convert_handshape(&note_times, &entities, &hs);
+
+    assert_eq!(fp.chord_id, hs.chord_id, "Chord ID is same");
+    assert!((fp.start_time - 1.4).abs() < 1e-3, "Start time is same");
+    assert!((fp.end_time - 1.8).abs() < 1e-3, "End time is same");
+    assert!(
+        (fp.first_note_time - 1.5).abs() < 1e-3,
+        "First note time is same"
+    );
+    assert!(
+        (fp.last_note_time - 1.7).abs() < 1e-3,
+        "Last note time is same"
+    );
+}
 
 #[test]
 #[ignore = "Parity placeholder: Hand Shape last note time behavior not implemented yet"]
