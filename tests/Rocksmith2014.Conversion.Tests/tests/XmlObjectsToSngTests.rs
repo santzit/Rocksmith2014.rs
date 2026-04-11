@@ -818,8 +818,32 @@ fn hand_shape_conversion() {
 }
 
 #[test]
-#[ignore = "Parity placeholder: Hand Shape last note time behavior not implemented yet"]
-fn hand_shape_last_note_time_for_sustained_chord() {}
+fn hand_shape_last_note_time_for_sustained_chord() {
+    let hs = HandShape {
+        chord_id: 2,
+        start_time: 1_400,
+        end_time: 1_800,
+    };
+    let note = Note {
+        time: 1_500,
+        sustain: 500,
+        ..Default::default()
+    };
+    let note_times = vec![note.time];
+    let entities = vec![XmlEntity::Note(note)];
+
+    let fp = xml_convert_handshape(&note_times, &entities, &hs);
+
+    assert_eq!(fp.chord_id, hs.chord_id, "Chord ID is same");
+    assert!(
+        (fp.first_note_time - 1.5).abs() < 1e-3,
+        "First note time is same"
+    );
+    assert_eq!(
+        fp.last_note_time, -1.0,
+        "Last note time is -1.0 when sustain extends to hand shape end"
+    );
+}
 
 #[test]
 #[ignore = "Parity placeholder: Note conversion coverage not implemented yet"]
