@@ -5,12 +5,12 @@
 use rocksmith2014_conversion::{
     flag_on_anchor_change, make_beat_converter, xml_convert_bend_value, xml_convert_chord_template,
     xml_convert_event, xml_convert_level, xml_convert_phrase, xml_convert_phrase_iteration,
-    xml_convert_section, xml_convert_vocal, xml_create_dnas, xml_create_meta_data, AccuData,
-    NoteConverter, XmlEntity,
+    xml_convert_section, xml_convert_tone, xml_convert_vocal, xml_create_dnas,
+    xml_create_meta_data, AccuData, NoteConverter, XmlEntity,
 };
 use rocksmith2014_xml::{
     Anchor, ArrangementEvent, BendValue, ChordTemplate, Ebeat, InstrumentalArrangement, Level,
-    Note, PhraseIteration, Section,
+    Note, PhraseIteration, Section, ToneChange,
 };
 use rocksmith2014_xml::{Chord, Phrase as XmlPhrase};
 
@@ -657,8 +657,20 @@ fn event_conversion() {
 }
 
 #[test]
-#[ignore = "Parity placeholder: Tone conversion test variant not implemented yet"]
-fn tone_conversion() {}
+fn tone_conversion() {
+    let tone = ToneChange {
+        time: 3_215_123,
+        name: "tone_test".into(),
+        id: 3,
+    };
+
+    let sng = xml_convert_tone(&tone);
+    assert!(
+        (sng.time - ms_to_sec(tone.time)).abs() < 1e-3,
+        "Time is the same"
+    );
+    assert_eq!(sng.tone_id, tone.id, "Tone ID is same");
+}
 
 #[test]
 #[ignore = "Parity placeholder: Section (Last) not implemented yet"]
