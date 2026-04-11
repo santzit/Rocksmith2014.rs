@@ -637,8 +637,23 @@ fn level_conversion() {
 }
 
 #[test]
-#[ignore = "Parity placeholder: Phrase Iteration (Last) not implemented yet"]
-fn phrase_iteration_last() {}
+fn phrase_iteration_last() {
+    let test_arr = create_test_arr();
+    let pi = &test_arr.phrase_iterations[4];
+    let pi_times = test_pi_times(&test_arr);
+
+    let sng = xml_convert_phrase_iteration(&pi_times, 4, pi);
+
+    assert_eq!(sng.phrase_id, pi.phrase_id as i32, "Phrase ID is the same");
+    assert!(
+        (sng.start_time - ms_to_sec(pi.time)).abs() < 1e-3,
+        "Start time is the same"
+    );
+    assert!(
+        (sng.end_time - ms_to_sec(test_arr.meta.song_length)).abs() < 1e-3,
+        "End time uses song length for the last phrase iteration"
+    );
+}
 
 #[test]
 #[ignore = "Parity placeholder: New Linked Difficulty conversion not implemented yet"]
