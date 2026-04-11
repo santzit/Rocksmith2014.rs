@@ -81,7 +81,8 @@ pub use show_light::ShowLight;
 pub use types::{
     Anchor, ArrangementEvent, ArrangementProperties, BendValue, Chord, ChordMask, ChordNote,
     ChordTemplate, Ebeat, HandShape, HeroLevel, InstrumentalArrangement, Level, LinkedDiff,
-    MetaData, Note, NoteMask, Phrase, PhraseIteration, PhraseProperty, Section, ToneChange, Tuning,
+    MetaData, NewLinkedDiff, Note, NoteMask, Phrase, PhraseIteration, PhraseProperty, Section,
+    ToneChange, Tuning,
 };
 pub use vocal::Vocal;
 

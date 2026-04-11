@@ -1,14 +1,15 @@
 use rocksmith2014_sng::{
     Anchor as SngAnchor, Beat as SngBeat, BendData32, BendValue as SngBendValue, Chord as SngChord,
-    Event as SngEvent, FingerPrint as SngFingerPrint, Level as SngLevel, Note as SngNote,
-    NoteMask as SngNoteMask, PhraseExtraInfo, PhraseIteration as SngPhraseIteration,
-    Section as SngSection, Sng, Tone as SngTone,
+    Event as SngEvent, FingerPrint as SngFingerPrint, Level as SngLevel,
+    NewLinkedDifficulty as SngNewLinkedDifficulty, Note as SngNote, NoteMask as SngNoteMask,
+    PhraseExtraInfo, PhraseIteration as SngPhraseIteration, Section as SngSection, Sng,
+    Tone as SngTone,
 };
 use rocksmith2014_xml::{
     Anchor as XmlAnchor, ArrangementEvent, BendValue as XmlBendValue, ChordNote, ChordTemplate,
-    Ebeat, HandShape, HeroLevel, InstrumentalArrangement, Level as XmlLevel, Note as XmlNote,
-    NoteMask as XmlNoteMask, Phrase as XmlPhrase, PhraseIteration as XmlPhraseIteration,
-    PhraseProperty, Section as XmlSection, ToneChange,
+    Ebeat, HandShape, HeroLevel, InstrumentalArrangement, Level as XmlLevel, NewLinkedDiff,
+    Note as XmlNote, NoteMask as XmlNoteMask, Phrase as XmlPhrase,
+    PhraseIteration as XmlPhraseIteration, PhraseProperty, Section as XmlSection, ToneChange,
 };
 
 use crate::utils::{bytes_to_string, sec_to_ms};
@@ -102,6 +103,14 @@ pub fn convert_phrase_extra_info(info: &PhraseExtraInfo) -> PhraseProperty {
         level_jump: info.level_jump as i32,
         empty: info.empty,
         difficulty: info.difficulty,
+    }
+}
+
+/// Converts an SNG NewLinkedDifficulty to an XML NewLinkedDiff.
+pub fn convert_new_linked_difficulty(nld: &SngNewLinkedDifficulty) -> NewLinkedDiff {
+    NewLinkedDiff {
+        level_break: nld.level_break as i8,
+        phrase_ids: nld.nld_phrases.clone(),
     }
 }
 

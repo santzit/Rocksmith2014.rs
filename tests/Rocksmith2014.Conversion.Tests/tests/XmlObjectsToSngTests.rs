@@ -3,19 +3,22 @@
 //! Mirrors `XmlObjectsToSngTests.fs` in Rocksmith2014.Conversion.Tests (.NET).
 
 use rocksmith2014_conversion::{
-    flag_on_anchor_change, make_beat_converter, xml_convert_bend_value, xml_convert_chord_template,
-    xml_convert_level, xml_convert_phrase, xml_convert_phrase_iteration, xml_convert_section,
-    AccuData, NoteConverter, XmlEntity,
+    flag_on_anchor_change, make_beat_converter, xml_convert_anchor, xml_convert_bend_value,
+    xml_convert_chord_template, xml_convert_event, xml_convert_handshape, xml_convert_level,
+    xml_convert_new_linked_difficulty, xml_convert_phrase, xml_convert_phrase_iteration,
+    xml_convert_section, xml_convert_tone, xml_convert_vocal, xml_create_dnas,
+    xml_create_meta_data, AccuData, NoteConverter, XmlEntity,
 };
 use rocksmith2014_xml::{
-    Anchor, ArrangementEvent, BendValue, ChordTemplate, Ebeat, InstrumentalArrangement, Level,
-    Note, PhraseIteration, Section,
+    Anchor, ArrangementEvent, BendValue, ChordTemplate, Ebeat, HandShape, InstrumentalArrangement,
+    Level, NewLinkedDiff, Note, PhraseIteration, Section, ToneChange,
 };
 use rocksmith2014_xml::{Chord, Phrase as XmlPhrase};
 
 fn create_test_arr() -> InstrumentalArrangement {
     let mut arr = InstrumentalArrangement::default();
     arr.meta.song_length = 4_784_455;
+    arr.meta.start_beat = 1000;
 
     let f1 = [1i8; 6];
     let f2 = [1i8, 1, -1, -1, -1, -1];
@@ -244,8 +247,23 @@ fn beats() {
 }
 
 #[test]
-#[ignore = "convert_vocal (single) is not publicly exported from rocksmith2014-conversion"]
-fn vocal() {}
+fn vocal() {
+    let v = rocksmith2014_xml::Vocal {
+        time: 54_132,
+        length: 22_222,
+        lyric: "Hello".into(),
+        note: 77,
+    };
+
+    let sng = xml_convert_vocal(&v);
+    assert!((sng.time - ms_to_sec(v.time)).abs() < 1e-3, "Time is same");
+    assert!(
+        (sng.length - ms_to_sec(v.length)).abs() < 1e-3,
+        "Length is same"
+    );
+    assert_eq!(&sng.lyric[..5], b"Hello", "Lyric is same");
+    assert_eq!(sng.note, v.note as i32, "Note is same");
+}
 
 #[test]
 fn phrase() {
@@ -408,12 +426,32 @@ fn section_conversion() {
 }
 
 #[test]
-#[ignore = "create_dnas is not publicly exported from rocksmith2014-conversion"]
-fn events_to_dnas() {}
+fn events_to_dnas() {
+    let test_arr = create_test_arr();
+    let dnas = xml_create_dnas(&test_arr);
+    assert_eq!(dnas.len(), 4, "DNA count is correct");
+    assert_eq!(dnas[3].dna_id, 2, "Last DNA ID is correct");
+}
 
 #[test]
-#[ignore = "create_meta_data is not publicly exported from rocksmith2014-conversion"]
-fn meta_data() {}
+fn meta_data() {
+    let test_arr = create_test_arr();
+    let accu = AccuData::init(&test_arr);
+    let md = xml_create_meta_data(&accu, 10.0, &test_arr);
+    assert_eq!(md.max_score, 100_000.0, "Max score is correct");
+    assert_eq!(md.start_time, 1.0, "Start time is correct");
+    assert_eq!(md.capo_fret_id, -1, "Capo fret is correct");
+    assert_eq!(md.part, test_arr.meta.part as i16, "Part is same");
+    assert!(
+        (md.song_length - ms_to_sec(test_arr.meta.song_length)).abs() < 1e-3,
+        "Song length is same"
+    );
+    assert_eq!(
+        md.tuning,
+        test_arr.meta.tuning.strings.to_vec(),
+        "Tuning is same"
+    );
+}
 
 #[test]
 fn note_mask_1() {
@@ -597,4 +635,710 @@ fn level_conversion() {
         test_level.anchors.len(),
         "Anchor count is same"
     );
+}
+
+#[test]
+fn phrase_iteration_last() {
+    let test_arr = create_test_arr();
+    let pi = &test_arr.phrase_iterations[4];
+    let pi_times = test_pi_times(&test_arr);
+
+    let sng = xml_convert_phrase_iteration(&pi_times, 4, pi);
+
+    assert_eq!(sng.phrase_id, pi.phrase_id as i32, "Phrase ID is the same");
+    assert!(
+        (sng.start_time - ms_to_sec(pi.time)).abs() < 1e-3,
+        "Start time is the same"
+    );
+    assert!(
+        (sng.end_time - ms_to_sec(test_arr.meta.song_length)).abs() < 1e-3,
+        "End time uses song length for the last phrase iteration"
+    );
+}
+
+#[test]
+fn new_linked_difficulty() {
+    let nld = NewLinkedDiff {
+        level_break: 2,
+        phrase_ids: vec![3, 5, 7],
+    };
+
+    let sng = xml_convert_new_linked_difficulty(&nld);
+
+    assert_eq!(
+        sng.level_break, nld.level_break as i32,
+        "Level break is the same"
+    );
+    assert_eq!(sng.nld_phrases, nld.phrase_ids, "Phrase IDs are the same");
+}
+
+#[test]
+fn event_conversion() {
+    let e = ArrangementEvent {
+        time: 1_750_735,
+        code: "wedge_cutoff".into(),
+    };
+
+    let sng = xml_convert_event(&e);
+    assert!((sng.time - ms_to_sec(e.time)).abs() < 1e-3, "Time is same");
+    assert_eq!(&sng.name[..12], b"wedge_cutoff", "Code/name is same");
+}
+
+#[test]
+fn tone_conversion() {
+    let tone = ToneChange {
+        time: 3_215_123,
+        name: "tone_test".into(),
+        id: 3,
+    };
+
+    let sng = xml_convert_tone(&tone);
+    assert!(
+        (sng.time - ms_to_sec(tone.time)).abs() < 1e-3,
+        "Time is the same"
+    );
+    assert_eq!(sng.tone_id, tone.id, "Tone ID is same");
+}
+
+#[test]
+fn section_last() {
+    let test_arr = create_test_arr();
+    let section = &test_arr.sections[2];
+    let string_masks: Vec<Vec<i8>> = vec![vec![]; test_arr.sections.len()];
+
+    let sng = xml_convert_section(&string_masks, &test_arr, 2, section);
+
+    assert!(
+        (sng.start_time - ms_to_sec(section.start_time)).abs() < 1e-3,
+        "Start time is same"
+    );
+    assert!(
+        (sng.end_time - ms_to_sec(test_arr.meta.song_length)).abs() < 1e-3,
+        "End time uses song length for the last section"
+    );
+    assert_eq!(
+        sng.start_phrase_iteration_id, 4,
+        "Start PI index is correct"
+    );
+    assert_eq!(sng.end_phrase_iteration_id, 4, "End PI index is correct");
+}
+
+#[test]
+fn section_phrase_iteration_start_end_1_iteration() {
+    let mut test_arr = create_test_arr();
+    test_arr.phrase_iterations.truncate(1);
+    let section = &test_arr.sections[0];
+    let string_masks: Vec<Vec<i8>> = vec![vec![]; test_arr.sections.len()];
+
+    let sng = xml_convert_section(&string_masks, &test_arr, 0, section);
+
+    assert_eq!(
+        sng.start_phrase_iteration_id, 0,
+        "Start PI index is correct"
+    );
+    assert_eq!(sng.end_phrase_iteration_id, 0, "End PI index is correct");
+}
+
+#[test]
+fn section_phrase_iteration_start_end_3_phrase_iterations() {
+    let test_arr = create_test_arr();
+    let section = &test_arr.sections[0];
+    let string_masks: Vec<Vec<i8>> = vec![vec![]; test_arr.sections.len()];
+
+    let sng = xml_convert_section(&string_masks, &test_arr, 0, section);
+
+    assert_eq!(
+        sng.start_phrase_iteration_id, 0,
+        "Start PI index is correct"
+    );
+    assert_eq!(sng.end_phrase_iteration_id, 2, "End PI index is correct");
+}
+
+#[test]
+fn anchor_conversion() {
+    let mut test_arr = create_test_arr();
+    test_arr.levels[0].notes.push(Note {
+        time: 1_500,
+        sustain: 100,
+        ..Default::default()
+    });
+    test_arr.levels[0].notes.push(Note {
+        time: 1_900,
+        sustain: 50,
+        ..Default::default()
+    });
+    let level = &test_arr.levels[0];
+    let note_times = note_times_from_level(level);
+    let xml_notes = level.notes.clone();
+    let anchor = &level.anchors[0];
+
+    let sng = xml_convert_anchor(&xml_notes, &note_times, level, &test_arr, 0, anchor);
+
+    assert!(
+        (sng.start_time - ms_to_sec(anchor.time)).abs() < 1e-3,
+        "Start time is same"
+    );
+    assert!(
+        (sng.end_time - 2.0).abs() < 1e-3,
+        "End time is next anchor time"
+    );
+    assert!(
+        (sng.first_note_time - 1.5).abs() < 1e-3,
+        "First note time is same"
+    );
+    assert!(
+        (sng.last_note_time - 1.9).abs() < 1e-3,
+        "Last note time is same"
+    );
+    assert_eq!(sng.fret_id, anchor.fret, "Fret is same");
+    assert_eq!(sng.width, anchor.width, "Width is same");
+    assert_eq!(sng.phrase_iteration_id, 0, "Phrase iteration id is same");
+}
+
+#[test]
+fn hand_shape_conversion() {
+    let hs = HandShape {
+        chord_id: 3,
+        start_time: 1_400,
+        end_time: 1_800,
+    };
+    let n1 = Note {
+        time: 1_500,
+        sustain: 100,
+        ..Default::default()
+    };
+    let n2 = Note {
+        time: 1_700,
+        sustain: 50,
+        ..Default::default()
+    };
+    let note_times = vec![n1.time, n2.time];
+    let entities = vec![XmlEntity::Note(n1), XmlEntity::Note(n2)];
+
+    let fp = xml_convert_handshape(&note_times, &entities, &hs);
+
+    assert_eq!(fp.chord_id, hs.chord_id, "Chord ID is same");
+    assert!((fp.start_time - 1.4).abs() < 1e-3, "Start time is same");
+    assert!((fp.end_time - 1.8).abs() < 1e-3, "End time is same");
+    assert!(
+        (fp.first_note_time - 1.5).abs() < 1e-3,
+        "First note time is same"
+    );
+    assert!(
+        (fp.last_note_time - 1.7).abs() < 1e-3,
+        "Last note time is same"
+    );
+}
+
+#[test]
+fn hand_shape_last_note_time_for_sustained_chord() {
+    let hs = HandShape {
+        chord_id: 2,
+        start_time: 1_400,
+        end_time: 1_800,
+    };
+    let note = Note {
+        time: 1_500,
+        sustain: 500,
+        ..Default::default()
+    };
+    let note_times = vec![note.time];
+    let entities = vec![XmlEntity::Note(note)];
+
+    let fp = xml_convert_handshape(&note_times, &entities, &hs);
+
+    assert_eq!(fp.chord_id, hs.chord_id, "Chord ID is same");
+    assert!(
+        (fp.first_note_time - 1.5).abs() < 1e-3,
+        "First note time is same"
+    );
+    assert_eq!(
+        fp.last_note_time, -1.0,
+        "Last note time is -1.0 when sustain extends to hand shape end"
+    );
+}
+
+#[test]
+#[ignore = "Parity placeholder: Note conversion coverage not implemented yet"]
+fn note_conversion() {}
+
+#[test]
+fn note_next_previous_note_ids() {
+    let n1 = Note {
+        time: 1000,
+        string: 1,
+        fret: 3,
+        ..Default::default()
+    };
+    let n2 = Note {
+        time: 1500,
+        string: 2,
+        fret: 5,
+        ..Default::default()
+    };
+
+    let mut test_arr = create_test_arr();
+    test_arr.levels[0].notes.push(n1.clone());
+    test_arr.levels[0].notes.push(n2.clone());
+
+    let note_times = note_times_from_level(&test_arr.levels[0]);
+    let pi_times = test_pi_times(&test_arr);
+    let mut accu = AccuData::init(&test_arr);
+    let mut converter = NoteConverter::new(
+        &note_times,
+        &pi_times,
+        &[],
+        &[],
+        &mut accu,
+        flag_on_anchor_change,
+        &test_arr,
+        0,
+    );
+
+    let sng1 = converter.call(0, XmlEntity::Note(n1));
+    let sng2 = converter.call(1, XmlEntity::Note(n2));
+
+    assert_eq!(sng1.prev_iter_note, -1, "First note has no previous note");
+    assert_eq!(sng1.next_iter_note, 1, "First note points to next note");
+    assert_eq!(
+        sng2.prev_iter_note, 0,
+        "Second note points to previous note"
+    );
+    assert_eq!(sng2.next_iter_note, -1, "Second note has no next note");
+}
+
+#[test]
+fn note_link_next() {
+    let n1 = Note {
+        time: 1000,
+        string: 1,
+        fret: 3,
+        mask: rocksmith2014_xml::NoteMask::LINK_NEXT,
+        ..Default::default()
+    };
+    let n2 = Note {
+        time: 1500,
+        string: 1,
+        fret: 5,
+        ..Default::default()
+    };
+
+    let mut test_arr = create_test_arr();
+    test_arr.levels[0].notes.push(n1.clone());
+    test_arr.levels[0].notes.push(n2.clone());
+
+    let note_times = note_times_from_level(&test_arr.levels[0]);
+    let pi_times = test_pi_times(&test_arr);
+    let mut accu = AccuData::init(&test_arr);
+    let mut converter = NoteConverter::new(
+        &note_times,
+        &pi_times,
+        &[],
+        &[],
+        &mut accu,
+        flag_on_anchor_change,
+        &test_arr,
+        0,
+    );
+
+    let sng1 = converter.call(0, XmlEntity::Note(n1));
+    let sng2 = converter.call(1, XmlEntity::Note(n2));
+
+    assert!(
+        sng1.mask.contains(rocksmith2014_sng::NoteMask::PARENT),
+        "Link-next note has parent flag"
+    );
+    assert!(
+        sng2.mask.contains(rocksmith2014_sng::NoteMask::CHILD),
+        "Following note on same string has child flag"
+    );
+    assert_eq!(
+        sng2.parent_prev_note, 0,
+        "Child note points to parent link-next index"
+    );
+}
+
+#[test]
+fn note_hand_shape_id() {
+    let note = Note {
+        time: 1500,
+        string: 1,
+        fret: 5,
+        ..Default::default()
+    };
+    let hand_shapes = vec![rocksmith2014_sng::FingerPrint {
+        chord_id: 3,
+        start_time: 1.4,
+        end_time: 1.8,
+        first_note_time: 1.5,
+        last_note_time: 1.5,
+    }];
+
+    let mut test_arr = create_test_arr();
+    test_arr.levels[0].notes.push(note.clone());
+
+    let note_times = note_times_from_level(&test_arr.levels[0]);
+    let pi_times = test_pi_times(&test_arr);
+    let mut accu = AccuData::init(&test_arr);
+    let mut converter = NoteConverter::new(
+        &note_times,
+        &pi_times,
+        &hand_shapes,
+        &[],
+        &mut accu,
+        flag_on_anchor_change,
+        &test_arr,
+        0,
+    );
+
+    let sng = converter.call(0, XmlEntity::Note(note));
+
+    assert_eq!(
+        sng.finger_print_id[0], 0,
+        "Hand shape ID references the first fingerprint (index 0)"
+    );
+    assert_eq!(sng.finger_print_id[1], -1, "Arpeggio ID remains unset");
+}
+
+#[test]
+fn note_hand_shape_id_arpeggio() {
+    let note = Note {
+        time: 1500,
+        string: 1,
+        fret: 5,
+        ..Default::default()
+    };
+    let arpeggios = vec![rocksmith2014_sng::FingerPrint {
+        chord_id: 3,
+        start_time: 1.4,
+        end_time: 1.8,
+        first_note_time: 1.5,
+        last_note_time: 1.5,
+    }];
+
+    let mut test_arr = create_test_arr();
+    test_arr.levels[0].notes.push(note.clone());
+
+    let note_times = note_times_from_level(&test_arr.levels[0]);
+    let pi_times = test_pi_times(&test_arr);
+    let mut accu = AccuData::init(&test_arr);
+    let mut converter = NoteConverter::new(
+        &note_times,
+        &pi_times,
+        &[],
+        &arpeggios,
+        &mut accu,
+        flag_on_anchor_change,
+        &test_arr,
+        0,
+    );
+
+    let sng = converter.call(0, XmlEntity::Note(note));
+
+    assert_eq!(sng.finger_print_id[0], -1, "Hand shape ID remains unset");
+    assert_eq!(
+        sng.finger_print_id[1], 0,
+        "Arpeggio ID references the first fingerprint (index 0)"
+    );
+    assert!(
+        sng.mask.contains(rocksmith2014_sng::NoteMask::ARPEGGIO),
+        "Arpeggio flag is set when arpeggio fingerprint is assigned"
+    );
+}
+
+#[test]
+fn chord_double_stop_arpeggio_no_chord_notes() {
+    let chord = Chord {
+        time: 1_250,
+        chord_id: 1,
+        chord_notes: vec![rocksmith2014_xml::ChordNote {
+            string: 0,
+            fret: 3,
+            sustain: 200,
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+
+    let mut test_arr = create_test_arr();
+    test_arr.levels[0].chords.push(chord.clone());
+
+    let note_times = note_times_from_level(&test_arr.levels[0]);
+    let pi_times = test_pi_times(&test_arr);
+    let mut accu = AccuData::init(&test_arr);
+    let mut converter = NoteConverter::new(
+        &note_times,
+        &pi_times,
+        &[],
+        &[],
+        &mut accu,
+        flag_on_anchor_change,
+        &test_arr,
+        0,
+    );
+
+    let sng = converter.call(0, XmlEntity::Chord(chord));
+
+    assert!(
+        sng.mask.contains(rocksmith2014_sng::NoteMask::DOUBLE_STOP),
+        "Double-stop flag is set from two-string chord template"
+    );
+    assert!(
+        sng.mask.contains(rocksmith2014_sng::NoteMask::ARPEGGIO),
+        "Arpeggio flag is set from -arp chord template"
+    );
+    assert_eq!(
+        sng.chord_notes_id, -1,
+        "Chord notes entry is not created for double-stop/arpeggio chords"
+    );
+    assert!(
+        !sng.mask.contains(rocksmith2014_sng::NoteMask::CHORD_NOTES),
+        "CHORD_NOTES flag is not set for double-stop/arpeggio chords"
+    );
+}
+
+#[test]
+fn chord_mask() {
+    let chord = Chord {
+        time: 1_250,
+        chord_id: 0,
+        mask: rocksmith2014_xml::ChordMask::ACCENT
+            | rocksmith2014_xml::ChordMask::FRET_HAND_MUTE
+            | rocksmith2014_xml::ChordMask::HIGH_DENSITY
+            | rocksmith2014_xml::ChordMask::IGNORE
+            | rocksmith2014_xml::ChordMask::PALM_MUTE,
+        chord_notes: vec![rocksmith2014_xml::ChordNote {
+            sustain: 100,
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+
+    let mut test_arr = create_test_arr();
+    test_arr.levels[0].chords.push(chord.clone());
+
+    let note_times = note_times_from_level(&test_arr.levels[0]);
+    let pi_times = test_pi_times(&test_arr);
+    let mut accu = AccuData::init(&test_arr);
+    let mut converter = NoteConverter::new(
+        &note_times,
+        &pi_times,
+        &[],
+        &[],
+        &mut accu,
+        flag_on_anchor_change,
+        &test_arr,
+        0,
+    );
+
+    let sng = converter.call(0, XmlEntity::Chord(chord));
+
+    assert!(sng.mask.contains(rocksmith2014_sng::NoteMask::CHORD));
+    assert!(sng.mask.contains(rocksmith2014_sng::NoteMask::ACCENT));
+    assert!(sng
+        .mask
+        .contains(rocksmith2014_sng::NoteMask::FRET_HAND_MUTE));
+    assert!(sng.mask.contains(rocksmith2014_sng::NoteMask::HIGH_DENSITY));
+    assert!(sng.mask.contains(rocksmith2014_sng::NoteMask::IGNORE));
+    assert!(sng.mask.contains(rocksmith2014_sng::NoteMask::PALM_MUTE));
+}
+
+#[test]
+fn chord_link_next() {
+    let c1 = Chord {
+        time: 1_000,
+        chord_id: 0,
+        mask: rocksmith2014_xml::ChordMask::LINK_NEXT,
+        chord_notes: vec![rocksmith2014_xml::ChordNote {
+            string: 1,
+            fret: 3,
+            mask: rocksmith2014_xml::NoteMask::LINK_NEXT,
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+    let c2 = Chord {
+        time: 1_500,
+        chord_id: 0,
+        chord_notes: vec![rocksmith2014_xml::ChordNote {
+            string: 1,
+            fret: 5,
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+
+    let mut test_arr = create_test_arr();
+    test_arr.levels[0].chords.push(c1.clone());
+    test_arr.levels[0].chords.push(c2.clone());
+
+    let note_times = note_times_from_level(&test_arr.levels[0]);
+    let pi_times = test_pi_times(&test_arr);
+    let mut accu = AccuData::init(&test_arr);
+    let mut converter = NoteConverter::new(
+        &note_times,
+        &pi_times,
+        &[],
+        &[],
+        &mut accu,
+        flag_on_anchor_change,
+        &test_arr,
+        0,
+    );
+
+    let sng1 = converter.call(0, XmlEntity::Chord(c1));
+    let sng2 = converter.call(1, XmlEntity::Chord(c2));
+
+    assert!(
+        sng1.mask.contains(rocksmith2014_sng::NoteMask::PARENT),
+        "Link-next chord has parent flag"
+    );
+    assert!(
+        sng2.mask.contains(rocksmith2014_sng::NoteMask::CHILD),
+        "Following chord on same string has child flag"
+    );
+    assert_eq!(
+        sng2.parent_prev_note, 0,
+        "Child chord points to parent link-next index"
+    );
+}
+
+#[test]
+fn chord_notes_are_created_when_needed() {
+    let chord = Chord {
+        time: 1_250,
+        chord_id: 0,
+        chord_notes: vec![rocksmith2014_xml::ChordNote {
+            string: 1,
+            fret: 3,
+            sustain: 120,
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+
+    let mut test_arr = create_test_arr();
+    test_arr.levels[0].chords.push(chord.clone());
+
+    let note_times = note_times_from_level(&test_arr.levels[0]);
+    let pi_times = test_pi_times(&test_arr);
+    let mut accu = AccuData::init(&test_arr);
+    let mut converter = NoteConverter::new(
+        &note_times,
+        &pi_times,
+        &[],
+        &[],
+        &mut accu,
+        flag_on_anchor_change,
+        &test_arr,
+        0,
+    );
+
+    let sng = converter.call(0, XmlEntity::Chord(chord));
+
+    assert_eq!(sng.chord_notes_id, 0, "First chord notes entry gets id 0");
+    assert!(
+        sng.mask.contains(rocksmith2014_sng::NoteMask::CHORD_NOTES),
+        "CHORD_NOTES flag is set when chord-note detail is needed"
+    );
+}
+
+#[test]
+fn chord_notes_are_not_created_when_not_needed() {
+    let chord = Chord {
+        time: 1_250,
+        chord_id: 0,
+        chord_notes: vec![rocksmith2014_xml::ChordNote {
+            string: 1,
+            fret: 3,
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+
+    let mut test_arr = create_test_arr();
+    test_arr.levels[0].chords.push(chord.clone());
+
+    let note_times = note_times_from_level(&test_arr.levels[0]);
+    let pi_times = test_pi_times(&test_arr);
+    let mut accu = AccuData::init(&test_arr);
+    let mut converter = NoteConverter::new(
+        &note_times,
+        &pi_times,
+        &[],
+        &[],
+        &mut accu,
+        flag_on_anchor_change,
+        &test_arr,
+        0,
+    );
+
+    let sng = converter.call(0, XmlEntity::Chord(chord));
+
+    assert_eq!(sng.chord_notes_id, -1, "No chord notes entry is created");
+    assert!(
+        !sng.mask.contains(rocksmith2014_sng::NoteMask::CHORD_NOTES),
+        "CHORD_NOTES flag is not set when no chord-note detail is needed"
+    );
+}
+
+#[test]
+fn anchor_extensions_are_created_for_slide_notes() {
+    let note = Note {
+        time: 1_500,
+        string: 1,
+        fret: 5,
+        slide_to: 9,
+        sustain: 500,
+        ..Default::default()
+    };
+
+    let mut test_arr = create_test_arr();
+    test_arr.levels[0].notes.push(note.clone());
+
+    let note_times = note_times_from_level(&test_arr.levels[0]);
+    let pi_times = test_pi_times(&test_arr);
+    let mut accu = AccuData::init(&test_arr);
+    let mut converter = NoteConverter::new(
+        &note_times,
+        &pi_times,
+        &[],
+        &[],
+        &mut accu,
+        flag_on_anchor_change,
+        &test_arr,
+        0,
+    );
+
+    let _ = converter.call(0, XmlEntity::Note(note));
+
+    assert_eq!(
+        accu.anchor_extensions[0].len(),
+        1,
+        "One anchor extension is created for sustained slide"
+    );
+    assert!(
+        (accu.anchor_extensions[0][0].beat_time - 2.0).abs() < 1e-3,
+        "Anchor extension beat time is note time plus sustain"
+    );
+    assert_eq!(
+        accu.anchor_extensions[0][0].fret_id, 9,
+        "Anchor extension fret id matches slide target"
+    );
+}
+
+#[test]
+fn section_string_mask() {
+    let test_arr = create_test_arr();
+    let section = &test_arr.sections[1];
+    let mut string_masks: Vec<Vec<i8>> = vec![vec![]; test_arr.sections.len()];
+    string_masks[1] = vec![1, 0, -1, 5];
+
+    let sng = xml_convert_section(&string_masks, &test_arr, 1, section);
+
+    assert_eq!(sng.string_mask[0], 1, "First mask value is copied");
+    assert_eq!(sng.string_mask[1], 0, "Second mask value is copied");
+    assert_eq!(sng.string_mask[2], -1, "Third mask value is copied");
+    assert_eq!(sng.string_mask[3], 5, "Fourth mask value is copied");
+    assert_eq!(sng.string_mask[4], 0, "Remaining values are default");
 }

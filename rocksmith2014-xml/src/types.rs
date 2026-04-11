@@ -142,6 +142,13 @@ pub struct LinkedDiff {
     pub child_id: i32,
 }
 
+/// Dynamic-difficulty link definition for phrase IDs at a given level break.
+#[derive(Debug, Clone, Default)]
+pub struct NewLinkedDiff {
+    pub level_break: i8,
+    pub phrase_ids: Vec<i32>,
+}
+
 #[derive(Debug, Clone, Default)]
 pub struct PhraseProperty {
     pub phrase_id: i32,

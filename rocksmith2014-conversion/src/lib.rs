@@ -33,12 +33,18 @@ use rocksmith2014_sng::Sng;
 use rocksmith2014_xml::InstrumentalArrangement;
 
 pub use accu_data::{AccuData, NoteCounts};
-pub use convert_vocals::{extract_glyph_data, sng_vocals_to_xml, xml_vocals_to_sng, FontOption};
+pub use convert_vocals::{
+    convert_symbol_definition as xml_convert_symbol_definition,
+    convert_symbol_definition_to_xml as sng_convert_symbol_definition, extract_glyph_data,
+    sng_convert_vocal, sng_vocals_to_xml, xml_convert_vocal, xml_vocals_to_sng, FontOption,
+};
 pub use sng_to_xml::{
     convert_anchor as sng_convert_anchor, convert_beat as sng_convert_beat,
+    convert_bend_data32_opt as sng_convert_bend_data32,
     convert_bend_value as sng_convert_bend_value, convert_chord as sng_convert_chord,
     convert_chord_template as sng_convert_chord_template, convert_event as sng_convert_event,
     convert_hand_shape as sng_convert_hand_shape, convert_level as sng_convert_level,
+    convert_new_linked_difficulty as sng_convert_new_linked_difficulty,
     convert_note as sng_convert_note, convert_phrase as sng_convert_phrase,
     convert_phrase_extra_info as sng_convert_phrase_extra_info,
     convert_phrase_iteration as sng_convert_phrase_iteration,
@@ -47,9 +53,11 @@ pub use sng_to_xml::{
 pub use xml_to_sng::{
     convert_anchor as xml_convert_anchor, convert_bend_value as xml_convert_bend_value,
     convert_chord_template as xml_convert_chord_template, convert_event as xml_convert_event,
-    convert_handshape as xml_convert_handshape, convert_phrase as xml_convert_phrase,
-    convert_phrase_iteration as xml_convert_phrase_iteration,
-    convert_section as xml_convert_section, convert_tone as xml_convert_tone, make_beat_converter,
+    convert_handshape as xml_convert_handshape,
+    convert_new_linked_difficulty as xml_convert_new_linked_difficulty,
+    convert_phrase as xml_convert_phrase, convert_phrase_iteration as xml_convert_phrase_iteration,
+    convert_section as xml_convert_section, convert_tone as xml_convert_tone,
+    create_dnas as xml_create_dnas, create_meta_data as xml_create_meta_data, make_beat_converter,
     map_to_midi_notes, to_midi_note, XmlEntity,
 };
 pub use xml_to_sng_level::convert_level as xml_convert_level;

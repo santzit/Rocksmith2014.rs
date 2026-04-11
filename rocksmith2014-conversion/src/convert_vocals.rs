@@ -190,6 +190,16 @@ pub fn extract_glyph_data(sng: &Sng) -> GlyphDefinitions {
     }
 }
 
+/// Converts a single XML vocal entry to an SNG vocal entry.
+pub fn xml_convert_vocal(v: &XmlVocal) -> rocksmith2014_sng::Vocal {
+    convert_vocal(v)
+}
+
+/// Converts a single SNG vocal entry to an XML vocal entry.
+pub fn sng_convert_vocal(v: &rocksmith2014_sng::Vocal) -> XmlVocal {
+    convert_vocal_to_xml(v)
+}
+
 // ---------------------------------------------------------------------------
 // Internal helpers
 // ---------------------------------------------------------------------------

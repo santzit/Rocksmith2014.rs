@@ -376,30 +376,32 @@ impl<'a> NoteConverter<'a> {
         }
 
         // Create SNG chord notes if needed (with deduplication like .NET ChordNotesMap)
-        let (sng_chord_notes_id, _needs_chord_notes) =
-            if !chord.chord_notes.is_empty() && should_create_chord_notes(&chord.chord_notes) {
-                let cn = build_sng_chord_notes(&chord.chord_notes, &[]);
-                // Serialize to bytes for dedup (f32 compared by bits)
-                let key = chord_notes_key(&cn);
-                // Look for existing identical entry
-                let id = if let Some(pos) = self
-                    .accu_data
-                    .chord_notes_keys
-                    .iter()
-                    .position(|k| *k == key)
-                {
-                    pos as i32
-                } else {
-                    let id = self.accu_data.chord_notes.len() as i32;
-                    self.accu_data.chord_notes_keys.push(key);
-                    self.accu_data.chord_notes.push(cn);
-                    id
-                };
-                sng_mask |= SngNoteMask::CHORD_NOTES;
-                (id, true)
+        let (sng_chord_notes_id, _needs_chord_notes) = if !chord.chord_notes.is_empty()
+            && (!is_double_stop || !is_arpeggio)
+            && should_create_chord_notes(&chord.chord_notes)
+        {
+            let cn = build_sng_chord_notes(&chord.chord_notes, &[]);
+            // Serialize to bytes for dedup (f32 compared by bits)
+            let key = chord_notes_key(&cn);
+            // Look for existing identical entry
+            let id = if let Some(pos) = self
+                .accu_data
+                .chord_notes_keys
+                .iter()
+                .position(|k| *k == key)
+            {
+                pos as i32
             } else {
-                (-1, false)
+                let id = self.accu_data.chord_notes.len() as i32;
+                self.accu_data.chord_notes_keys.push(key);
+                self.accu_data.chord_notes.push(cn);
+                id
             };
+            sng_mask |= SngNoteMask::CHORD_NOTES;
+            (id, true)
+        } else {
+            (-1, false)
+        };
 
         // Sustain from chord notes
         let sustain = chord

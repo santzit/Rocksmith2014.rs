@@ -1,13 +1,13 @@
 use rocksmith2014_sng::{
     Anchor as SngAnchor, Beat as SngBeat, BeatMask, BendValue as SngBendValue, Chord as SngChord,
     ChordMask as SngChordMask, Event as SngEvent, FingerPrint, MetaData as SngMetaData,
-    Phrase as SngPhrase, PhraseIteration as SngPhraseIteration, Section as SngSection,
-    Tone as SngTone, DNA,
+    NewLinkedDifficulty as SngNewLinkedDifficulty, Phrase as SngPhrase,
+    PhraseIteration as SngPhraseIteration, Section as SngSection, Tone as SngTone, DNA,
 };
 use rocksmith2014_xml::{
     Anchor as XmlAnchor, ArrangementEvent, BendValue as XmlBendValue, ChordTemplate, Ebeat,
-    HandShape, InstrumentalArrangement, Level as XmlLevel, Note as XmlNote, Phrase as XmlPhrase,
-    PhraseIteration as XmlPhraseIteration, Section as XmlSection, ToneChange,
+    HandShape, InstrumentalArrangement, Level as XmlLevel, NewLinkedDiff, Note as XmlNote,
+    Phrase as XmlPhrase, PhraseIteration as XmlPhraseIteration, Section as XmlSection, ToneChange,
 };
 
 use crate::utils::{
@@ -160,6 +160,14 @@ pub fn convert_phrase_iteration(
         start_time: ms_to_sec(pi.time),
         end_time: ms_to_sec(end_time),
         difficulty: [easy, medium, hard],
+    }
+}
+
+/// Converts an XML NewLinkedDiff to an SNG NewLinkedDifficulty.
+pub fn convert_new_linked_difficulty(nld: &NewLinkedDiff) -> SngNewLinkedDifficulty {
+    SngNewLinkedDifficulty {
+        level_break: nld.level_break as i32,
+        nld_phrases: nld.phrase_ids.clone(),
     }
 }
 
