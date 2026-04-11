@@ -1051,8 +1051,50 @@ fn note_hand_shape_id_arpeggio() {
 fn chord_double_stop_arpeggio_no_chord_notes() {}
 
 #[test]
-#[ignore = "Parity placeholder: Chord mask behavior not implemented yet"]
-fn chord_mask() {}
+fn chord_mask() {
+    let chord = Chord {
+        time: 1_250,
+        chord_id: 0,
+        mask: rocksmith2014_xml::ChordMask::ACCENT
+            | rocksmith2014_xml::ChordMask::FRET_HAND_MUTE
+            | rocksmith2014_xml::ChordMask::HIGH_DENSITY
+            | rocksmith2014_xml::ChordMask::IGNORE
+            | rocksmith2014_xml::ChordMask::PALM_MUTE,
+        chord_notes: vec![rocksmith2014_xml::ChordNote {
+            sustain: 100,
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+
+    let mut test_arr = create_test_arr();
+    test_arr.levels[0].chords.push(chord.clone());
+
+    let note_times = note_times_from_level(&test_arr.levels[0]);
+    let pi_times = test_pi_times(&test_arr);
+    let mut accu = AccuData::init(&test_arr);
+    let mut converter = NoteConverter::new(
+        &note_times,
+        &pi_times,
+        &[],
+        &[],
+        &mut accu,
+        flag_on_anchor_change,
+        &test_arr,
+        0,
+    );
+
+    let sng = converter.call(0, XmlEntity::Chord(chord));
+
+    assert!(sng.mask.contains(rocksmith2014_sng::NoteMask::CHORD));
+    assert!(sng.mask.contains(rocksmith2014_sng::NoteMask::ACCENT));
+    assert!(sng
+        .mask
+        .contains(rocksmith2014_sng::NoteMask::FRET_HAND_MUTE));
+    assert!(sng.mask.contains(rocksmith2014_sng::NoteMask::HIGH_DENSITY));
+    assert!(sng.mask.contains(rocksmith2014_sng::NoteMask::IGNORE));
+    assert!(sng.mask.contains(rocksmith2014_sng::NoteMask::PALM_MUTE));
+}
 
 #[test]
 fn chord_link_next() {
