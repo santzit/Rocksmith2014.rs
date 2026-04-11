@@ -255,7 +255,10 @@ fn vocal() {
 
     let sng = xml_convert_vocal(&v);
     assert!((sng.time - ms_to_sec(v.time)).abs() < 1e-3, "Time is same");
-    assert!((sng.length - ms_to_sec(v.length)).abs() < 1e-3, "Length is same");
+    assert!(
+        (sng.length - ms_to_sec(v.length)).abs() < 1e-3,
+        "Length is same"
+    );
     assert_eq!(&sng.lyric[..5], b"Hello", "Lyric is same");
     assert_eq!(sng.note, v.note as i32, "Note is same");
 }
@@ -441,7 +444,11 @@ fn meta_data() {
         (md.song_length - ms_to_sec(test_arr.meta.song_length)).abs() < 1e-3,
         "Song length is same"
     );
-    assert_eq!(md.tuning, test_arr.meta.tuning.strings.to_vec(), "Tuning is same");
+    assert_eq!(
+        md.tuning,
+        test_arr.meta.tuning.strings.to_vec(),
+        "Tuning is same"
+    );
 }
 
 #[test]

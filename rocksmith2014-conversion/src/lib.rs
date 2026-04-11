@@ -34,10 +34,9 @@ use rocksmith2014_xml::InstrumentalArrangement;
 
 pub use accu_data::{AccuData, NoteCounts};
 pub use convert_vocals::{
-    extract_glyph_data, sng_convert_vocal, sng_vocals_to_xml,
     convert_symbol_definition as xml_convert_symbol_definition,
-    convert_symbol_definition_to_xml as sng_convert_symbol_definition, xml_convert_vocal,
-    xml_vocals_to_sng, FontOption,
+    convert_symbol_definition_to_xml as sng_convert_symbol_definition, extract_glyph_data,
+    sng_convert_vocal, sng_vocals_to_xml, xml_convert_vocal, xml_vocals_to_sng, FontOption,
 };
 pub use sng_to_xml::{
     convert_anchor as sng_convert_anchor, convert_beat as sng_convert_beat,
@@ -53,10 +52,10 @@ pub use sng_to_xml::{
 pub use xml_to_sng::{
     convert_anchor as xml_convert_anchor, convert_bend_value as xml_convert_bend_value,
     convert_chord_template as xml_convert_chord_template, convert_event as xml_convert_event,
-    create_dnas as xml_create_dnas, create_meta_data as xml_create_meta_data,
     convert_handshape as xml_convert_handshape, convert_phrase as xml_convert_phrase,
     convert_phrase_iteration as xml_convert_phrase_iteration,
-    convert_section as xml_convert_section, convert_tone as xml_convert_tone, make_beat_converter,
+    convert_section as xml_convert_section, convert_tone as xml_convert_tone,
+    create_dnas as xml_create_dnas, create_meta_data as xml_create_meta_data, make_beat_converter,
     map_to_midi_notes, to_midi_note, XmlEntity,
 };
 pub use xml_to_sng_level::convert_level as xml_convert_level;

@@ -3,11 +3,11 @@
 //! Mirrors `SngObjectsToXmlTests.fs` in Rocksmith2014.Conversion.Tests (.NET).
 
 use rocksmith2014_conversion::{
-    sng_convert_anchor, sng_convert_beat, sng_convert_bend_value, sng_convert_chord,
-    sng_convert_bend_data32, sng_convert_chord_template, sng_convert_event, sng_convert_hand_shape,
+    sng_convert_anchor, sng_convert_beat, sng_convert_bend_data32, sng_convert_bend_value,
+    sng_convert_chord, sng_convert_chord_template, sng_convert_event, sng_convert_hand_shape,
     sng_convert_level, sng_convert_note, sng_convert_phrase, sng_convert_phrase_extra_info,
-    sng_convert_phrase_iteration, sng_convert_section, sng_convert_tone,
-    sng_convert_symbol_definition, sng_convert_vocal,
+    sng_convert_phrase_iteration, sng_convert_section, sng_convert_symbol_definition,
+    sng_convert_tone, sng_convert_vocal,
 };
 use rocksmith2014_sng::{
     Anchor, Beat, BeatMask, BendData32, BendValue, Chord, ChordMask, ChordNotes, Event,
