@@ -1161,8 +1161,43 @@ fn chord_link_next() {
 fn chord_notes_are_created_when_needed() {}
 
 #[test]
-#[ignore = "Parity placeholder: Chord notes omission behavior not implemented yet"]
-fn chord_notes_are_not_created_when_not_needed() {}
+fn chord_notes_are_not_created_when_not_needed() {
+    let chord = Chord {
+        time: 1_250,
+        chord_id: 0,
+        chord_notes: vec![rocksmith2014_xml::ChordNote {
+            string: 1,
+            fret: 3,
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+
+    let mut test_arr = create_test_arr();
+    test_arr.levels[0].chords.push(chord.clone());
+
+    let note_times = note_times_from_level(&test_arr.levels[0]);
+    let pi_times = test_pi_times(&test_arr);
+    let mut accu = AccuData::init(&test_arr);
+    let mut converter = NoteConverter::new(
+        &note_times,
+        &pi_times,
+        &[],
+        &[],
+        &mut accu,
+        flag_on_anchor_change,
+        &test_arr,
+        0,
+    );
+
+    let sng = converter.call(0, XmlEntity::Chord(chord));
+
+    assert_eq!(sng.chord_notes_id, -1, "No chord notes entry is created");
+    assert!(
+        !sng.mask.contains(rocksmith2014_sng::NoteMask::CHORD_NOTES),
+        "CHORD_NOTES flag is not set when no chord-note detail is needed"
+    );
+}
 
 #[test]
 #[ignore = "Parity placeholder: Anchor extensions for slide notes not implemented yet"]
