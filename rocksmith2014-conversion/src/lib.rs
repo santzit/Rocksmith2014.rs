@@ -44,6 +44,7 @@ pub use sng_to_xml::{
     convert_bend_value as sng_convert_bend_value, convert_chord as sng_convert_chord,
     convert_chord_template as sng_convert_chord_template, convert_event as sng_convert_event,
     convert_hand_shape as sng_convert_hand_shape, convert_level as sng_convert_level,
+    convert_new_linked_difficulty as sng_convert_new_linked_difficulty,
     convert_note as sng_convert_note, convert_phrase as sng_convert_phrase,
     convert_phrase_extra_info as sng_convert_phrase_extra_info,
     convert_phrase_iteration as sng_convert_phrase_iteration,

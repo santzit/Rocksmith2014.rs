@@ -5,14 +5,14 @@
 use rocksmith2014_conversion::{
     sng_convert_anchor, sng_convert_beat, sng_convert_bend_data32, sng_convert_bend_value,
     sng_convert_chord, sng_convert_chord_template, sng_convert_event, sng_convert_hand_shape,
-    sng_convert_level, sng_convert_note, sng_convert_phrase, sng_convert_phrase_extra_info,
-    sng_convert_phrase_iteration, sng_convert_section, sng_convert_symbol_definition,
-    sng_convert_tone, sng_convert_vocal,
+    sng_convert_level, sng_convert_new_linked_difficulty, sng_convert_note, sng_convert_phrase,
+    sng_convert_phrase_extra_info, sng_convert_phrase_iteration, sng_convert_section,
+    sng_convert_symbol_definition, sng_convert_tone, sng_convert_vocal,
 };
 use rocksmith2014_sng::{
     Anchor, Beat, BeatMask, BendData32, BendValue, Chord, ChordMask, ChordNotes, Event,
-    FingerPrint, Level, Note, NoteMask, PhraseExtraInfo, PhraseIteration, Rect, Section, Sng,
-    SymbolDefinition, Tone, Vocal,
+    FingerPrint, Level, NewLinkedDifficulty, Note, NoteMask, PhraseExtraInfo, PhraseIteration,
+    Rect, Section, Sng, SymbolDefinition, Tone, Vocal,
 };
 use rocksmith2014_xml::NoteMask as XmlNoteMask;
 
@@ -250,8 +250,19 @@ fn phrase_properties() {
 }
 
 #[test]
-#[ignore = "NewLinkedDiff XML type is not implemented in rocksmith2014-xml yet"]
-fn new_linked_difficulty() {}
+fn new_linked_difficulty() {
+    let nld = NewLinkedDifficulty {
+        level_break: 12,
+        nld_phrases: vec![2, 6, 15],
+    };
+
+    let xml = sng_convert_new_linked_difficulty(&nld);
+    assert_eq!(
+        xml.level_break, nld.level_break as i8,
+        "Level break is same"
+    );
+    assert_eq!(xml.phrase_ids, nld.nld_phrases, "Phrase IDs are same");
+}
 
 #[test]
 fn event() {
