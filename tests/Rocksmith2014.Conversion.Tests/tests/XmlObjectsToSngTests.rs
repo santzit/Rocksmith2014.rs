@@ -863,8 +863,49 @@ fn hand_shape_last_note_time_for_sustained_chord() {
 fn note_conversion() {}
 
 #[test]
-#[ignore = "Parity placeholder: Note next/previous IDs behavior not implemented yet"]
-fn note_next_previous_note_ids() {}
+fn note_next_previous_note_ids() {
+    let n1 = Note {
+        time: 1000,
+        string: 1,
+        fret: 3,
+        ..Default::default()
+    };
+    let n2 = Note {
+        time: 1500,
+        string: 2,
+        fret: 5,
+        ..Default::default()
+    };
+
+    let mut test_arr = create_test_arr();
+    test_arr.levels[0].notes.push(n1.clone());
+    test_arr.levels[0].notes.push(n2.clone());
+
+    let note_times = note_times_from_level(&test_arr.levels[0]);
+    let pi_times = test_pi_times(&test_arr);
+    let mut accu = AccuData::init(&test_arr);
+    let mut converter = NoteConverter::new(
+        &note_times,
+        &pi_times,
+        &[],
+        &[],
+        &mut accu,
+        flag_on_anchor_change,
+        &test_arr,
+        0,
+    );
+
+    let sng1 = converter.call(0, XmlEntity::Note(n1));
+    let sng2 = converter.call(1, XmlEntity::Note(n2));
+
+    assert_eq!(sng1.prev_iter_note, -1, "First note has no previous note");
+    assert_eq!(sng1.next_iter_note, 1, "First note points to next note");
+    assert_eq!(
+        sng2.prev_iter_note, 0,
+        "Second note points to previous note"
+    );
+    assert_eq!(sng2.next_iter_note, -1, "Second note has no next note");
+}
 
 #[test]
 #[ignore = "Parity placeholder: Note link next behavior not implemented yet"]
