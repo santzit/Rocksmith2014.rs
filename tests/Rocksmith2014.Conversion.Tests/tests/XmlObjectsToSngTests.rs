@@ -798,5 +798,17 @@ fn chord_notes_are_not_created_when_not_needed() {}
 fn anchor_extensions_are_created_for_slide_notes() {}
 
 #[test]
-#[ignore = "Parity placeholder: Section string mask behavior not implemented yet"]
-fn section_string_mask() {}
+fn section_string_mask() {
+    let test_arr = create_test_arr();
+    let section = &test_arr.sections[1];
+    let mut string_masks: Vec<Vec<i8>> = vec![vec![]; test_arr.sections.len()];
+    string_masks[1] = vec![1, 0, -1, 5];
+
+    let sng = xml_convert_section(&string_masks, &test_arr, 1, section);
+
+    assert_eq!(sng.string_mask[0], 1, "First mask value is copied");
+    assert_eq!(sng.string_mask[1], 0, "Second mask value is copied");
+    assert_eq!(sng.string_mask[2], -1, "Third mask value is copied");
+    assert_eq!(sng.string_mask[3], 5, "Fourth mask value is copied");
+    assert_eq!(sng.string_mask[4], 0, "Remaining values are default");
+}
