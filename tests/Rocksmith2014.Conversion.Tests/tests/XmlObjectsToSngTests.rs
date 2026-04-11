@@ -908,8 +908,55 @@ fn note_next_previous_note_ids() {
 }
 
 #[test]
-#[ignore = "Parity placeholder: Note link next behavior not implemented yet"]
-fn note_link_next() {}
+fn note_link_next() {
+    let n1 = Note {
+        time: 1000,
+        string: 1,
+        fret: 3,
+        mask: rocksmith2014_xml::NoteMask::LINK_NEXT,
+        ..Default::default()
+    };
+    let n2 = Note {
+        time: 1500,
+        string: 1,
+        fret: 5,
+        ..Default::default()
+    };
+
+    let mut test_arr = create_test_arr();
+    test_arr.levels[0].notes.push(n1.clone());
+    test_arr.levels[0].notes.push(n2.clone());
+
+    let note_times = note_times_from_level(&test_arr.levels[0]);
+    let pi_times = test_pi_times(&test_arr);
+    let mut accu = AccuData::init(&test_arr);
+    let mut converter = NoteConverter::new(
+        &note_times,
+        &pi_times,
+        &[],
+        &[],
+        &mut accu,
+        flag_on_anchor_change,
+        &test_arr,
+        0,
+    );
+
+    let sng1 = converter.call(0, XmlEntity::Note(n1));
+    let sng2 = converter.call(1, XmlEntity::Note(n2));
+
+    assert!(
+        sng1.mask.contains(rocksmith2014_sng::NoteMask::PARENT),
+        "Link-next note has parent flag"
+    );
+    assert!(
+        sng2.mask.contains(rocksmith2014_sng::NoteMask::CHILD),
+        "Following note on same string has child flag"
+    );
+    assert_eq!(
+        sng2.parent_prev_note, 0,
+        "Child note points to parent link-next index"
+    );
+}
 
 #[test]
 #[ignore = "Parity placeholder: Note hand shape id behavior not implemented yet"]
