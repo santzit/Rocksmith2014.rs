@@ -13,7 +13,7 @@ A port of the [Rocksmith2014.NET](https://github.com/iminashi/Rocksmith2014.NET)
 
 | Submodule | .NET Tests | Rust Tests | Passed | Ignored | Failed |
 |---|---|---|---|---|---|
-| Audio | 17 | 18 | 18 | 0 | 0 |
+| Audio | 17 | 19 | 19 | 0 | 0 |
 | Common | 38 | 38 | 38 | 0 | 0 |
 | Conversion | 74 | 74 | 73 | 1 | 0 |
 | DLCProject | 105 | 105 | 14 | 91 | 0 |

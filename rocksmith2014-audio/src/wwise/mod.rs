@@ -15,6 +15,7 @@ use std::fs;
 use std::io::Cursor;
 use std::path::{Path, PathBuf};
 use std::process::Command;
+use std::sync::atomic::{AtomicU64, Ordering};
 use zip::{result::ZipError, ZipArchive};
 
 // Wwise project templates embedded directly in the binary.
@@ -81,11 +82,16 @@ fn get_temp_directory() -> Result<PathBuf> {
 /// The .NET version uses `Guid.NewGuid()`.
 fn uuid_v4() -> String {
     use std::time::{SystemTime, UNIX_EPOCH};
+    static COUNTER: AtomicU64 = AtomicU64::new(0);
+
     let nanos = SystemTime::now()
         .duration_since(UNIX_EPOCH)
-        .map(|d| d.subsec_nanos())
+        .map(|d| d.as_nanos())
         .unwrap_or(0);
-    format!("wwise-{nanos:x}")
+    let pid = std::process::id();
+    let seq = COUNTER.fetch_add(1, Ordering::Relaxed);
+
+    format!("wwise-{pid:x}-{nanos:x}-{seq:x}")
 }
 
 /// Determines the Wwise version from the executable path (non-Windows) or
@@ -212,17 +218,24 @@ fn copy_wem_file(dest_path: &Path, template_dir: &Path) -> Result<()> {
 /// Builds the `generate-soundbank` argument string for the WwiseConsole CLI.
 ///
 /// Mirrors `Wwise.createArgs` from the .NET reference.
-fn create_args(is_linux: bool, template_dir: &Path) -> String {
+fn create_args(is_linux: bool, template_dir: &Path) -> Vec<String> {
     let template_path = template_dir.join("Template.wproj");
-    let template_str = if is_linux {
+    let template = if is_linux {
         format!("z:{}", template_path.display())
     } else {
         template_path.display().to_string()
     };
 
-    format!(
-        r#"generate-soundbank "{template_str}" --platform "Windows" --language "English(US)" --no-decode --quiet"#
-    )
+    vec![
+        "generate-soundbank".to_string(),
+        template,
+        "--platform".to_string(),
+        "Windows".to_string(),
+        "--language".to_string(),
+        "English(US)".to_string(),
+        "--no-decode".to_string(),
+        "--quiet".to_string(),
+    ]
 }
 
 /// Converts the source audio file into a wem file.
@@ -255,19 +268,16 @@ pub fn convert_to_wem_with_cli(cli_path: Option<&Path>, source_path: &Path) -> R
     let result = (|| -> Result<()> {
         let is_linux = cfg!(target_os = "linux");
         let args = create_args(is_linux, &template_dir);
-
-        let (program, full_args) = if is_linux {
-            (
-                "wine".to_string(),
-                format!("\"{}\" {}", cli.display(), args),
-            )
+        let mut command = if is_linux {
+            let mut c = Command::new("wine");
+            c.arg(&cli);
+            c
         } else {
-            (cli.to_string_lossy().to_string(), args)
+            Command::new(&cli)
         };
+        command.args(args);
 
-        let output = Command::new(&program)
-            .args(full_args.split_whitespace())
-            .output()?;
+        let output = command.output()?;
 
         let exit_code = output.status.code().unwrap_or(-1);
         if exit_code != 0 {
@@ -299,4 +309,17 @@ pub fn convert_to_wem_with_cli(cli_path: Option<&Path>, source_path: &Path) -> R
 /// `wwise::convert_to_wem(path) -> Result<()>`.
 pub fn convert_to_wem(source_path: &Path) -> Result<()> {
     convert_to_wem_with_cli(None, source_path)
+}
+
+#[cfg(test)]
+mod tests {
+    use std::collections::HashSet;
+
+    #[test]
+    fn generated_temp_directory_name_is_unique() {
+        let mut names = HashSet::new();
+        for _ in 0..1024 {
+            assert!(names.insert(super::uuid_v4()));
+        }
+    }
 }
