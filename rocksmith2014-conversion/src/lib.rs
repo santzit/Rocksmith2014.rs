@@ -53,8 +53,9 @@ pub use sng_to_xml::{
 pub use xml_to_sng::{
     convert_anchor as xml_convert_anchor, convert_bend_value as xml_convert_bend_value,
     convert_chord_template as xml_convert_chord_template, convert_event as xml_convert_event,
-    convert_handshape as xml_convert_handshape, convert_phrase as xml_convert_phrase,
-    convert_phrase_iteration as xml_convert_phrase_iteration,
+    convert_handshape as xml_convert_handshape,
+    convert_new_linked_difficulty as xml_convert_new_linked_difficulty,
+    convert_phrase as xml_convert_phrase, convert_phrase_iteration as xml_convert_phrase_iteration,
     convert_section as xml_convert_section, convert_tone as xml_convert_tone,
     create_dnas as xml_create_dnas, create_meta_data as xml_create_meta_data, make_beat_converter,
     map_to_midi_notes, to_midi_note, XmlEntity,

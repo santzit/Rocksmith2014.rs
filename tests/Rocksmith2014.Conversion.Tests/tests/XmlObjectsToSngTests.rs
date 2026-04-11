@@ -5,12 +5,13 @@
 use rocksmith2014_conversion::{
     flag_on_anchor_change, make_beat_converter, xml_convert_anchor, xml_convert_bend_value,
     xml_convert_chord_template, xml_convert_event, xml_convert_handshape, xml_convert_level,
-    xml_convert_phrase, xml_convert_phrase_iteration, xml_convert_section, xml_convert_tone,
-    xml_convert_vocal, xml_create_dnas, xml_create_meta_data, AccuData, NoteConverter, XmlEntity,
+    xml_convert_new_linked_difficulty, xml_convert_phrase, xml_convert_phrase_iteration,
+    xml_convert_section, xml_convert_tone, xml_convert_vocal, xml_create_dnas,
+    xml_create_meta_data, AccuData, NoteConverter, XmlEntity,
 };
 use rocksmith2014_xml::{
     Anchor, ArrangementEvent, BendValue, ChordTemplate, Ebeat, HandShape, InstrumentalArrangement,
-    Level, Note, PhraseIteration, Section, ToneChange,
+    Level, NewLinkedDiff, Note, PhraseIteration, Section, ToneChange,
 };
 use rocksmith2014_xml::{Chord, Phrase as XmlPhrase};
 
@@ -656,8 +657,20 @@ fn phrase_iteration_last() {
 }
 
 #[test]
-#[ignore = "Parity placeholder: New Linked Difficulty conversion not implemented yet"]
-fn new_linked_difficulty() {}
+fn new_linked_difficulty() {
+    let nld = NewLinkedDiff {
+        level_break: 2,
+        phrase_ids: vec![3, 5, 7],
+    };
+
+    let sng = xml_convert_new_linked_difficulty(&nld);
+
+    assert_eq!(
+        sng.level_break, nld.level_break as i32,
+        "Level break is the same"
+    );
+    assert_eq!(sng.nld_phrases, nld.phrase_ids, "Phrase IDs are the same");
+}
 
 #[test]
 fn event_conversion() {
