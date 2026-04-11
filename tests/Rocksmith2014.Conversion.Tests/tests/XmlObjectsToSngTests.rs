@@ -993,7 +993,10 @@ fn note_hand_shape_id() {
 
     let sng = converter.call(0, XmlEntity::Note(note));
 
-    assert_eq!(sng.finger_print_id[0], 0, "Hand shape ID is assigned");
+    assert_eq!(
+        sng.finger_print_id[0], 0,
+        "Hand shape ID references the first fingerprint (index 0)"
+    );
     assert_eq!(sng.finger_print_id[1], -1, "Arpeggio ID remains unset");
 }
 
