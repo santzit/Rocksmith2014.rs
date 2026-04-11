@@ -117,8 +117,7 @@ fn json_str_field(text: &str, key: &str) -> Option<String> {
     let needle = format!("\"{}\":", key);
     let start = text.find(&needle)? + needle.len();
     let rest = text[start..].trim_start();
-    if rest.starts_with('"') {
-        let inner = &rest[1..];
+    if let Some(inner) = rest.strip_prefix('"') {
         let end = inner.find('"')?;
         Some(inner[..end].to_string())
     } else {
