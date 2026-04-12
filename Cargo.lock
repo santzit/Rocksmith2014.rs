@@ -1074,6 +1074,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "rocksmith2014-dd-tests"
+version = "0.1.0"
+
+[[package]]
 name = "rocksmith2014-dlcproject"
 version = "0.1.0"
 dependencies = [

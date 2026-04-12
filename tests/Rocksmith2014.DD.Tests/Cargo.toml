@@ -1,0 +1,23 @@
+[package]
+name = "rocksmith2014-dd-tests"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dev-dependencies]
+
+[[test]]
+name = "AnchorChooserTests"
+path = "AnchorChooserTests.rs"
+
+[[test]]
+name = "ComparerTests"
+path = "ComparerTests.rs"
+
+[[test]]
+name = "GeneratorTests"
+path = "GeneratorTests.rs"
+
+[[test]]
+name = "HandShapeChooserTests"
+path = "HandShapeChooserTests.rs"

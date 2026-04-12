@@ -21,6 +21,7 @@ members = [
     "tests/DLCBuilder.Domain.Tests",
     "tests/Rocksmith2014.Audio.Tests",
     "tests/Rocksmith2014.DLCProject.Tests",
+    "tests/Rocksmith2014.DD.Tests",
     "rocksmith2014-eof",
     "tests/Rocksmith2014.EOF.Tests",
     "rocksmith2014-dlcproject",
