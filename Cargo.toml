@@ -8,6 +8,7 @@ members = [
     "rocksmith2014-xml-processing",
     "rocksmith2014-conversion",
     "rocksmith2014-audio",
+    "rocksmith2014-dd",
     "rocksmith2014-dd-model",
     "rocksmith2014-fsharp-extensions",
     "tests/Rocksmith2014.Common.Tests",

@@ -1,0 +1,8 @@
+[package]
+name = "rocksmith2014-dd"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+rocksmith2014-xml = { path = "../rocksmith2014-xml" }
+rocksmith2014-xml-extension = { path = "../rocksmith2014-xml-extension" }
