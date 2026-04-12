@@ -34,8 +34,7 @@ fn same_chord_note(a: &ChordNote, b: &ChordNote) -> bool {
         && a.left_hand == b.left_hand
         && a.mask == b.mask
         && a.bend_values.len() == b.bend_values.len()
-        && a
-            .bend_values
+        && a.bend_values
             .iter()
             .zip(b.bend_values.iter())
             .all(|(x, y)| x.step == y.step)
@@ -93,7 +92,11 @@ fn find_next_match<T: Clone>(
     )
 }
 
-pub fn get_same_item_count<T: Clone>(equal: impl Fn(&T, &T) -> bool, input1: &[T], input2: &[T]) -> usize {
+pub fn get_same_item_count<T: Clone>(
+    equal: impl Fn(&T, &T) -> bool,
+    input1: &[T],
+    input2: &[T],
+) -> usize {
     fn get_count<T: Clone>(
         equal: &impl Fn(&T, &T) -> bool,
         count: usize,
@@ -122,11 +125,22 @@ pub fn get_same_item_count<T: Clone>(equal: impl Fn(&T, &T) -> bool, input1: &[T
             return get_count(equal, count, len1, len2 - 1, list1, tail2);
         }
 
-        match find_next_match(equal, std::slice::from_ref(head1), std::slice::from_ref(head2), tail1, tail2) {
+        match find_next_match(
+            equal,
+            std::slice::from_ref(head1),
+            std::slice::from_ref(head2),
+            tail1,
+            tail2,
+        ) {
             None => count,
-            Some((new_tail1, new_tail2)) => {
-                get_count(equal, count + 1, new_tail1.len(), new_tail2.len(), &new_tail1, &new_tail2)
-            }
+            Some((new_tail1, new_tail2)) => get_count(
+                equal,
+                count + 1,
+                new_tail1.len(),
+                new_tail2.len(),
+                &new_tail1,
+                &new_tail2,
+            ),
         }
     }
 

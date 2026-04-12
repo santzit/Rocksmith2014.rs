@@ -2,7 +2,11 @@ use crate::types::{GeneratorConfig, LevelCountGeneration};
 use crate::utils::{get_allowed_chord_notes, get_note_count, should_start_from_highest_note};
 use rocksmith2014_xml::{Chord, ChordNote, InstrumentalArrangement, Level, Note};
 
-fn chord_note_to_note(chord: &Chord, sustain: i32, choose_highest_for_high_strings: bool) -> Option<Note> {
+fn chord_note_to_note(
+    chord: &Chord,
+    sustain: i32,
+    choose_highest_for_high_strings: bool,
+) -> Option<Note> {
     let cn = if choose_highest_for_high_strings {
         chord.chord_notes.iter().max_by_key(|n| n.string)?
     } else {
@@ -64,11 +68,7 @@ pub fn generate_for_arrangement(config: GeneratorConfig, arr: &mut InstrumentalA
 
         let diff_percent = (diff + 1) as f64 / level_count as f64;
         let allowed_notes = get_allowed_chord_notes(diff_percent, max_strings);
-        let sustain_for_notes = if diff_percent < 0.2 {
-            0
-        } else {
-            800
-        };
+        let sustain_for_notes = if diff_percent < 0.2 { 0 } else { 800 };
 
         let mut level = Level {
             difficulty: diff as i8,

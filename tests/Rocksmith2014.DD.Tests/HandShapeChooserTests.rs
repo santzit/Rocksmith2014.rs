@@ -76,8 +76,14 @@ fn chooses_hand_shape_when_a_note_sustain_ends_inside_it() {
         ..Default::default()
     })];
 
-    let result =
-        hand_shape_chooser::choose(1.0, &level_entities, &level_entities, 3, &templates, &hand_shapes);
+    let result = hand_shape_chooser::choose(
+        1.0,
+        &level_entities,
+        &level_entities,
+        3,
+        &templates,
+        &hand_shapes,
+    );
     assert_eq!(result.len(), 1);
     assert!(result[0].1.is_none());
 }

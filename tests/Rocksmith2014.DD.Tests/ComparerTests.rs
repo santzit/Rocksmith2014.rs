@@ -1,4 +1,6 @@
-use rocksmith2014_dd::comparers::{get_max_similarity_fast, get_same_item_count, same_chord, same_note};
+use rocksmith2014_dd::comparers::{
+    get_max_similarity_fast, get_same_item_count, same_chord, same_note,
+};
 use rocksmith2014_xml::{Chord, ChordMask, Note};
 
 fn n(string: i8, fret: i8) -> Note {
@@ -41,7 +43,10 @@ fn correct_similarity_percent_for_four_elements() {
 
 #[test]
 fn count_is_zero_for_different_notes() {
-    assert_eq!(run_same_count(&[(0, 1), (0, 5), (1, 9)], &[(0, 2), (0, 4), (1, 8)]), 0);
+    assert_eq!(
+        run_same_count(&[(0, 1), (0, 5), (1, 9)], &[(0, 2), (0, 4), (1, 8)]),
+        0
+    );
 }
 
 #[test]
@@ -82,7 +87,10 @@ fn correct_for_same_chords() {
 #[test]
 fn correct_when_extra_note_at_the_beginning_1_2() {
     assert_eq!(
-        run_same_count(&[(0, 0), (0, 14), (0, 13), (1, 12)], &[(0, 14), (0, 13), (1, 12)]),
+        run_same_count(
+            &[(0, 0), (0, 14), (0, 13), (1, 12)],
+            &[(0, 14), (0, 13), (1, 12)]
+        ),
         3
     );
 }
@@ -90,7 +98,10 @@ fn correct_when_extra_note_at_the_beginning_1_2() {
 #[test]
 fn correct_when_extra_note_at_the_beginning_2_2() {
     assert_eq!(
-        run_same_count(&[(0, 14), (0, 13), (1, 12)], &[(0, 0), (0, 14), (0, 13), (1, 12)]),
+        run_same_count(
+            &[(0, 14), (0, 13), (1, 12)],
+            &[(0, 0), (0, 14), (0, 13), (1, 12)]
+        ),
         3
     );
 }
@@ -98,7 +109,10 @@ fn correct_when_extra_note_at_the_beginning_2_2() {
 #[test]
 fn correct_when_extra_note_in_between_1_2() {
     assert_eq!(
-        run_same_count(&[(0, 14), (0, 13), (1, 15), (1, 12)], &[(0, 14), (0, 13), (1, 12)]),
+        run_same_count(
+            &[(0, 14), (0, 13), (1, 15), (1, 12)],
+            &[(0, 14), (0, 13), (1, 12)]
+        ),
         3
     );
 }
@@ -106,7 +120,10 @@ fn correct_when_extra_note_in_between_1_2() {
 #[test]
 fn correct_when_extra_note_in_between_2_2() {
     assert_eq!(
-        run_same_count(&[(0, 14), (0, 13), (1, 12)], &[(0, 14), (1, 15), (0, 13), (1, 12)]),
+        run_same_count(
+            &[(0, 14), (0, 13), (1, 12)],
+            &[(0, 14), (1, 15), (0, 13), (1, 12)]
+        ),
         3
     );
 }
@@ -185,8 +202,8 @@ fn calculation_does_not_take_forever() {
         notes1.push(n((i % 6) as i8, (i % 12) as i8));
         notes2.push(n(((i + 1) % 6) as i8, (i % 12) as i8));
     }
-    let _ = get_same_item_count(same_note, &notes1, &notes2);
-    assert!(true);
+    let same_count = get_same_item_count(same_note, &notes1, &notes2);
+    assert!(same_count <= notes1.len());
 }
 
 #[test]
@@ -205,7 +222,18 @@ fn correct_when_6_different_notes_in_between() {
     assert_eq!(
         run_same_count(
             &[(0, 5), (0, 1), (0, 2), (0, 3)],
-            &[(0, 5), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 1), (0, 2), (0, 3)]
+            &[
+                (0, 5),
+                (0, 0),
+                (0, 0),
+                (0, 0),
+                (0, 0),
+                (0, 0),
+                (0, 0),
+                (0, 1),
+                (0, 2),
+                (0, 3)
+            ]
         ),
         4
     );
@@ -237,8 +265,26 @@ fn correct_when_different_starting_and_ending_note_2_2() {
 fn correct_when_different_starting_and_ending_note_same_number_of_notes() {
     assert_eq!(
         run_same_count(
-            &[(0, 0), (0, 1), (0, 2), (0, 3), (0, 1), (0, 2), (0, 3), (0, 9)],
-            &[(0, 9), (0, 1), (0, 2), (0, 3), (0, 1), (0, 2), (0, 3), (0, 0)]
+            &[
+                (0, 0),
+                (0, 1),
+                (0, 2),
+                (0, 3),
+                (0, 1),
+                (0, 2),
+                (0, 3),
+                (0, 9)
+            ],
+            &[
+                (0, 9),
+                (0, 1),
+                (0, 2),
+                (0, 3),
+                (0, 1),
+                (0, 2),
+                (0, 3),
+                (0, 0)
+            ]
         ),
         6
     );
@@ -248,8 +294,28 @@ fn correct_when_different_starting_and_ending_note_same_number_of_notes() {
 fn correct_when_different_starting_notes_and_ending_note_same_number_of_notes() {
     assert_eq!(
         run_same_count(
-            &[(0, 0), (0, 8), (0, 1), (0, 2), (0, 3), (0, 1), (0, 2), (0, 3), (0, 9)],
-            &[(0, 9), (0, 7), (0, 1), (0, 2), (0, 3), (0, 1), (0, 2), (0, 3), (0, 0)]
+            &[
+                (0, 0),
+                (0, 8),
+                (0, 1),
+                (0, 2),
+                (0, 3),
+                (0, 1),
+                (0, 2),
+                (0, 3),
+                (0, 9)
+            ],
+            &[
+                (0, 9),
+                (0, 7),
+                (0, 1),
+                (0, 2),
+                (0, 3),
+                (0, 1),
+                (0, 2),
+                (0, 3),
+                (0, 0)
+            ]
         ),
         6
     );
@@ -259,7 +325,16 @@ fn correct_when_different_starting_notes_and_ending_note_same_number_of_notes() 
 fn correct_when_different_starting_and_ending_notes_with_different_notes_in_between() {
     assert_eq!(
         run_same_count(
-            &[(0, 0), (0, 1), (0, 2), (0, 3), (0, 1), (0, 2), (0, 3), (0, 9)],
+            &[
+                (0, 0),
+                (0, 1),
+                (0, 2),
+                (0, 3),
+                (0, 1),
+                (0, 2),
+                (0, 3),
+                (0, 9)
+            ],
             &[
                 (0, 9),
                 (0, 5),
