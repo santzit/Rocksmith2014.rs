@@ -44,8 +44,11 @@ Converts between the XML arrangement format and the binary SNG format used by th
 
 Decodes `MLModel.zip` archive metadata and exposes model input/output types (`ModelInput`/`ModelOutput`) for DD level-count prediction work. Includes ONNX runtime loading and prediction via `tract`.
 
-> The Rust crate now bundles `MLModel.zip` at `rocksmith2014-dd-model/model/MLModel.zip`.
-> ONNX runtime loading still expects a model path provided by the caller.
+> The Rust crate now bundles:
+> - `rocksmith2014-dd-model/model/MLModel.zip`
+> - `rocksmith2014-dd-model/model/MLModel.onnx` (pre-converted)
+>
+> So local consumers do not need to convert the archive on every run.
 
 ### DLCProject
 

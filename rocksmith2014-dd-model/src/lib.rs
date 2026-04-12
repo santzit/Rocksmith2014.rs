@@ -5,6 +5,8 @@ pub mod onnx_runtime;
 
 /// Bundled ML.NET archive path, relative to `rocksmith2014-dd-model/`.
 pub const RUST_MLMODEL_RELATIVE_PATH: &str = "model/MLModel.zip";
+/// Bundled ONNX path converted from the ML.NET archive, relative to `rocksmith2014-dd-model/`.
+pub const RUST_ONNX_MODEL_RELATIVE_PATH: &str = "model/MLModel.onnx";
 /// Legacy reference to the .NET submodule model archive path.
 pub const DOTNET_MLMODEL_RELATIVE_PATH: &str =
     "../Rocksmith2014.NET/src/Rocksmith2014.DD.Model/MLModel.zip";
