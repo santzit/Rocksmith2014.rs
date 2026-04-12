@@ -57,7 +57,7 @@ fn chooses_full_hand_shape_for_arpeggio() {
 
     let result = hand_shape_chooser::choose(0.0, &entities, &entities, 3, &templates, &hand_shapes);
     assert_eq!(result.len(), 1);
-    assert_eq!(result[0].1.is_none(), true);
+    assert!(result[0].1.is_none());
     assert_eq!(result[0].0.chord_id, 0);
 }
 
@@ -79,5 +79,5 @@ fn chooses_hand_shape_when_a_note_sustain_ends_inside_it() {
     let result =
         hand_shape_chooser::choose(1.0, &level_entities, &level_entities, 3, &templates, &hand_shapes);
     assert_eq!(result.len(), 1);
-    assert_eq!(result[0].1.is_none(), true);
+    assert!(result[0].1.is_none());
 }
