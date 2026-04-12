@@ -44,6 +44,10 @@ Converts between the XML arrangement format and the binary SNG format used by th
 
 Decodes the .NET `MLModel.zip` archive metadata and exposes model input/output types (`ModelInput`/`ModelOutput`) for DD level-count prediction work. Includes ONNX runtime loading and prediction via `tract`.
 
+> Note: the Rust crate currently does **not** bundle its own `MLModel.zip` or `.onnx` binary in-repo.
+> The current reference archive is the one from the `.NET` submodule at
+> `Rocksmith2014.NET/src/Rocksmith2014.DD.Model/MLModel.zip`, and ONNX runtime loading expects a model path provided by the caller.
+
 ### DLCProject
 
 The `Arrangement` and `DLCProject` domain types, plus miscellaneous helpers needed for CDLC creation (DDS conversion, showlight generation, etc.).
