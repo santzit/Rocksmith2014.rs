@@ -16,6 +16,7 @@ A port of the [Rocksmith2014.NET](https://github.com/iminashi/Rocksmith2014.NET)
 | Audio | 17 | 20 | 20 | 0 | 0 |
 | Common | 38 | 38 | 38 | 0 | 0 |
 | Conversion | 74 | 74 | 73 | 1 | 0 |
+| DD | 33 | 0 | 0 | 0 | 0 |
 | DD Model | 0 | 5 | 5 | 0 | 0 |
 | DLCProject | 105 | 105 | 14 | 91 | 0 |
 | EOF | 4 | 5 | 5 | 0 | 0 |
