@@ -76,6 +76,7 @@ pub fn inspect_mlnet_model_archive(path: impl AsRef<Path>) -> Result<ModelArchiv
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::RUST_MLMODEL_RELATIVE_PATH;
     use std::io::{Cursor, Write};
     use std::path::Path;
 
@@ -131,9 +132,8 @@ mod tests {
     }
 
     #[test]
-    fn inspects_dotnet_dd_mlmodel_when_available() {
-        let path = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../Rocksmith2014.NET/src/Rocksmith2014.DD.Model/MLModel.zip");
+    fn inspects_bundled_dd_mlmodel_when_available() {
+        let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(RUST_MLMODEL_RELATIVE_PATH);
         if !path.exists() {
             return;
         }
