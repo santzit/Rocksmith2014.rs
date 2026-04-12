@@ -16,7 +16,7 @@ A port of the [Rocksmith2014.NET](https://github.com/iminashi/Rocksmith2014.NET)
 | Audio | 17 | 20 | 20 | 0 | 0 |
 | Common | 38 | 38 | 38 | 0 | 0 |
 | Conversion | 74 | 74 | 73 | 1 | 0 |
-| DD Model | 0 | 3 | 3 | 0 | 0 |
+| DD Model | 0 | 5 | 5 | 0 | 0 |
 | DLCProject | 105 | 105 | 14 | 91 | 0 |
 | EOF | 4 | 5 | 5 | 0 | 0 |
 | FSharp Extensions | 15 | 33 | 33 | 0 | 0 |
@@ -41,7 +41,7 @@ Converts between the XML arrangement format and the binary SNG format used by th
 
 ### DD Model
 
-Decodes the .NET `MLModel.zip` archive metadata and exposes model input/output types (`ModelInput`/`ModelOutput`) for DD level-count prediction work. Current runtime support detects ML.NET zip vs ONNX format so ONNX/`tract` integration can be added in the DD crate.
+Decodes the .NET `MLModel.zip` archive metadata and exposes model input/output types (`ModelInput`/`ModelOutput`) for DD level-count prediction work. Includes ONNX runtime loading and prediction via `tract`.
 
 ### DLCProject
 

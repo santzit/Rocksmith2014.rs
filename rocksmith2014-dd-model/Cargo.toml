@@ -7,4 +7,5 @@ license = "MIT"
 
 [dependencies]
 thiserror = "2"
+tract-onnx = "0.21.11"
 zip = { version = "8.5.1", default-features = false, features = ["deflate"] }
