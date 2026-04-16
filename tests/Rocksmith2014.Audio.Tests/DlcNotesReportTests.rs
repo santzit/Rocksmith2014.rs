@@ -42,7 +42,7 @@ fn note_checksum(level: &rocksmith2014_xml::Level) -> u64 {
     for row in note_rows {
         for byte in row.bytes().chain(std::iter::once(b';')) {
             hash ^= byte as u64;
-            hash = hash.wrapping_mul(0x1000_0000_01b3);
+            hash = hash.wrapping_mul(0x100000001b3);
         }
     }
     hash
@@ -136,7 +136,8 @@ fn checks_all_dlc_notes_and_prints_in_between_dreams_notes() {
 
     if let Ok(summary_path) = std::env::var("RUST_DLC_NOTE_SUMMARY_PATH") {
         summary_lines.sort();
-        fs::write(summary_path, summary_lines.join("\n")).expect("write rust DLC note summary");
+        fs::write(summary_path, format!("{}\n", summary_lines.join("\n")))
+            .expect("write rust DLC note summary");
     }
 
     assert!(checked_notes > 0, "no notes found across DLC xml files");
