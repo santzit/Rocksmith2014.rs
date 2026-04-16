@@ -483,6 +483,7 @@ dependencies = [
  "hound",
  "rocksmith2014-audio",
  "rocksmith2014-psarc",
+ "rocksmith2014-xml",
  "tempfile",
 ]
 
