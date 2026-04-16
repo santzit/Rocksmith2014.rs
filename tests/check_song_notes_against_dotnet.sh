@@ -140,7 +140,10 @@ File.WriteAllLines(summaryOut, lines);
 return 0;
 EOF
 
-dotnet run --project "$DOTNET_APP_DIR/NoteCheck.csproj" -- "$DLC_DIR" "$DOTNET_SUMMARY"
+if ! dotnet run --project "$DOTNET_APP_DIR/NoteCheck.csproj" -- "$DLC_DIR" "$DOTNET_SUMMARY"; then
+  echo "ERROR: .NET note checker failed before summary comparison." >&2
+  exit 1
+fi
 
 diff -u "$DOTNET_SUMMARY" "$RUST_SUMMARY"
 echo "Rust and .NET note parsing summaries match."
