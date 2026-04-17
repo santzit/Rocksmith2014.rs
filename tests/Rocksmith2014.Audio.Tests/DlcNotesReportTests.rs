@@ -17,9 +17,8 @@ fn is_target_song(psarc_path: &Path, entry: &str, title: &str) -> bool {
     let has_in_between = title_norm.contains("inbetween")
         || entry_norm.contains("inbetween")
         || file_norm.contains("inbetween");
-    let has_dream = title_norm.contains("dream")
-        || entry_norm.contains("dream")
-        || file_norm.contains("dream");
+    let has_dream =
+        title_norm.contains("dream") || entry_norm.contains("dream") || file_norm.contains("dream");
     let has_days =
         title_norm.contains("days") || entry_norm.contains("days") || file_norm.contains("days");
     has_in_between && (has_dream || has_days)
@@ -108,8 +107,12 @@ fn checks_all_dlc_notes_and_prints_in_between_dreams_notes() {
                 ));
             }
 
-            let has_any_notes = arrangement.levels.iter().any(|level| !level.notes.is_empty());
-            if has_any_notes && is_target_song(psarc_path, &xml_entry, &arrangement.meta.song_name) {
+            let has_any_notes = arrangement
+                .levels
+                .iter()
+                .any(|level| !level.notes.is_empty());
+            if has_any_notes && is_target_song(psarc_path, &xml_entry, &arrangement.meta.song_name)
+            {
                 target_printed = true;
                 println!(
                     "\nTarget song: {} ({})",

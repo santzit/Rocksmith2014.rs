@@ -10,6 +10,10 @@
 //! and was produced by the matching constructor exported here.  Null pointers
 //! are checked at the entry of every function.
 
+// C ABI functions must be non-unsafe for P/Invoke compatibility.
+// Callers are responsible for passing valid pointers; null checks are at each entry point.
+#![allow(clippy::not_unsafe_ptr_arg_deref)]
+
 use rocksmith2014_psarc::Psarc;
 use rocksmith2014_xml::read_file;
 use std::ffi::{CStr, CString};
@@ -119,9 +123,7 @@ pub extern "C" fn rs_metadata_artist_name_sort(h: *const MetaDataHandle) -> *con
 
 /// Borrow the last-conversion-date-time string (owned by the handle).
 #[no_mangle]
-pub extern "C" fn rs_metadata_last_conversion_datetime(
-    h: *const MetaDataHandle,
-) -> *const c_char {
+pub extern "C" fn rs_metadata_last_conversion_datetime(h: *const MetaDataHandle) -> *const c_char {
     if h.is_null() {
         return std::ptr::null();
     }
