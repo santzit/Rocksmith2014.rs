@@ -565,6 +565,7 @@ name = "rocksmith2014-ffi"
 version = "0.1.0"
 dependencies = [
  "rocksmith2014-psarc",
+ "rocksmith2014-sng",
  "rocksmith2014-xml",
 ]
 

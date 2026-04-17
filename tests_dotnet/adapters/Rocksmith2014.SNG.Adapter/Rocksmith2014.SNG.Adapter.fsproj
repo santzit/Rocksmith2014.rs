@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- Must target the same framework as the test projects -->
+    <TargetFramework>net8.0</TargetFramework>
+    <!-- Match the assembly name expected by the F# test project -->
+    <AssemblyName>Rocksmith2014.SNG</AssemblyName>
+    <RootNamespace>Rocksmith2014.SNG</RootNamespace>
+    <!-- Prevent the .NET SDK from auto-adding the SDK-version FSharp.Core
+         (e.g. 10.1.x when running under .NET 10 SDK) so we can pin to 8.0.401
+         and avoid NU1605 downgrade errors from the test project. -->
+    <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Platform.fs must come first: it defines Rocksmith2014.Common.Platform -->
+    <Compile Include="Platform.fs" />
+    <Compile Include="SNG.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Pin to the same FSharp.Core version used by Rocksmith2014.SNG.Tests at v3.5.0. -->
+    <PackageReference Include="FSharp.Core" Version="8.0.401" />
+  </ItemGroup>
+</Project>

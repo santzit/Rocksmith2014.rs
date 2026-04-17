@@ -15,6 +15,7 @@
 #![allow(clippy::not_unsafe_ptr_arg_deref)]
 
 use rocksmith2014_psarc::Psarc;
+use rocksmith2014_sng::{Platform as SngPlatform, Sng};
 use rocksmith2014_xml::read_file;
 use std::ffi::{CStr, CString};
 use std::os::raw::c_char;
@@ -237,5 +238,106 @@ pub extern "C" fn rs_psarc_free(h: *mut PsarcHandle) {
 pub extern "C" fn rs_free_string(ptr: *mut c_char) {
     if !ptr.is_null() {
         unsafe { drop(CString::from_raw(ptr)) };
+    }
+}
+
+// ─── SNG ──────────────────────────────────────────────────────────────────────
+
+pub struct SngHandle(Sng);
+
+fn sng_platform(platform: i32) -> SngPlatform {
+    if platform == 1 {
+        SngPlatform::Mac
+    } else {
+        SngPlatform::Pc
+    }
+}
+
+/// Read and parse an unencrypted (unpacked) SNG file. Returns null on error.
+#[no_mangle]
+pub extern "C" fn rs_sng_read_unpacked(path: *const c_char) -> *mut SngHandle {
+    if path.is_null() {
+        return std::ptr::null_mut();
+    }
+    let path = unsafe { CStr::from_ptr(path) }.to_string_lossy();
+    let data = match std::fs::read(Path::new(path.as_ref())) {
+        Ok(d) => d,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    match Sng::read(&data) {
+        Ok(sng) => Box::into_raw(Box::new(SngHandle(sng))),
+        Err(_) => std::ptr::null_mut(),
+    }
+}
+
+/// Write an unencrypted (unpacked) SNG to a file. Returns 0 on success, -1 on error.
+#[no_mangle]
+pub extern "C" fn rs_sng_save_unpacked(handle: *const SngHandle, path: *const c_char) -> i32 {
+    if handle.is_null() || path.is_null() {
+        return -1;
+    }
+    let path = unsafe { CStr::from_ptr(path) }.to_string_lossy();
+    let sng = &unsafe { &*handle }.0;
+    match sng.write() {
+        Ok(bytes) => match std::fs::write(Path::new(path.as_ref()), &bytes) {
+            Ok(_) => 0,
+            Err(_) => -1,
+        },
+        Err(_) => -1,
+    }
+}
+
+/// Read and parse an encrypted (packed) SNG file. `platform`: 0=PC, 1=Mac. Returns null on error.
+#[no_mangle]
+pub extern "C" fn rs_sng_read_packed(path: *const c_char, platform: i32) -> *mut SngHandle {
+    if path.is_null() {
+        return std::ptr::null_mut();
+    }
+    let path = unsafe { CStr::from_ptr(path) }.to_string_lossy();
+    let data = match std::fs::read(Path::new(path.as_ref())) {
+        Ok(d) => d,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    match Sng::from_encrypted(&data, sng_platform(platform)) {
+        Ok(sng) => Box::into_raw(Box::new(SngHandle(sng))),
+        Err(_) => std::ptr::null_mut(),
+    }
+}
+
+/// Write an encrypted (packed) SNG to a file. `platform`: 0=PC, 1=Mac. Returns 0 on success, -1 on error.
+#[no_mangle]
+pub extern "C" fn rs_sng_save_packed(
+    handle: *const SngHandle,
+    path: *const c_char,
+    platform: i32,
+) -> i32 {
+    if handle.is_null() || path.is_null() {
+        return -1;
+    }
+    let path = unsafe { CStr::from_ptr(path) }.to_string_lossy();
+    let sng = &unsafe { &*handle }.0;
+    match sng.to_encrypted(sng_platform(platform)) {
+        Ok(bytes) => match std::fs::write(Path::new(path.as_ref()), &bytes) {
+            Ok(_) => 0,
+            Err(_) => -1,
+        },
+        Err(_) => -1,
+    }
+}
+
+/// Return the number of difficulty levels in the SNG. Returns -1 on null handle.
+#[no_mangle]
+pub extern "C" fn rs_sng_level_count(handle: *const SngHandle) -> i32 {
+    if handle.is_null() {
+        return -1;
+    }
+    unsafe { &*handle }.0.levels.len() as i32
+}
+
+/// Free an SNG handle produced by `rs_sng_read_unpacked` or `rs_sng_read_packed`.
+#[no_mangle]
+pub extern "C" fn rs_sng_free(handle: *mut SngHandle) {
+    if !handle.is_null() {
+        unsafe { drop(Box::from_raw(handle)) };
     }
 }

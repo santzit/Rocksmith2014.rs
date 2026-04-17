@@ -19,3 +19,4 @@ path = "src/main.rs"
 [dependencies]
 rocksmith2014-psarc = { path = "../rocksmith2014-psarc" }
 rocksmith2014-xml = { path = "../rocksmith2014-xml" }
+rocksmith2014-sng = { path = "../rocksmith2014-sng" }
