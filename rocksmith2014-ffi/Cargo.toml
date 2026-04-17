@@ -2,8 +2,15 @@
 name = "rocksmith2014-ffi"
 version = "0.1.0"
 edition = "2021"
-description = "CLI shim for Rust/.NET note-parity comparison"
+description = "C ABI exports and CLI shim for Rust/.NET parity testing"
 publish = false
+
+# cdylib  — consumed by .NET P/Invoke (tests_dotnet adapters)
+# rlib    — consumed by the CLI binary in this same package
+[lib]
+name = "rocksmith2014_ffi"
+crate-type = ["cdylib", "rlib"]
+path = "src/lib.rs"
 
 [[bin]]
 name = "rocksmith2014-ffi"
