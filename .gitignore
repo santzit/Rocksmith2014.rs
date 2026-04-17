@@ -16,6 +16,10 @@ target
 # Local clone of Rocksmith2014.NET used by helper scripts
 tests/rocksmith2014-net/
 
+# .NET build artifacts from adapter projects
+tests_dotnet/adapters/**/bin/
+tests_dotnet/adapters/**/obj/
+
 # RustRover
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
 #  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
