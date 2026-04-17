@@ -21,4 +21,4 @@ pub mod wwise;
 pub use error::{AudioError, Result};
 pub use fader::AudioFader;
 pub use preview::PreviewParams;
-pub use volume::calculate_lufs;
+pub use volume::{calculate_from_file, calculate_lufs};

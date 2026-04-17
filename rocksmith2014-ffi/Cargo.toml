@@ -20,3 +20,6 @@ path = "src/main.rs"
 rocksmith2014-psarc = { path = "../rocksmith2014-psarc" }
 rocksmith2014-xml = { path = "../rocksmith2014-xml" }
 rocksmith2014-sng = { path = "../rocksmith2014-sng" }
+rocksmith2014-conversion = { path = "../rocksmith2014-conversion" }
+rocksmith2014-audio = { path = "../rocksmith2014-audio" }
+rocksmith2014-eof = { path = "../rocksmith2014-eof" }

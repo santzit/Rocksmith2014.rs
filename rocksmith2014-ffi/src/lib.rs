@@ -341,3 +341,405 @@ pub extern "C" fn rs_sng_free(handle: *mut SngHandle) {
         unsafe { drop(Box::from_raw(handle)) };
     }
 }
+
+// ─── SNG count getters ───────────────────────────────────────────────────────
+
+macro_rules! sng_count {
+    ($name:ident, $field:ident) => {
+        #[no_mangle]
+        pub extern "C" fn $name(h: *const SngHandle) -> i32 {
+            if h.is_null() { return -1; }
+            unsafe { &*h }.0.$field.len() as i32
+        }
+    };
+}
+
+sng_count!(rs_sng_beats_count,                  beats);
+sng_count!(rs_sng_phrases_count,                phrases);
+sng_count!(rs_sng_chord_templates_count,        chords);
+sng_count!(rs_sng_chord_notes_count,            chord_notes);
+sng_count!(rs_sng_vocals_count,                 vocals);
+sng_count!(rs_sng_symbols_headers_count,        symbols_headers);
+sng_count!(rs_sng_symbols_textures_count,       symbols_textures);
+sng_count!(rs_sng_symbol_definitions_count,     symbol_definitions);
+sng_count!(rs_sng_phrase_iterations_count,      phrase_iterations);
+sng_count!(rs_sng_phrase_extra_info_count,      phrase_extra_info);
+sng_count!(rs_sng_new_linked_difficulties_count, new_linked_difficulties);
+sng_count!(rs_sng_events_count,                 events);
+sng_count!(rs_sng_tones_count,                  tones);
+sng_count!(rs_sng_dnas_count,                   dnas);
+sng_count!(rs_sng_sections_count,               sections);
+
+/// Width of the symbols texture at `idx`.  Returns -1 on invalid input.
+#[no_mangle]
+pub extern "C" fn rs_sng_texture_width(h: *const SngHandle, idx: i32) -> i32 {
+    if h.is_null() { return -1; }
+    let sng = unsafe { &*h };
+    sng.0.symbols_textures.get(idx as usize).map(|t| t.width).unwrap_or(-1)
+}
+
+/// Height of the symbols texture at `idx`.  Returns -1 on invalid input.
+#[no_mangle]
+pub extern "C" fn rs_sng_texture_height(h: *const SngHandle, idx: i32) -> i32 {
+    if h.is_null() { return -1; }
+    let sng = unsafe { &*h };
+    sng.0.symbols_textures.get(idx as usize).map(|t| t.height).unwrap_or(-1)
+}
+
+// ─── SNG MetaData getters ────────────────────────────────────────────────────
+
+/// Arrangement part (int16).  Returns 0 on null.
+#[no_mangle]
+pub extern "C" fn rs_sng_meta_part(h: *const SngHandle) -> i16 {
+    if h.is_null() { return 0; }
+    unsafe { &*h }.0.metadata.part
+}
+
+/// Song length in seconds (f32).  Returns 0 on null.
+#[no_mangle]
+pub extern "C" fn rs_sng_meta_song_length(h: *const SngHandle) -> f32 {
+    if h.is_null() { return 0.0; }
+    unsafe { &*h }.0.metadata.song_length
+}
+
+/// Number of tuning strings.  Returns 0 on null.
+#[no_mangle]
+pub extern "C" fn rs_sng_meta_tuning_count(h: *const SngHandle) -> i32 {
+    if h.is_null() { return 0; }
+    unsafe { &*h }.0.metadata.tuning.len() as i32
+}
+
+/// Tuning value at `idx` (int16).  Returns 0 on invalid input.
+#[no_mangle]
+pub extern "C" fn rs_sng_meta_tuning(h: *const SngHandle, idx: i32) -> i16 {
+    if h.is_null() { return 0; }
+    unsafe { &*h }.0.metadata.tuning.get(idx as usize).copied().unwrap_or(0)
+}
+
+/// Last conversion datetime as a NUL-terminated UTF-8 string.
+/// Caller must free with `rs_free_string`.
+#[no_mangle]
+pub extern "C" fn rs_sng_meta_last_conversion_datetime(h: *const SngHandle) -> *mut c_char {
+    if h.is_null() {
+        return CString::new("").unwrap().into_raw();
+    }
+    let dt = &unsafe { &*h }.0.metadata.last_conversion_date_time;
+    let end = dt.iter().position(|&b| b == 0).unwrap_or(dt.len());
+    let s = String::from_utf8_lossy(&dt[..end]).into_owned();
+    CString::new(s).unwrap_or_default().into_raw()
+}
+
+// ─── SNG Vocal getters ───────────────────────────────────────────────────────
+
+/// Lyric at `idx` as a NUL-terminated UTF-8 string.  Caller must free with `rs_free_string`.
+#[no_mangle]
+pub extern "C" fn rs_sng_vocal_lyric(h: *const SngHandle, idx: i32) -> *mut c_char {
+    if h.is_null() {
+        return CString::new("").unwrap().into_raw();
+    }
+    let sng = unsafe { &*h };
+    let lyric = match sng.0.vocals.get(idx as usize) {
+        Some(v) => {
+            let end = v.lyric.iter().position(|&b| b == 0).unwrap_or(v.lyric.len());
+            String::from_utf8_lossy(&v.lyric[..end]).into_owned()
+        }
+        None => String::new(),
+    };
+    CString::new(lyric).unwrap_or_default().into_raw()
+}
+
+/// Note value at `idx` (i32).  Returns 0 on invalid input.
+#[no_mangle]
+pub extern "C" fn rs_sng_vocal_note(h: *const SngHandle, idx: i32) -> i32 {
+    if h.is_null() { return 0; }
+    unsafe { &*h }.0.vocals.get(idx as usize).map(|v| v.note).unwrap_or(0)
+}
+
+/// Time of vocal at `idx` in seconds (f32).  Returns 0 on invalid input.
+#[no_mangle]
+pub extern "C" fn rs_sng_vocal_time(h: *const SngHandle, idx: i32) -> f32 {
+    if h.is_null() { return 0.0; }
+    unsafe { &*h }.0.vocals.get(idx as usize).map(|v| v.time).unwrap_or(0.0)
+}
+
+/// Length of vocal at `idx` in seconds (f32).  Returns 0 on invalid input.
+#[no_mangle]
+pub extern "C" fn rs_sng_vocal_length(h: *const SngHandle, idx: i32) -> f32 {
+    if h.is_null() { return 0.0; }
+    unsafe { &*h }.0.vocals.get(idx as usize).map(|v| v.length).unwrap_or(0.0)
+}
+
+// ─── Conversion — Instrumental ───────────────────────────────────────────────
+
+/// Convert a loaded `InstrumentalArrangement` to SNG.  Returns null on null input.
+#[no_mangle]
+pub extern "C" fn rs_sng_from_arrangement(arr: *const ArrangementHandle) -> *mut SngHandle {
+    if arr.is_null() {
+        return std::ptr::null_mut();
+    }
+    let sng = rocksmith2014_conversion::xml_to_sng(&unsafe { &*arr }.0);
+    Box::into_raw(Box::new(SngHandle(sng)))
+}
+
+/// Convert an SNG to InstrumentalArrangement XML and write to `path`.
+/// Returns 0 on success, -1 on error.
+#[no_mangle]
+pub extern "C" fn rs_sng_to_xml_file(h: *const SngHandle, path: *const c_char) -> i32 {
+    if h.is_null() || path.is_null() { return -1; }
+    let path_str = unsafe { CStr::from_ptr(path) }.to_string_lossy();
+    let arr = rocksmith2014_conversion::sng_to_xml_full(&unsafe { &*h }.0);
+    match rocksmith2014_xml::write_file(&arr, Path::new(path_str.as_ref())) {
+        Ok(()) => 0,
+        Err(_) => -1,
+    }
+}
+
+// ─── Conversion — Vocals ─────────────────────────────────────────────────────
+
+/// Convert a vocals XML file to SNG using the default font.
+/// Returns a new SngHandle (free with `rs_sng_free`) or null on error.
+#[no_mangle]
+pub extern "C" fn rs_convert_vocals_xml_to_sng_default(vocals_path: *const c_char) -> *mut SngHandle {
+    if vocals_path.is_null() { return std::ptr::null_mut(); }
+    let path_str = unsafe { CStr::from_ptr(vocals_path) }.to_string_lossy();
+    let vocals = match rocksmith2014_xml::vocal::load(Path::new(path_str.as_ref())) {
+        Ok(v) => v,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let sng = rocksmith2014_conversion::xml_vocals_to_sng(
+        rocksmith2014_conversion::FontOption::DefaultFont,
+        &vocals,
+    );
+    Box::into_raw(Box::new(SngHandle(sng)))
+}
+
+/// Convert a vocals XML file to SNG using a custom glyph font.
+/// `asset_path` is the DDS texture path embedded in the SNG.
+/// Returns a new SngHandle (free with `rs_sng_free`) or null on error.
+#[no_mangle]
+pub extern "C" fn rs_convert_vocals_xml_to_sng_custom(
+    vocals_path: *const c_char,
+    glyphs_path: *const c_char,
+    asset_path: *const c_char,
+) -> *mut SngHandle {
+    if vocals_path.is_null() || glyphs_path.is_null() || asset_path.is_null() {
+        return std::ptr::null_mut();
+    }
+    let vocals_str = unsafe { CStr::from_ptr(vocals_path) }.to_string_lossy();
+    let glyphs_str = unsafe { CStr::from_ptr(glyphs_path) }.to_string_lossy();
+    let asset_str = unsafe { CStr::from_ptr(asset_path) }.to_string_lossy();
+
+    let vocals = match rocksmith2014_xml::vocal::load(Path::new(vocals_str.as_ref())) {
+        Ok(v) => v,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let glyphs = match rocksmith2014_xml::GlyphDefinitions::load(Path::new(glyphs_str.as_ref())) {
+        Ok(g) => g,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let sng = rocksmith2014_conversion::xml_vocals_to_sng(
+        rocksmith2014_conversion::FontOption::CustomFont(&glyphs, asset_str.as_ref()),
+        &vocals,
+    );
+    Box::into_raw(Box::new(SngHandle(sng)))
+}
+
+/// Convert the vocals in an SNG to XML vocals format and write to `output_path`.
+/// Returns 0 on success, -1 on error.
+#[no_mangle]
+pub extern "C" fn rs_convert_vocals_sng_to_xml_file(
+    h: *const SngHandle,
+    output_path: *const c_char,
+) -> i32 {
+    if h.is_null() || output_path.is_null() { return -1; }
+    let path_str = unsafe { CStr::from_ptr(output_path) }.to_string_lossy();
+    let xml_vocals = rocksmith2014_conversion::sng_vocals_to_xml(&unsafe { &*h }.0);
+    match rocksmith2014_xml::vocal::save(Path::new(path_str.as_ref()), &xml_vocals) {
+        Ok(()) => 0,
+        Err(_) => -1,
+    }
+}
+
+/// Extract glyph definitions from an SNG and write to `output_path` as XML.
+/// Returns 0 on success, -1 on error.
+#[no_mangle]
+pub extern "C" fn rs_convert_extract_glyphs_file(
+    h: *const SngHandle,
+    output_path: *const c_char,
+) -> i32 {
+    if h.is_null() || output_path.is_null() { return -1; }
+    let path_str = unsafe { CStr::from_ptr(output_path) }.to_string_lossy();
+    let glyphs = rocksmith2014_conversion::extract_glyph_data(&unsafe { &*h }.0);
+    match glyphs.save(Path::new(path_str.as_ref())) {
+        Ok(()) => 0,
+        Err(_) => -1,
+    }
+}
+
+// ─── Audio ───────────────────────────────────────────────────────────────────
+
+/// Calculate the volume of an audio file (WAV/OGG/FLAC).
+/// Returns the volume value (e.g. -0.2) or `f64::NAN` on error.
+#[no_mangle]
+pub extern "C" fn rs_audio_calculate_volume(path: *const c_char) -> f64 {
+    if path.is_null() { return f64::NAN; }
+    let path_str = unsafe { CStr::from_ptr(path) }.to_string_lossy();
+    match rocksmith2014_audio::volume::calculate_from_file(Path::new(path_str.as_ref())) {
+        Ok(v) => v,
+        Err(_) => f64::NAN,
+    }
+}
+
+/// Get the duration of an audio file (WAV/OGG/FLAC) in milliseconds.
+/// Returns -1.0 on error.
+#[no_mangle]
+pub extern "C" fn rs_audio_get_length_ms(path: *const c_char) -> f64 {
+    if path.is_null() { return -1.0; }
+    let path_str = unsafe { CStr::from_ptr(path) }.to_string_lossy();
+    match rocksmith2014_audio::utils::get_length(Path::new(path_str.as_ref())) {
+        Ok(d) => d.as_secs_f64() * 1000.0,
+        Err(_) => -1.0,
+    }
+}
+
+/// Create a preview audio path string from a source path.
+/// Returns a new NUL-terminated string; caller must free with `rs_free_string`.
+#[no_mangle]
+pub extern "C" fn rs_audio_create_preview_path(path: *const c_char) -> *mut c_char {
+    if path.is_null() {
+        return CString::new("").unwrap().into_raw();
+    }
+    let path_str = unsafe { CStr::from_ptr(path) }.to_string_lossy();
+    let result = rocksmith2014_audio::utils::create_preview_audio_path(path_str.as_ref());
+    CString::new(result).unwrap_or_default().into_raw()
+}
+
+// ─── EOF Helpers ─────────────────────────────────────────────────────────────
+
+/// Get the index of the beat closest to `target_time` in milliseconds.
+/// `times` and `measures` are parallel arrays of length `count`.
+/// Returns 0 on null/empty input.
+#[no_mangle]
+pub extern "C" fn rs_eof_get_closest_beat(
+    times: *const i32,
+    measures: *const i16,
+    count: i32,
+    target_time: i32,
+) -> i32 {
+    if times.is_null() || measures.is_null() || count <= 0 { return 0; }
+    let n = count as usize;
+    let times_slice = unsafe { std::slice::from_raw_parts(times, n) };
+    let measures_slice = unsafe { std::slice::from_raw_parts(measures, n) };
+    let beats: Vec<rocksmith2014_xml::Ebeat> = times_slice
+        .iter()
+        .zip(measures_slice.iter())
+        .map(|(&t, &m)| rocksmith2014_xml::Ebeat { time: t, measure: m })
+        .collect();
+    rocksmith2014_eof::helpers::get_closest_beat(&beats, target_time) as i32
+}
+
+/// Try to parse a time signature from `text` (e.g. "TS:3/4").
+/// If successful writes numerator/denominator to `n_out`/`d_out` and returns 1.
+/// Returns 0 if the text is not a valid time signature.
+#[no_mangle]
+pub extern "C" fn rs_eof_try_parse_ts(
+    text: *const c_char,
+    n_out: *mut u32,
+    d_out: *mut u32,
+) -> i32 {
+    if text.is_null() { return 0; }
+    let s = unsafe { CStr::from_ptr(text) }.to_string_lossy();
+    match rocksmith2014_eof::helpers::try_parse_time_signature(s.as_ref()) {
+        Some((n, d)) => {
+            if !n_out.is_null() { unsafe { *n_out = n }; }
+            if !d_out.is_null() { unsafe { *d_out = d }; }
+            1
+        }
+        None => 0,
+    }
+}
+
+pub struct TsResultHandle(Vec<(i32, rocksmith2014_eof::types::TimeSignature)>);
+
+/// Infer time signatures from an array of beats.
+/// Returns a TsResultHandle; free with `rs_eof_ts_free`.
+#[no_mangle]
+pub extern "C" fn rs_eof_infer_time_signatures(
+    times: *const i32,
+    measures: *const i16,
+    count: i32,
+) -> *mut TsResultHandle {
+    if times.is_null() || measures.is_null() || count <= 0 {
+        return Box::into_raw(Box::new(TsResultHandle(Vec::new())));
+    }
+    let n = count as usize;
+    let times_slice = unsafe { std::slice::from_raw_parts(times, n) };
+    let measures_slice = unsafe { std::slice::from_raw_parts(measures, n) };
+    let beats: Vec<rocksmith2014_xml::Ebeat> = times_slice
+        .iter()
+        .zip(measures_slice.iter())
+        .map(|(&t, &m)| rocksmith2014_xml::Ebeat { time: t, measure: m })
+        .collect();
+    let result = rocksmith2014_eof::helpers::infer_time_signatures(&beats);
+    Box::into_raw(Box::new(TsResultHandle(result)))
+}
+
+/// Number of time signature results.
+#[no_mangle]
+pub extern "C" fn rs_eof_ts_count(h: *const TsResultHandle) -> i32 {
+    if h.is_null() { return 0; }
+    unsafe { &*h }.0.len() as i32
+}
+
+/// Time (ms) of the time signature result at `idx`.
+#[no_mangle]
+pub extern "C" fn rs_eof_ts_time(h: *const TsResultHandle, idx: i32) -> i32 {
+    if h.is_null() { return 0; }
+    unsafe { &*h }.0.get(idx as usize).map(|(t, _)| *t).unwrap_or(0)
+}
+
+/// Tag for the time signature at `idx`:
+/// 0=TS2/4, 1=TS3/4, 2=TS4/4, 3=TS5/4, 4=TS6/4, 5=Custom.
+#[no_mangle]
+pub extern "C" fn rs_eof_ts_tag(h: *const TsResultHandle, idx: i32) -> u8 {
+    if h.is_null() { return 0; }
+    match unsafe { &*h }.0.get(idx as usize) {
+        Some((_, ts)) => match ts {
+            rocksmith2014_eof::types::TimeSignature::TS2_4  => 0,
+            rocksmith2014_eof::types::TimeSignature::TS3_4  => 1,
+            rocksmith2014_eof::types::TimeSignature::TS4_4  => 2,
+            rocksmith2014_eof::types::TimeSignature::TS5_4  => 3,
+            rocksmith2014_eof::types::TimeSignature::TS6_4  => 4,
+            rocksmith2014_eof::types::TimeSignature::Custom(_, _) => 5,
+        },
+        None => 0,
+    }
+}
+
+/// Numerator of a Custom time signature at `idx`.  Returns 0 for non-Custom.
+#[no_mangle]
+pub extern "C" fn rs_eof_ts_num(h: *const TsResultHandle, idx: i32) -> u32 {
+    if h.is_null() { return 0; }
+    match unsafe { &*h }.0.get(idx as usize) {
+        Some((_, rocksmith2014_eof::types::TimeSignature::Custom(n, _))) => *n,
+        _ => 0,
+    }
+}
+
+/// Denominator of a Custom time signature at `idx`.  Returns 0 for non-Custom.
+#[no_mangle]
+pub extern "C" fn rs_eof_ts_den(h: *const TsResultHandle, idx: i32) -> u32 {
+    if h.is_null() { return 0; }
+    match unsafe { &*h }.0.get(idx as usize) {
+        Some((_, rocksmith2014_eof::types::TimeSignature::Custom(_, d))) => *d,
+        _ => 0,
+    }
+}
+
+/// Free a TsResultHandle.
+#[no_mangle]
+pub extern "C" fn rs_eof_ts_free(h: *mut TsResultHandle) {
+    if !h.is_null() {
+        unsafe { drop(Box::from_raw(h)) };
+    }
+}
