@@ -23,5 +23,6 @@ members = [
     "rocksmith2014-eof",
     "tests/Rocksmith2014.EOF.Tests",
     "rocksmith2014-dlcproject",
+    "rocksmith2014-ffi",
 ]
 resolver = "2"
