@@ -33,6 +33,8 @@ module private Ffi =
     [<DllImport("rocksmith2014_ffi")>] extern int rs_sng_symbols_headers_count(nativeint h)
     [<DllImport("rocksmith2014_ffi")>] extern int rs_sng_symbols_textures_count(nativeint h)
     [<DllImport("rocksmith2014_ffi")>] extern int rs_sng_symbol_definitions_count(nativeint h)
+    [<DllImport("rocksmith2014_ffi", CharSet = CharSet.Ansi)>]
+    extern nativeint rs_sng_symbol_definition_symbol(nativeint h, int idx)
     [<DllImport("rocksmith2014_ffi")>] extern int rs_sng_phrase_iterations_count(nativeint h)
     [<DllImport("rocksmith2014_ffi")>] extern int rs_sng_phrase_extra_info_count(nativeint h)
     [<DllImport("rocksmith2014_ffi")>] extern int rs_sng_new_linked_difficulties_count(nativeint h)
@@ -76,6 +78,9 @@ type SngSymbolsTexture = { Width: int; Height: int }
 /// SNG metadata subset used by conversion tests.
 type SngMetaData = { Part: int16; LastConversionDateTime: string; Tuning: int16[]; SongLength: float32 }
 
+/// A symbol definition entry with symbol string.
+type SngSymbolDefinition = { Symbol: string }
+
 /// Wraps the Rust SNG handle via P/Invoke.
 /// Failing tests reveal behavioural mismatches between Rust and .NET.
 type SNG internal (handle: nativeint) =
@@ -94,7 +99,10 @@ type SNG internal (handle: nativeint) =
     let chords             = Array.create (max 0 (Ffi.rs_sng_chord_templates_count(handle))) ()
     let chordNotes         = Array.create (max 0 (Ffi.rs_sng_chord_notes_count(handle))) ()
     let symbolsHeaders     = Array.create (max 0 (Ffi.rs_sng_symbols_headers_count(handle))) ()
-    let symbolDefinitions  = Array.create (max 0 (Ffi.rs_sng_symbol_definitions_count(handle))) ()
+    let symbolDefinitions  =
+        let n = max 0 (Ffi.rs_sng_symbol_definitions_count(handle))
+        Array.init n (fun i ->
+            { Symbol = readAndFreeString (Ffi.rs_sng_symbol_definition_symbol(handle, i)) })
     let phraseIterations   = Array.create (max 0 (Ffi.rs_sng_phrase_iterations_count(handle))) ()
     let phraseExtraInfo    = Array.create (max 0 (Ffi.rs_sng_phrase_extra_info_count(handle))) ()
     let newLinkedDiffs     = Array.create (max 0 (Ffi.rs_sng_new_linked_difficulties_count(handle))) ()
@@ -135,7 +143,7 @@ type SNG internal (handle: nativeint) =
     member _.Vocals : SngVocal array           = vocals
     member _.SymbolsHeaders : unit array       = symbolsHeaders
     member _.SymbolsTextures : SngSymbolsTexture array = symbolsTextures
-    member _.SymbolDefinitions : unit array    = symbolDefinitions
+    member _.SymbolDefinitions : SngSymbolDefinition array = symbolDefinitions
     member _.PhraseIterations : unit array     = phraseIterations
     member _.PhraseExtraInfo : unit array      = phraseExtraInfo
     member _.NewLinkedDifficulties : unit array = newLinkedDiffs

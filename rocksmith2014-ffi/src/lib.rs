@@ -525,6 +525,30 @@ pub extern "C" fn rs_sng_vocal_length(h: *const SngHandle, idx: i32) -> f32 {
         .unwrap_or(0.0)
 }
 
+// ─── SNG SymbolDefinition getters ────────────────────────────────────────────
+
+/// Symbol string at `idx` as a NUL-terminated UTF-8 string.
+/// Caller must free with `rs_free_string`.
+#[no_mangle]
+pub extern "C" fn rs_sng_symbol_definition_symbol(h: *const SngHandle, idx: i32) -> *mut c_char {
+    if h.is_null() {
+        return CString::new("").unwrap().into_raw();
+    }
+    let sng = unsafe { &*h };
+    let symbol = match sng.0.symbol_definitions.get(idx as usize) {
+        Some(sd) => {
+            let end = sd
+                .symbol
+                .iter()
+                .position(|&b| b == 0)
+                .unwrap_or(sd.symbol.len());
+            String::from_utf8_lossy(&sd.symbol[..end]).into_owned()
+        }
+        None => String::new(),
+    };
+    CString::new(symbol).unwrap_or_default().into_raw()
+}
+
 // ─── Conversion — Instrumental ───────────────────────────────────────────────
 
 /// Convert a loaded `InstrumentalArrangement` to SNG.  Returns null on null input.
