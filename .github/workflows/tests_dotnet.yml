@@ -8,12 +8,24 @@ name: .NET Parity Tests
 # The two known mismatches today are:
 #   • ChordMask bit layout (Rust ≠ .NET)
 #   • Any other parsing/behavioural differences surfaced by the tests
+#
+# Test suites and their adapter strategy:
+#   • Rocksmith2014.XML.Tests       — Rust C# adapter (P/Invoke into cdylib)
+#   • Rocksmith2014.PSARC.Tests     — Rust C# adapter (P/Invoke into cdylib)
+#   • Rocksmith2014.XML.Processing.Tests — F# reference (adapter WIP; Rust XML adapter incomplete)
+#   • Rocksmith2014.Conversion.Tests     — F# reference (adapter WIP)
+#   • Rocksmith2014.SNG.Tests            — F# reference (no XML dep; pure binary I/O)
+#   • Rocksmith2014.Audio.Tests          — F# reference (no XML dep; audio processing)
+#   • Rocksmith2014.EOF.Tests            — F# reference (adapter WIP)
 
 on:
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+
+permissions:
+  contents: read
 
 jobs:
   dotnet-parity:
@@ -51,11 +63,16 @@ jobs:
         run: cargo build --release -p rocksmith2014-ffi
 
       # ── .NET ───────────────────────────────────────────────────────────────
-      # Tests target net10.0 — .NET 10 is required.
+      # XML.Tests / PSARC.Tests target net10.0; new suites target net8.0.
       - name: Setup .NET 10
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
 
       # ── Patch test project references ──────────────────────────────────────
       # Swap the .NET library references in the test .csproj/.fsproj files so
@@ -102,7 +119,7 @@ jobs:
           print("Patched:", proj)
           PY
 
-      # ── Run .NET tests ─────────────────────────────────────────────────────
+      # ── Run .NET tests (Rust-backed adapters) ──────────────────────────────
       # LD_LIBRARY_PATH exposes the Rust cdylib to the .NET P/Invoke loader.
       # --no-build is NOT used so the patched projects are compiled fresh.
       # We capture results with --logger trx and continue even if tests fail.
@@ -128,6 +145,61 @@ jobs:
             --logger "trx;LogFileName=psarc-tests.trx" \
             --results-directory test-results \
             || true   # record mismatches; don't abort the job
+
+      # ── Run .NET tests (F# reference implementation) ───────────────────────
+      # These suites run against the original F# implementations from v3.5.0.
+      # They provide a passing baseline and will be swapped to Rust adapters
+      # progressively as the Rust XML adapter gains completeness.
+
+      - name: dotnet test — Rocksmith2014.SNG.Tests (F# reference)
+        run: |
+          dotnet test \
+            tests_dotnet/Rocksmith2014.NET/tests/Rocksmith2014.SNG.Tests/ \
+            --logger "console;verbosity=normal" \
+            --logger "trx;LogFileName=sng-tests.trx" \
+            --results-directory test-results \
+            || true   # baseline run against F# reference; failures surface build issues
+
+      - name: dotnet test — Rocksmith2014.EOF.Tests (F# reference)
+        run: |
+          dotnet test \
+            tests_dotnet/Rocksmith2014.NET/tests/Rocksmith2014.EOF.Tests/ \
+            --logger "console;verbosity=normal" \
+            --logger "trx;LogFileName=eof-tests.trx" \
+            --results-directory test-results \
+            || true   # baseline run against F# reference; swap to Rust adapter when XML adapter is complete
+
+      - name: dotnet test — Rocksmith2014.XML.Processing.Tests (F# reference)
+        run: |
+          dotnet test \
+            tests_dotnet/Rocksmith2014.NET/tests/Rocksmith2014.XML.Processing.Tests/ \
+            --logger "console;verbosity=normal" \
+            --logger "trx;LogFileName=xml-processing-tests.trx" \
+            --results-directory test-results \
+            || true   # baseline run against F# reference; swap to Rust adapter when XML adapter is complete
+
+      - name: dotnet test — Rocksmith2014.Conversion.Tests (F# reference)
+        run: |
+          dotnet test \
+            tests_dotnet/Rocksmith2014.NET/tests/Rocksmith2014.Conversion.Tests/ \
+            --logger "console;verbosity=normal" \
+            --logger "trx;LogFileName=conversion-tests.trx" \
+            --results-directory test-results \
+            || true   # baseline run against F# reference; swap to Rust adapter when XML+SNG adapters are complete
+
+      # Audio project has Platforms=x64 and RuntimeIdentifiers for linux/win/osx.
+      # The job runs on ubuntu-latest, so linux-x64 is always the correct choice.
+      # Wwise-dependent tests (WwiseTests, ConversionTests) may fail if ww2ogg
+      # is unavailable; audio volume/duration tests should pass.
+      - name: dotnet test — Rocksmith2014.Audio.Tests (F# reference)
+        run: |
+          dotnet test \
+            tests_dotnet/Rocksmith2014.NET/tests/Rocksmith2014.Audio.Tests/ \
+            --runtime linux-x64 \
+            --logger "console;verbosity=normal" \
+            --logger "trx;LogFileName=audio-tests.trx" \
+            --results-directory test-results \
+            || true   # baseline run against F# reference; Wwise tests may fail without ww2ogg tool
 
       - name: Upload test results
         if: always()
