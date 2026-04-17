@@ -208,9 +208,7 @@ pub(crate) fn write_arrangement(
     )?;
     write_text_element(writer, "centOffset", &arr.meta.cent_offset.to_string())?;
 
-    let mut song_length_elem = BytesStart::new("songLength");
-    song_length_elem.push_attribute(("time", time_to_str(arr.meta.song_length).as_str()));
-    writer.write_event(XmlEvent::Empty(song_length_elem))?;
+    write_text_element(writer, "songLength", &time_to_str(arr.meta.song_length))?;
 
     write_text_element(
         writer,
@@ -219,9 +217,11 @@ pub(crate) fn write_arrangement(
     )?;
     write_text_element(writer, "startBeat", &time_to_str(arr.meta.start_beat))?;
 
-    let mut avg_tempo_elem = BytesStart::new("averageTempo");
-    avg_tempo_elem.push_attribute(("bpm", format!("{:.3}", arr.meta.average_tempo).as_str()));
-    writer.write_event(XmlEvent::Empty(avg_tempo_elem))?;
+    write_text_element(
+        writer,
+        "averageTempo",
+        &format!("{:.3}", arr.meta.average_tempo),
+    )?;
 
     let mut tuning_elem = BytesStart::new("tuning");
     tuning_elem.push_attribute(("string0", arr.meta.tuning.strings[0].to_string().as_str()));
