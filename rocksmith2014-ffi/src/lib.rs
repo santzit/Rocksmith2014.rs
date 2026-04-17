@@ -652,10 +652,8 @@ pub extern "C" fn rs_audio_calculate_volume(path: *const c_char) -> f64 {
         return f64::NAN;
     }
     let path_str = unsafe { CStr::from_ptr(path) }.to_string_lossy();
-    match rocksmith2014_audio::volume::calculate_from_file(Path::new(path_str.as_ref())) {
-        Ok(v) => v,
-        Err(_) => f64::NAN,
-    }
+    rocksmith2014_audio::volume::calculate_from_file(Path::new(path_str.as_ref()))
+        .unwrap_or(f64::NAN)
 }
 
 /// Get the duration of an audio file (WAV/OGG/FLAC) in milliseconds.
