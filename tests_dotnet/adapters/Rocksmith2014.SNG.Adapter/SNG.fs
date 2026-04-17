@@ -189,3 +189,9 @@ module SNG =
                 failwithf "Rust SNG failed to save packed file '%s'" path
         }
 
+    /// Create an SNG wrapper from a raw Rust handle (for use by adapter assemblies).
+    let fromHandle (h: nativeint) : SNG =
+        if h = nativeint 0 then
+            failwith "Rust returned a null SNG handle"
+        new SNG(h)
+

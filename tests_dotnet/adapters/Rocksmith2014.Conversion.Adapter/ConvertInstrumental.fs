@@ -30,7 +30,7 @@ let xmlToSng (xml: InstrumentalArrangement) : SNG =
         Ffi.rs_arrangement_free(arrHandle)
         if sngHandle = nativeint 0 then
             failwith "Rust conversion failed: rs_sng_from_arrangement"
-        new SNG(sngHandle)
+        SNG.fromHandle sngHandle
     finally
         if File.Exists(temp) then File.Delete(temp)
 

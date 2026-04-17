@@ -36,7 +36,7 @@ let xmlToSng (font: FontOption) (xml: System.Collections.Generic.List<Vocal>) : 
                     if File.Exists(glyphTemp) then File.Delete(glyphTemp)
         if handle = nativeint 0 then
             failwith "Rust conversion failed: rs_convert_vocals_xml_to_sng"
-        new SNG(handle)
+        SNG.fromHandle handle
     finally
         if File.Exists(temp1) then File.Delete(temp1)
 
