@@ -64,14 +64,6 @@ module private Ffi =
     [<DllImport("rocksmith2014_ffi")>]
     extern unit rs_free_string(nativeint ptr)
 
-/// Helper to read a Rust-allocated CString and free it.
-let private readAndFreeString (ptr: nativeint) : string =
-    if ptr = nativeint 0 then ""
-    else
-        let s = Marshal.PtrToStringAnsi(ptr)
-        Ffi.rs_free_string(ptr)
-        if s = null then "" else s
-
 /// Minimal placeholder — only Levels.Length is accessed by the kept test files.
 type Level = { Difficulty: int }
 
@@ -87,6 +79,12 @@ type SngMetaData = { Part: int16; LastConversionDateTime: string; Tuning: int16[
 /// Wraps the Rust SNG handle via P/Invoke.
 /// Failing tests reveal behavioural mismatches between Rust and .NET.
 type SNG internal (handle: nativeint) =
+    let readAndFreeString (ptr: nativeint) : string =
+        if ptr = nativeint 0 then ""
+        else
+            let s = Marshal.PtrToStringAnsi(ptr)
+            Ffi.rs_free_string(ptr)
+            if s = null then "" else s
     let levelCount = Ffi.rs_sng_level_count(handle)
     let levels = Array.init (max 0 levelCount) (fun i -> { Difficulty = i })
 

@@ -157,8 +157,7 @@ jobs:
             tests_dotnet/Rocksmith2014.NET/tests/Rocksmith2014.XML.Tests/ \
             --logger "console;verbosity=normal" \
             --logger "trx;LogFileName=xml-tests.trx" \
-            --results-directory test-results \
-            || true   # record mismatches; don't abort the job
+            --results-directory test-results
 
       - name: dotnet test — Rocksmith2014.PSARC.Tests (ReadTests)
         env:
@@ -168,8 +167,7 @@ jobs:
             tests_dotnet/Rocksmith2014.NET/tests/Rocksmith2014.PSARC.Tests/ \
             --logger "console;verbosity=normal" \
             --logger "trx;LogFileName=psarc-tests.trx" \
-            --results-directory test-results \
-            || true   # record mismatches; don't abort the job
+            --results-directory test-results
 
       # ── Run .NET tests (F# reference implementation) ───────────────────────
       # These suites run against the original F# implementations from v3.5.0.
@@ -184,8 +182,7 @@ jobs:
             tests_dotnet/Rocksmith2014.NET/tests/Rocksmith2014.SNG.Tests/ \
             --logger "console;verbosity=normal" \
             --logger "trx;LogFileName=sng-tests.trx" \
-            --results-directory test-results \
-            || true   # record mismatches; don't abort the job
+            --results-directory test-results
 
       # ── Patch Conversion.Tests → Rust adapter ──────────────────────────────
       - name: Patch Rocksmith2014.Conversion.Tests → Rust adapter
@@ -283,8 +280,7 @@ jobs:
             tests_dotnet/Rocksmith2014.NET/tests/Rocksmith2014.Conversion.Tests/ \
             --logger "console;verbosity=normal" \
             --logger "trx;LogFileName=conversion-tests.trx" \
-            --results-directory test-results \
-            || true   # record mismatches; don't abort the job
+            --results-directory test-results
 
       - name: dotnet test — Rocksmith2014.EOF.Tests (Rust adapter, HelperTests)
         env:
@@ -294,8 +290,7 @@ jobs:
             tests_dotnet/Rocksmith2014.NET/tests/Rocksmith2014.EOF.Tests/ \
             --logger "console;verbosity=normal" \
             --logger "trx;LogFileName=eof-tests.trx" \
-            --results-directory test-results \
-            || true   # record mismatches; don't abort the job
+            --results-directory test-results
 
       - name: dotnet test — Rocksmith2014.XML.Processing.Tests (F# reference)
         run: |
@@ -318,8 +313,7 @@ jobs:
             --runtime linux-x64 \
             --logger "console;verbosity=normal" \
             --logger "trx;LogFileName=audio-tests.trx" \
-            --results-directory test-results \
-            || true   # record mismatches; don't abort the job
+            --results-directory test-results
 
       - name: Upload test results
         if: always()
