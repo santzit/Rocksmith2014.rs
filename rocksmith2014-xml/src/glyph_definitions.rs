@@ -42,6 +42,20 @@ impl GlyphDefinitions {
         Self::from_xml(&xml)
     }
 
+    /// Removes characters that are illegal in XML 1.0 from a string.
+    fn sanitize_xml(s: &str) -> String {
+        s.chars()
+            .filter(|&c| {
+                matches!(c,
+                    '\t' | '\n' | '\r'
+                    | '\u{0020}'..='\u{D7FF}'
+                    | '\u{E000}'..='\u{FFFD}'
+                    | '\u{10000}'..='\u{10FFFF}'
+                )
+            })
+            .collect()
+    }
+
     /// Saves glyph definitions to a `.glyphs.xml` file.
     pub fn save(&self, path: impl AsRef<Path>) -> Result<()> {
         let file = fs::File::create(path)?;
@@ -53,8 +67,9 @@ impl GlyphDefinitions {
         root.push_attribute(("TextureHeight", self.texture_height.to_string().as_str()));
         w.write_event(XmlEvent::Start(root))?;
         for g in &self.glyphs {
+            let safe_symbol = Self::sanitize_xml(&g.symbol);
             let mut elem = BytesStart::new("GlyphDefinition");
-            elem.push_attribute(("Symbol", g.symbol.as_str()));
+            elem.push_attribute(("Symbol", safe_symbol.as_str()));
             elem.push_attribute(("InnerYMin", g.inner_y_min.to_string().as_str()));
             elem.push_attribute(("InnerYMax", g.inner_y_max.to_string().as_str()));
             elem.push_attribute(("InnerXMin", g.inner_x_min.to_string().as_str()));
