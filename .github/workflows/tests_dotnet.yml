@@ -3,20 +3,23 @@ name: .NET Parity Tests
 # Purpose: run the *actual* .NET test suite (Rocksmith2014.NET v3.5.0) against
 # the Rust implementation exposed through thin C# adapter assemblies.
 #
-# Failing tests are expected until all mismatches are resolved — the workflow
-# intentionally records test results rather than blocking on a green gate.
-# The two known mismatches today are:
-#   • ChordMask bit layout (Rust ≠ .NET)
-#   • Any other parsing/behavioural differences surfaced by the tests
+# All upstream test projects target net8.0. Our C# adapters also target net8.0.
 #
 # Test suites and their adapter strategy:
-#   • Rocksmith2014.XML.Tests       — Rust C# adapter (P/Invoke into cdylib)
-#   • Rocksmith2014.PSARC.Tests     — Rust C# adapter (P/Invoke into cdylib)
-#   • Rocksmith2014.XML.Processing.Tests — F# reference (adapter WIP; Rust XML adapter incomplete)
-#   • Rocksmith2014.Conversion.Tests     — F# reference (adapter WIP)
-#   • Rocksmith2014.SNG.Tests            — F# reference (no XML dep; pure binary I/O)
-#   • Rocksmith2014.Audio.Tests          — F# reference (no XML dep; audio processing)
-#   • Rocksmith2014.EOF.Tests            — F# reference (adapter WIP)
+#   • Rocksmith2014.XML.Tests       — Rust C# adapter (P/Invoke into cdylib) ← TESTS RUST
+#   • Rocksmith2014.PSARC.Tests     — Rust C# adapter (P/Invoke into cdylib) ← TESTS RUST
+#   • Rocksmith2014.SNG.Tests            — F# reference (Rust SNG adapter WIP)
+#   • Rocksmith2014.EOF.Tests            — F# reference (Rust adapter WIP)
+#   • Rocksmith2014.XML.Processing.Tests — F# reference (Rust XML adapter incomplete)
+#   • Rocksmith2014.Conversion.Tests     — F# reference (Rust adapter WIP)
+#   • Rocksmith2014.Audio.Tests          — F# reference (Rust adapter WIP)
+#
+# The F# reference suites run against the *original* F# implementation from v3.5.0
+# and will trivially pass — they establish a baseline until Rust adapters cover
+# enough of the API surface to replace them.
+#
+# Failing tests in the Rust-backed suites surface Rust vs .NET mismatches.
+# All steps use || true so results are recorded in TRX artifacts without blocking CI.
 
 on:
   push:
@@ -59,16 +62,11 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: ${{ runner.os }}-cargo-
 
-      - name: Build Rust cdylib + CLI (release)
+      - name: Build Rust cdylib (release)
         run: cargo build --release -p rocksmith2014-ffi
 
       # ── .NET ───────────────────────────────────────────────────────────────
-      # XML.Tests / PSARC.Tests target net10.0; new suites target net8.0.
-      - name: Setup .NET 10
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '10.0.x'
-
+      # All test projects target net8.0; adapters also target net8.0.
       - name: Setup .NET 8
         uses: actions/setup-dotnet@v4
         with:
