@@ -450,11 +450,7 @@ fn parse_toc(header: &Header, data: &[u8]) -> Result<(Vec<Entry>, Vec<u32>)> {
 
     let z_type = z_type(header.block_size_alloc);
     let block_table_len = data.len() - toc_bytes;
-    let block_count = if z_type > 0 {
-        block_table_len / z_type
-    } else {
-        0
-    };
+    let block_count = block_table_len.checked_div(z_type).unwrap_or(0);
 
     let mut block_sizes = Vec::with_capacity(block_count);
     for _ in 0..block_count {

@@ -126,7 +126,8 @@ impl InstrumentalArrangement {
     pub fn to_xml(&self) -> Result<String> {
         let mut w = Writer::new_with_indent(Vec::new(), b' ', 2);
         w.write_event(XmlEvent::Decl(BytesDecl::new("1.0", Some("utf-8"), None)))?;
-        let song_start = BytesStart::new("song");
+        let mut song_start = BytesStart::new("song");
+        song_start.push_attribute(("version", "7"));
         w.write_event(XmlEvent::Start(song_start))?;
         writer::write_arrangement(self, &mut w)?;
         w.write_event(XmlEvent::End(BytesEnd::new("song")))?;

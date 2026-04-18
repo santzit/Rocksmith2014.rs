@@ -170,13 +170,11 @@ fn write_chord(writer: &mut Writer<Vec<u8>>, chord: &Chord) -> Result<()> {
         writer.write_event(XmlEvent::Empty(elem))?;
     } else {
         writer.write_event(XmlEvent::Start(elem))?;
-        let mut cn_elem = BytesStart::new("chordNotes");
-        cn_elem.push_attribute(("count", chord.chord_notes.len().to_string().as_str()));
-        writer.write_event(XmlEvent::Start(cn_elem))?;
+        // The .NET Chord.ReadXml expects <chordNote> as direct children of <chord>,
+        // NOT wrapped in a <chordNotes> container element.
         for cn in &chord.chord_notes {
             write_chord_note(writer, cn)?;
         }
-        writer.write_event(XmlEvent::End(BytesEnd::new("chordNotes")))?;
         writer.write_event(XmlEvent::End(BytesEnd::new("chord")))?;
     }
     Ok(())
@@ -208,9 +206,7 @@ pub(crate) fn write_arrangement(
     )?;
     write_text_element(writer, "centOffset", &arr.meta.cent_offset.to_string())?;
 
-    let mut song_length_elem = BytesStart::new("songLength");
-    song_length_elem.push_attribute(("time", time_to_str(arr.meta.song_length).as_str()));
-    writer.write_event(XmlEvent::Empty(song_length_elem))?;
+    write_text_element(writer, "songLength", &time_to_str(arr.meta.song_length))?;
 
     write_text_element(
         writer,
@@ -219,9 +215,11 @@ pub(crate) fn write_arrangement(
     )?;
     write_text_element(writer, "startBeat", &time_to_str(arr.meta.start_beat))?;
 
-    let mut avg_tempo_elem = BytesStart::new("averageTempo");
-    avg_tempo_elem.push_attribute(("bpm", format!("{:.3}", arr.meta.average_tempo).as_str()));
-    writer.write_event(XmlEvent::Empty(avg_tempo_elem))?;
+    write_text_element(
+        writer,
+        "averageTempo",
+        &format!("{:.3}", arr.meta.average_tempo),
+    )?;
 
     let mut tuning_elem = BytesStart::new("tuning");
     tuning_elem.push_attribute(("string0", arr.meta.tuning.strings[0].to_string().as_str()));
@@ -249,7 +247,7 @@ pub(crate) fn write_arrangement(
         "nonStandardChords",
         ap.non_standard_chords.to_string().as_str(),
     ));
-    ap_elem.push_attribute(("barrChords", ap.barr_chords.to_string().as_str()));
+    ap_elem.push_attribute(("barreChords", ap.barr_chords.to_string().as_str()));
     ap_elem.push_attribute(("powerChords", ap.power_chords.to_string().as_str()));
     ap_elem.push_attribute(("dropDPower", ap.drop_d_power.to_string().as_str()));
     ap_elem.push_attribute(("openChords", ap.open_chords.to_string().as_str()));
@@ -272,20 +270,17 @@ pub(crate) fn write_arrangement(
         "twoFingerPicking",
         ap.two_finger_picking.to_string().as_str(),
     ));
-    ap_elem.push_attribute(("fiveFretChords", ap.five_fret_chords.to_string().as_str()));
-    ap_elem.push_attribute(("chordNotes", ap.chord_notes.to_string().as_str()));
-    ap_elem.push_attribute(("octaves", ap.octaves.to_string().as_str()));
-    ap_elem.push_attribute(("susChords", ap.sus_chords.to_string().as_str()));
-    ap_elem.push_attribute((
-        "threeFingerChords",
-        ap.three_finger_chords.to_string().as_str(),
-    ));
-    ap_elem.push_attribute(("rhythmSide", ap.rhythm_side.to_string().as_str()));
-    ap_elem.push_attribute(("solo", ap.solo.to_string().as_str()));
+    // fifthsAndOctaves combines the old fiveFretChords + octaves fields (v8 attribute name)
+    let fifths_and_octaves = ap.five_fret_chords.max(ap.octaves);
+    ap_elem.push_attribute(("fifthsAndOctaves", fifths_and_octaves.to_string().as_str()));
+    // syncopation maps from the old chordNotes field (v8 attribute name)
+    ap_elem.push_attribute(("syncopation", ap.chord_notes.to_string().as_str()));
+    ap_elem.push_attribute(("bassPick", ap.bass_pick.to_string().as_str()));
+    // sustain maps from the old susChords field (v8 attribute name)
+    ap_elem.push_attribute(("sustain", ap.sus_chords.to_string().as_str()));
     ap_elem.push_attribute(("pathLead", ap.path_lead.to_string().as_str()));
     ap_elem.push_attribute(("pathRhythm", ap.path_rhythm.to_string().as_str()));
     ap_elem.push_attribute(("pathBass", ap.path_bass.to_string().as_str()));
-    ap_elem.push_attribute(("routingRules", ap.routing_rules.to_string().as_str()));
     writer.write_event(XmlEvent::Empty(ap_elem))?;
 
     write_text_element(writer, "tonebase", &arr.meta.tone_base)?;

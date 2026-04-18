@@ -1,0 +1,26 @@
+[package]
+name = "rocksmith2014-ffi"
+version = "0.1.0"
+edition = "2021"
+description = "C ABI exports and CLI shim for Rust/.NET parity testing"
+publish = false
+
+# cdylib  — consumed by .NET P/Invoke (tests_dotnet adapters)
+# rlib    — consumed by the CLI binary in this same package
+[lib]
+name = "rocksmith2014_ffi"
+crate-type = ["cdylib", "rlib"]
+path = "src/lib.rs"
+
+[[bin]]
+name = "rocksmith2014-ffi"
+path = "src/main.rs"
+
+[dependencies]
+rocksmith2014-psarc = { path = "../rocksmith2014-psarc" }
+rocksmith2014-xml = { path = "../rocksmith2014-xml" }
+rocksmith2014-sng = { path = "../rocksmith2014-sng" }
+rocksmith2014-conversion = { path = "../rocksmith2014-conversion" }
+rocksmith2014-audio = { path = "../rocksmith2014-audio" }
+rocksmith2014-eof = { path = "../rocksmith2014-eof" }
+rocksmith2014-xml-processing = { path = "../rocksmith2014-xml-processing" }

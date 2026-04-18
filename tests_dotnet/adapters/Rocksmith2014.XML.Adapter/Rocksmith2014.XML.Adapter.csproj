@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- Must target the same framework as the test projects (all target net8.0) -->
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Produce the assembly name the test projects reference -->
+    <AssemblyName>Rocksmith2014.XML</AssemblyName>
+    <RootNamespace>Rocksmith2014.XML</RootNamespace>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+</Project>

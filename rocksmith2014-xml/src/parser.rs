@@ -1035,7 +1035,8 @@ fn parse_arrangement_properties(e: &BytesStart) -> ArrangementProperties {
         non_standard_chords: get_attr(e, b"nonStandardChords")
             .and_then(|s| s.parse().ok())
             .unwrap_or(0),
-        barr_chords: get_attr(e, b"barrChords")
+        barr_chords: get_attr(e, b"barreChords")
+            .or_else(|| get_attr(e, b"barrChords"))
             .and_then(|s| s.parse().ok())
             .unwrap_or(0),
         power_chords: get_attr(e, b"powerChords")
@@ -1098,13 +1099,15 @@ fn parse_arrangement_properties(e: &BytesStart) -> ArrangementProperties {
         five_fret_chords: get_attr(e, b"fiveFretChords")
             .and_then(|s| s.parse().ok())
             .unwrap_or(0),
-        chord_notes: get_attr(e, b"chordNotes")
+        chord_notes: get_attr(e, b"syncopation")
+            .or_else(|| get_attr(e, b"chordNotes"))
             .and_then(|s| s.parse().ok())
             .unwrap_or(0),
         octaves: get_attr(e, b"octaves")
             .and_then(|s| s.parse().ok())
             .unwrap_or(0),
-        sus_chords: get_attr(e, b"susChords")
+        sus_chords: get_attr(e, b"sustain")
+            .or_else(|| get_attr(e, b"susChords"))
             .and_then(|s| s.parse().ok())
             .unwrap_or(0),
         three_finger_chords: get_attr(e, b"threeFingerChords")

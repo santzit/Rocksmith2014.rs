@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <AssemblyName>Rocksmith2014.Conversion</AssemblyName>
+    <RootNamespace>Rocksmith2014.Conversion</RootNamespace>
+    <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="FontOption.fs" />
+    <Compile Include="ConvertVocals.fs" />
+    <Compile Include="ConvertInstrumental.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FSharp.Core" Version="8.0.401" />
+  </ItemGroup>
+
+  <!-- Rust-backed SNG adapter (provides Rocksmith2014.SNG + Rocksmith2014.Common) -->
+  <ItemGroup>
+    <ProjectReference Include="../Rocksmith2014.SNG.Adapter/Rocksmith2014.SNG.Adapter.fsproj" />
+  </ItemGroup>
+
+  <!-- Original .NET XML library (provides InstrumentalArrangement, Vocals, GlyphDefinitions) -->
+  <!-- The Rocksmith2014.NET checkout is at tests_dotnet/Rocksmith2014.NET in CI -->
+  <ItemGroup>
+    <ProjectReference Include="../../Rocksmith2014.NET/src/Rocksmith2014.XML/Rocksmith2014.XML.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyName>NoteCompare</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <!--
+      These references are populated by the CI workflow, which checks out
+      Rocksmith2014.NET v3.5.0 into tests_dotnet/Rocksmith2014.NET/ before
+      building this project.
+    -->
+    <ProjectReference Include="../Rocksmith2014.NET/src/Rocksmith2014.PSARC/Rocksmith2014.PSARC.fsproj" />
+    <ProjectReference Include="../Rocksmith2014.NET/src/Rocksmith2014.XML/Rocksmith2014.XML.csproj" />
+  </ItemGroup>
+</Project>
