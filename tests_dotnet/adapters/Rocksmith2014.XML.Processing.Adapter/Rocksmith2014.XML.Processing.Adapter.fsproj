@@ -9,6 +9,7 @@
   <ItemGroup>
     <Compile Include="Types.fs" />
     <Compile Include="Utils.fs" />
+    <Compile Include="RustFfi.fs" />
     <Compile Include="Improvers/BasicFixes.fs" />
     <Compile Include="Improvers/CrowdEventAdder.fs" />
     <Compile Include="Improvers/ChordNameProcessor.fs" />

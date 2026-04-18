@@ -1,48 +1,77 @@
 module Rocksmith2014.XML.Processing.ArrangementImprover
 
-/// Adds crowd events to the arrangement if it does not have them.
-let addCrowdEvents = CrowdEventAdder.improve
+open System.IO
+open System.Runtime.InteropServices
+open Rocksmith2014.XML
 
-/// Processes the chord names in the arrangement.
-let processChordNames = ChordNameProcessor.improve
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
-/// Removes beats that come after the audio has ended.
-let removeExtraBeats = ExtraBeatRemover.improve
+/// Copy all mutable collections from `src` into `dst` in-place.
+let private copyBack (dst: InstrumentalArrangement) (src: InstrumentalArrangement) =
+    dst.Ebeats.Clear();            dst.Ebeats.AddRange(src.Ebeats)
+    dst.Phrases.Clear();           dst.Phrases.AddRange(src.Phrases)
+    dst.PhraseIterations.Clear();  dst.PhraseIterations.AddRange(src.PhraseIterations)
+    dst.Sections.Clear();          dst.Sections.AddRange(src.Sections)
+    dst.Events.Clear();            dst.Events.AddRange(src.Events)
+    dst.ChordTemplates.Clear();    dst.ChordTemplates.AddRange(src.ChordTemplates)
+    dst.Levels.Clear();            dst.Levels.AddRange(src.Levels)
+    dst.Tones.Clear();             dst.Tones.AddRange(src.Tones)
 
-/// Applies various minor fixes.
-let eofFixes = EOFFixes.fixAll
+/// Run a Rust operation (expressed as `nativeint -> unit`) on `arr`.
+/// Saves `arr` to a temp XML file, loads it into Rust, applies `rustOp`,
+/// writes the result back to XML, reloads it, and copies the updated data
+/// into the original arrangement in-place.
+let private withRustImprove (rustOp: nativeint -> unit) (arr: InstrumentalArrangement) =
+    let tempIn  = Path.ChangeExtension(Path.GetTempFileName(), ".xml")
+    let tempOut = Path.ChangeExtension(Path.GetTempFileName(), ".xml")
+    try
+        arr.Save(tempIn)
+        let handle = RustFfi.rs_arrangement_load(tempIn)
+        if handle = nativeint 0 then
+            failwith "Rust: failed to load arrangement"
+        try
+            rustOp handle
+            if RustFfi.rs_arrangement_save_xml(handle, tempOut) <> 0 then
+                failwith "Rust: failed to save arrangement"
+        finally
+            RustFfi.rs_arrangement_free(handle)
+        let updated = InstrumentalArrangement.Load(tempOut)
+        copyBack arr updated
+    finally
+        if File.Exists(tempIn)  then File.Delete(tempIn)
+        if File.Exists(tempOut) then File.Delete(tempOut)
 
-/// Moves phrases that have a special name "mover" (move right).
-let movePhrases = PhraseMover.improve
+// ── Public API ────────────────────────────────────────────────────────────────
 
-/// Processes custom events.
-let processCustomEvents = CustomEvents.improve
-
-/// Applies all the improvements to the arrangement.
+/// Applies all improvements to the arrangement (Rust-backed).
 let applyAll arrangement =
-    BasicFixes.validatePhraseNames arrangement
-    BasicFixes.addIgnores arrangement
-    BasicFixes.fixLinkNexts arrangement
-    BasicFixes.removeOverlappingBendValues arrangement
-    BasicFixes.removeMutedNotesFromChords arrangement
-    // Do before phrase start anchors are fixed
-    AnchorMover.improve arrangement
-    movePhrases arrangement
-    eofFixes arrangement
-    // Should be done after fixing the anchors at phrase start
-    BasicFixes.removeRedundantAnchors arrangement
-    addCrowdEvents arrangement
-    processChordNames arrangement
-    processCustomEvents arrangement
-    removeExtraBeats arrangement
-    HandShapeAdjuster.lengthenHandshapes arrangement
-    HandShapeAdjuster.shortenHandshapes arrangement
+    withRustImprove RustFfi.rs_arrangement_apply_all arrangement
 
-/// Applies the basic needed improvements to the arrangement.
+/// Applies the minimum set of improvements required for export (Rust-backed).
 let applyMinimum arrangement =
-    BasicFixes.validatePhraseNames arrangement
-    BasicFixes.addIgnores arrangement
-    BasicFixes.removeOverlappingBendValues arrangement
-    BasicFixes.removeMutedNotesFromChords arrangement
-    EOFFixes.fixChordNotes arrangement
-    EOFFixes.fixPhraseStartAnchors arrangement
+    withRustImprove RustFfi.rs_arrangement_apply_minimum arrangement
+
+/// Adds crowd events to the arrangement if it does not have them (Rust-backed).
+let addCrowdEvents arrangement =
+    withRustImprove RustFfi.rs_arrangement_add_crowd_events arrangement
+
+/// Processes the chord template names (Rust-backed).
+let processChordNames arrangement =
+    withRustImprove RustFfi.rs_arrangement_process_chord_names arrangement
+
+/// Removes beats that come after the audio has ended (Rust-backed).
+let removeExtraBeats arrangement =
+    withRustImprove RustFfi.rs_arrangement_remove_extra_beats arrangement
+
+/// Applies all EOF fixes (Rust-backed).
+let eofFixes arrangement =
+    withRustImprove RustFfi.rs_arrangement_eof_fix_all arrangement
+
+/// Moves phrases with a "mover" prefix to the Nth note (Rust-backed).
+let movePhrases arrangement =
+    withRustImprove RustFfi.rs_arrangement_move_phrases arrangement
+
+/// Processes custom events (Rust-backed).
+let processCustomEvents arrangement =
+    withRustImprove RustFfi.rs_arrangement_process_custom_events arrangement
+
