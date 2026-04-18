@@ -874,10 +874,7 @@ use rocksmith2014_xml_processing::{
 
 /// Save an arrangement handle to an XML file.  Returns 0 on success, -1 on error.
 #[no_mangle]
-pub extern "C" fn rs_arrangement_save_xml(
-    h: *const ArrangementHandle,
-    path: *const c_char,
-) -> i32 {
+pub extern "C" fn rs_arrangement_save_xml(h: *const ArrangementHandle, path: *const c_char) -> i32 {
     if h.is_null() || path.is_null() {
         return -1;
     }

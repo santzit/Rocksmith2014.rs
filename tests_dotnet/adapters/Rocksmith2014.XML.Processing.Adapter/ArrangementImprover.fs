@@ -59,9 +59,11 @@ let applyMinimum arrangement =
 let addCrowdEvents arrangement =
     withRustImprove RustFfi.rs_arrangement_add_crowd_events arrangement
 
-/// Processes the chord template names (Rust-backed).
+/// Processes the chord template names.
+/// Delegates to ChordNameProcessor to modify objects in-place, preserving
+/// external references held by tests.
 let processChordNames arrangement =
-    withRustImprove RustFfi.rs_arrangement_process_chord_names arrangement
+    ChordNameProcessor.improve arrangement
 
 /// Removes beats that come after the audio has ended (Rust-backed).
 let removeExtraBeats arrangement =
