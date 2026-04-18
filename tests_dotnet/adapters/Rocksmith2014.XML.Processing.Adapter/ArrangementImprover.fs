@@ -1,7 +1,6 @@
 module Rocksmith2014.XML.Processing.ArrangementImprover
 
 open System.IO
-open System.Runtime.InteropServices
 open Rocksmith2014.XML
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -15,7 +14,12 @@ let private copyBack (dst: InstrumentalArrangement) (src: InstrumentalArrangemen
     dst.Events.Clear();            dst.Events.AddRange(src.Events)
     dst.ChordTemplates.Clear();    dst.ChordTemplates.AddRange(src.ChordTemplates)
     dst.Levels.Clear();            dst.Levels.AddRange(src.Levels)
-    dst.Tones.Clear();             dst.Tones.AddRange(src.Tones)
+    // ToneInfo is a class with individual fields, not a ResizeArray.
+    dst.Tones.BaseToneName <- src.Tones.BaseToneName
+    for i in 0 .. src.Tones.Names.Length - 1 do
+        dst.Tones.Names.[i] <- src.Tones.Names.[i]
+    dst.Tones.Changes.Clear()
+    dst.Tones.Changes.AddRange(src.Tones.Changes)
 
 /// Run a Rust operation (expressed as `nativeint -> unit`) on `arr`.
 /// Saves `arr` to a temp XML file, loads it into Rust, applies `rustOp`,

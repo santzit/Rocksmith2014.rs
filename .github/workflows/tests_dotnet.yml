@@ -9,17 +9,12 @@ name: .NET Parity Tests
 #   • Rocksmith2014.XML.Tests       — Rust C# adapter (P/Invoke into cdylib) ← TESTS RUST
 #   • Rocksmith2014.PSARC.Tests     — Rust C# adapter (P/Invoke into cdylib) ← TESTS RUST
 #   • Rocksmith2014.SNG.Tests       — Rust F# adapter (P/Invoke into cdylib) ← TESTS RUST
-#   • Rocksmith2014.EOF.Tests            — F# reference (Rust adapter WIP)
-#   • Rocksmith2014.XML.Processing.Tests — F# adapter (same logic as .NET reference)
-#   • Rocksmith2014.Conversion.Tests     — F# reference (Rust adapter WIP)
-#   • Rocksmith2014.Audio.Tests          — F# reference (Rust adapter WIP)
+#   • Rocksmith2014.EOF.Tests            — Rust F# adapter (P/Invoke into cdylib) ← TESTS RUST
+#   • Rocksmith2014.XML.Processing.Tests — Rust F# adapter (P/Invoke into cdylib) ← TESTS RUST
+#   • Rocksmith2014.Conversion.Tests     — Rust F# adapter (P/Invoke into cdylib) ← TESTS RUST
+#   • Rocksmith2014.Audio.Tests          — Rust F# adapter (P/Invoke into cdylib) ← TESTS RUST
 #
-# The F# reference suites run against the *original* F# implementation from v3.5.0
-# and will trivially pass — they establish a baseline until Rust adapters cover
-# enough of the API surface to replace them.
-#
-# Failing tests in the Rust-backed suites surface Rust vs .NET mismatches.
-# All steps use || true so results are recorded in TRX artifacts without blocking CI.
+# All Rust-backed test steps fail CI on Rust vs .NET behavioural mismatches.
 
 on:
   push:
@@ -293,7 +288,7 @@ jobs:
             --results-directory test-results
 
       # ── Patch XML.Processing.Tests → F# adapter ───────────────────────────
-      - name: Patch Rocksmith2014.XML.Processing.Tests → F# adapter
+      - name: Patch Rocksmith2014.XML.Processing.Tests → Rust adapter
         run: |
           python3 - <<'PY'
           import re, pathlib
@@ -315,14 +310,15 @@ jobs:
           print("Patched:", proj)
           PY
 
-      - name: dotnet test — Rocksmith2014.XML.Processing.Tests (F# adapter)
+      - name: dotnet test — Rocksmith2014.XML.Processing.Tests (Rust adapter)
+        env:
+          LD_LIBRARY_PATH: ${{ github.workspace }}/target/release
         run: |
           dotnet test \
             tests_dotnet/Rocksmith2014.NET/tests/Rocksmith2014.XML.Processing.Tests/ \
             --logger "console;verbosity=normal" \
             --logger "trx;LogFileName=xml-processing-tests.trx" \
-            --results-directory test-results \
-            || true
+            --results-directory test-results
 
       # Audio project has Platforms=x64 and RuntimeIdentifiers for linux/win/osx.
       # The job runs on ubuntu-latest, so linux-x64 is always the correct choice.
