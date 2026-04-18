@@ -863,3 +863,379 @@ pub extern "C" fn rs_eof_ts_free(h: *mut TsResultHandle) {
         unsafe { drop(Box::from_raw(h)) };
     }
 }
+
+// ─── XML Processing ───────────────────────────────────────────────────────────
+
+use rocksmith2014_xml_processing::{
+    checkers::{checker as xml_checker, show_lights_checker, vocals_checker},
+    improvers::{custom_events, eof_fixes, handshape_adjuster, improver, phrase_mover},
+    types::Issue,
+};
+
+/// Save an arrangement handle to an XML file.  Returns 0 on success, -1 on error.
+#[no_mangle]
+pub extern "C" fn rs_arrangement_save_xml(
+    h: *const ArrangementHandle,
+    path: *const c_char,
+) -> i32 {
+    if h.is_null() || path.is_null() {
+        return -1;
+    }
+    let path_str = unsafe { CStr::from_ptr(path) }.to_string_lossy();
+    match rocksmith2014_xml::write_file(&unsafe { &*h }.0, Path::new(path_str.as_ref())) {
+        Ok(()) => 0,
+        Err(_) => -1,
+    }
+}
+
+// ── Improver functions — all mutate the arrangement in place ──────────────────
+
+/// Apply all improvements to the arrangement.
+#[no_mangle]
+pub extern "C" fn rs_arrangement_apply_all(h: *mut ArrangementHandle) {
+    if h.is_null() {
+        return;
+    }
+    improver::apply_all_improvements(&mut unsafe { &mut *h }.0);
+}
+
+/// Apply the minimum set of improvements required for export.
+#[no_mangle]
+pub extern "C" fn rs_arrangement_apply_minimum(h: *mut ArrangementHandle) {
+    if h.is_null() {
+        return;
+    }
+    improver::apply_minimum_improvements(&mut unsafe { &mut *h }.0);
+}
+
+/// Validate phrase names (strip illegal characters).
+#[no_mangle]
+pub extern "C" fn rs_arrangement_validate_phrase_names(h: *mut ArrangementHandle) {
+    if h.is_null() {
+        return;
+    }
+    improver::validate_phrase_names(&mut unsafe { &mut *h }.0);
+}
+
+/// Add ignore flags to high-fret notes and chord notes.
+#[no_mangle]
+pub extern "C" fn rs_arrangement_add_ignores(h: *mut ArrangementHandle) {
+    if h.is_null() {
+        return;
+    }
+    improver::add_ignores(&mut unsafe { &mut *h }.0);
+}
+
+/// Fix link-next attributes on notes.
+#[no_mangle]
+pub extern "C" fn rs_arrangement_fix_link_nexts(h: *mut ArrangementHandle) {
+    if h.is_null() {
+        return;
+    }
+    improver::fix_link_nexts(&mut unsafe { &mut *h }.0);
+}
+
+/// Remove overlapping bend values from notes and chord notes.
+#[no_mangle]
+pub extern "C" fn rs_arrangement_remove_overlapping_bend_values(h: *mut ArrangementHandle) {
+    if h.is_null() {
+        return;
+    }
+    improver::remove_overlapping_bend_values(&mut unsafe { &mut *h }.0);
+}
+
+/// Remove muted notes from chords that also contain normal notes.
+#[no_mangle]
+pub extern "C" fn rs_arrangement_remove_muted_notes_from_chords(h: *mut ArrangementHandle) {
+    if h.is_null() {
+        return;
+    }
+    improver::remove_muted_notes_from_chords(&mut unsafe { &mut *h }.0);
+}
+
+/// Remove redundant anchors (identical fret and width to the previous anchor).
+#[no_mangle]
+pub extern "C" fn rs_arrangement_remove_redundant_anchors(h: *mut ArrangementHandle) {
+    if h.is_null() {
+        return;
+    }
+    improver::remove_redundant_anchors(&mut unsafe { &mut *h }.0);
+}
+
+/// Add crowd events (E3/E13/D3) if missing.
+#[no_mangle]
+pub extern "C" fn rs_arrangement_add_crowd_events(h: *mut ArrangementHandle) {
+    if h.is_null() {
+        return;
+    }
+    improver::add_crowd_events(&mut unsafe { &mut *h }.0);
+}
+
+/// Process chord template names (rename "min"→"m", strip suffixes).
+#[no_mangle]
+pub extern "C" fn rs_arrangement_process_chord_names(h: *mut ArrangementHandle) {
+    if h.is_null() {
+        return;
+    }
+    improver::process_chord_names(&mut unsafe { &mut *h }.0);
+}
+
+/// Remove beats that fall after the song length.
+#[no_mangle]
+pub extern "C" fn rs_arrangement_remove_extra_beats(h: *mut ArrangementHandle) {
+    if h.is_null() {
+        return;
+    }
+    improver::remove_extra_beats(&mut unsafe { &mut *h }.0);
+}
+
+/// Move anchors that are within 5ms of a note/chord to align exactly.
+#[no_mangle]
+pub extern "C" fn rs_arrangement_move_anchors(h: *mut ArrangementHandle) {
+    if h.is_null() {
+        return;
+    }
+    improver::move_anchors(&mut unsafe { &mut *h }.0);
+}
+
+/// Move phrase iterations with a "mover" prefix to the Nth note.
+#[no_mangle]
+pub extern "C" fn rs_arrangement_move_phrases(h: *mut ArrangementHandle) {
+    if h.is_null() {
+        return;
+    }
+    phrase_mover::improve(&mut unsafe { &mut *h }.0);
+}
+
+/// Process custom events (w3, removebeats, so).
+#[no_mangle]
+pub extern "C" fn rs_arrangement_process_custom_events(h: *mut ArrangementHandle) {
+    if h.is_null() {
+        return;
+    }
+    custom_events::improve(&mut unsafe { &mut *h }.0);
+}
+
+/// Lengthen handshapes that end with a chord.
+#[no_mangle]
+pub extern "C" fn rs_arrangement_lengthen_handshapes(h: *mut ArrangementHandle) {
+    if h.is_null() {
+        return;
+    }
+    handshape_adjuster::lengthen_handshapes(&mut unsafe { &mut *h }.0);
+}
+
+/// Shorten handshapes that are too close to the next handshape.
+#[no_mangle]
+pub extern "C" fn rs_arrangement_shorten_handshapes(h: *mut ArrangementHandle) {
+    if h.is_null() {
+        return;
+    }
+    handshape_adjuster::shorten_handshapes(&mut unsafe { &mut *h }.0);
+}
+
+/// Apply all EOF fixes (fixCrowdEvents, fixChordNotes, removeInvalidChordNoteLinkNexts,
+/// fixChordSlideHandshapes, fixPhraseStartAnchors).
+#[no_mangle]
+pub extern "C" fn rs_arrangement_eof_fix_all(h: *mut ArrangementHandle) {
+    if h.is_null() {
+        return;
+    }
+    let arr = &mut unsafe { &mut *h }.0;
+    eof_fixes::fix_crowd_events(arr);
+    eof_fixes::fix_chord_notes(arr);
+    eof_fixes::remove_invalid_chord_note_link_nexts(arr);
+    eof_fixes::fix_chord_slide_handshapes(arr);
+    eof_fixes::fix_phrase_start_anchors(arr);
+}
+
+/// Fix chord notes (add LinkNext to chord when a chord note has it, equalise sustains).
+#[no_mangle]
+pub extern "C" fn rs_arrangement_eof_fix_chord_notes(h: *mut ArrangementHandle) {
+    if h.is_null() {
+        return;
+    }
+    eof_fixes::fix_chord_notes(&mut unsafe { &mut *h }.0);
+}
+
+/// Ensure each phrase start has an anchor.
+#[no_mangle]
+pub extern "C" fn rs_arrangement_eof_fix_phrase_start_anchors(h: *mut ArrangementHandle) {
+    if h.is_null() {
+        return;
+    }
+    eof_fixes::fix_phrase_start_anchors(&mut unsafe { &mut *h }.0);
+}
+
+// ── Issue list handle ─────────────────────────────────────────────────────────
+
+/// An opaque list of issues returned by checker functions.
+pub struct IssueListHandle {
+    issues: Vec<Issue>,
+    /// Cached null-terminated C strings for issue codes.
+    code_cache: Vec<CString>,
+    /// Cached C strings for extra data (event code, lyric, char:bool), indexed to match `issues`.
+    data_cache: Vec<Option<CString>>,
+}
+
+impl IssueListHandle {
+    fn new(issues: Vec<Issue>) -> Self {
+        use rocksmith2014_xml_processing::types::IssueType;
+        let code_cache = issues
+            .iter()
+            .map(|iss| CString::new(iss.issue_type().code()).unwrap_or_default())
+            .collect();
+        let data_cache = issues
+            .iter()
+            .map(|iss| {
+                let extra: Option<String> = match iss.issue_type() {
+                    IssueType::EventBetweenIntroApplause(code) => Some(code.clone()),
+                    IssueType::LyricTooLong(lyric) => Some(lyric.clone()),
+                    IssueType::LyricWithInvalidChar {
+                        invalid_char,
+                        custom_font_used,
+                    } => Some(format!("{}:{}", invalid_char, custom_font_used)),
+                    _ => None,
+                };
+                extra.and_then(|s| CString::new(s).ok())
+            })
+            .collect();
+        IssueListHandle {
+            issues,
+            code_cache,
+            data_cache,
+        }
+    }
+}
+
+/// Number of issues in the list.  Returns 0 on null handle.
+#[no_mangle]
+pub extern "C" fn rs_issue_list_count(h: *const IssueListHandle) -> i32 {
+    if h.is_null() {
+        return 0;
+    }
+    unsafe { &*h }.issues.len() as i32
+}
+
+/// Issue code string (e.g. "I01") at `idx`.  The pointer is valid for the lifetime of the handle.
+/// Returns null on out-of-range or null handle.
+#[no_mangle]
+pub extern "C" fn rs_issue_list_code(h: *const IssueListHandle, idx: i32) -> *const c_char {
+    if h.is_null() || idx < 0 {
+        return std::ptr::null();
+    }
+    match unsafe { &*h }.code_cache.get(idx as usize) {
+        Some(cs) => cs.as_ptr(),
+        None => std::ptr::null(),
+    }
+}
+
+/// Time code (ms) of the issue at `idx`.  Returns -1 if the issue has no time code,
+/// or if the handle / index is invalid.
+#[no_mangle]
+pub extern "C" fn rs_issue_list_time(h: *const IssueListHandle, idx: i32) -> i32 {
+    if h.is_null() || idx < 0 {
+        return -1;
+    }
+    match unsafe { &*h }.issues.get(idx as usize) {
+        Some(iss) => iss.time_code().unwrap_or(-1),
+        None => -1,
+    }
+}
+
+/// Extra associated data for the issue at `idx` (e.g. event code, lyric, "char:bool").
+/// The pointer is valid for the lifetime of the handle.
+/// Returns null when there is no extra data or the index is invalid.
+#[no_mangle]
+pub extern "C" fn rs_issue_list_data(h: *const IssueListHandle, idx: i32) -> *const c_char {
+    if h.is_null() || idx < 0 {
+        return std::ptr::null();
+    }
+    match unsafe { &*h }.data_cache.get(idx as usize) {
+        Some(Some(cs)) => cs.as_ptr(),
+        _ => std::ptr::null(),
+    }
+}
+
+/// Free an issue list handle produced by a checker function.
+#[no_mangle]
+pub extern "C" fn rs_issue_list_free(h: *mut IssueListHandle) {
+    if !h.is_null() {
+        unsafe { drop(Box::from_raw(h)) };
+    }
+}
+
+// ── Checker functions ─────────────────────────────────────────────────────────
+
+/// Run all instrumental checks on the arrangement.
+/// Returns a new IssueListHandle; free with `rs_issue_list_free`.
+#[no_mangle]
+pub extern "C" fn rs_arrangement_check_instrumental(
+    h: *const ArrangementHandle,
+) -> *mut IssueListHandle {
+    if h.is_null() {
+        return Box::into_raw(Box::new(IssueListHandle::new(Vec::new())));
+    }
+    let issues = xml_checker::check_instrumental(&unsafe { &*h }.0);
+    Box::into_raw(Box::new(IssueListHandle::new(issues)))
+}
+
+/// Check show lights loaded from `path` for validity.
+/// Returns a new IssueListHandle; free with `rs_issue_list_free`.
+/// Returns an empty list on null/invalid path.
+#[no_mangle]
+pub extern "C" fn rs_showlights_check_file(path: *const c_char) -> *mut IssueListHandle {
+    if path.is_null() {
+        return Box::into_raw(Box::new(IssueListHandle::new(Vec::new())));
+    }
+    let path_str = unsafe { CStr::from_ptr(path) }.to_string_lossy();
+    let lights = match rocksmith2014_xml::show_light::load(Path::new(path_str.as_ref())) {
+        Ok(l) => l,
+        Err(_) => return Box::into_raw(Box::new(IssueListHandle::new(Vec::new()))),
+    };
+    let issues = match show_lights_checker::check(&lights) {
+        Some(t) => vec![Issue::General(t)],
+        None => Vec::new(),
+    };
+    Box::into_raw(Box::new(IssueListHandle::new(issues)))
+}
+
+/// Check vocals loaded from `path` using the default charset.
+/// Returns a new IssueListHandle; free with `rs_issue_list_free`.
+#[no_mangle]
+pub extern "C" fn rs_vocals_check_file(path: *const c_char) -> *mut IssueListHandle {
+    if path.is_null() {
+        return Box::into_raw(Box::new(IssueListHandle::new(Vec::new())));
+    }
+    let path_str = unsafe { CStr::from_ptr(path) }.to_string_lossy();
+    let vocals = match rocksmith2014_xml::vocal::load(Path::new(path_str.as_ref())) {
+        Ok(v) => v,
+        Err(_) => return Box::into_raw(Box::new(IssueListHandle::new(Vec::new()))),
+    };
+    let issues = vocals_checker::check(None, &vocals);
+    Box::into_raw(Box::new(IssueListHandle::new(issues)))
+}
+
+/// Check vocals loaded from `vocals_path` using a custom font from `glyphs_path`.
+/// Returns a new IssueListHandle; free with `rs_issue_list_free`.
+#[no_mangle]
+pub extern "C" fn rs_vocals_check_file_custom(
+    vocals_path: *const c_char,
+    glyphs_path: *const c_char,
+) -> *mut IssueListHandle {
+    if vocals_path.is_null() || glyphs_path.is_null() {
+        return Box::into_raw(Box::new(IssueListHandle::new(Vec::new())));
+    }
+    let vp = unsafe { CStr::from_ptr(vocals_path) }.to_string_lossy();
+    let gp = unsafe { CStr::from_ptr(glyphs_path) }.to_string_lossy();
+    let vocals = match rocksmith2014_xml::vocal::load(Path::new(vp.as_ref())) {
+        Ok(v) => v,
+        Err(_) => return Box::into_raw(Box::new(IssueListHandle::new(Vec::new()))),
+    };
+    let glyphs = match rocksmith2014_xml::GlyphDefinitions::load(Path::new(gp.as_ref())) {
+        Ok(g) => g,
+        Err(_) => return Box::into_raw(Box::new(IssueListHandle::new(Vec::new()))),
+    };
+    let issues = vocals_checker::check(Some(&glyphs), &vocals);
+    Box::into_raw(Box::new(IssueListHandle::new(issues)))
+}
