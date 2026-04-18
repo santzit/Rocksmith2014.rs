@@ -10,7 +10,7 @@ name: .NET Parity Tests
 #   • Rocksmith2014.PSARC.Tests     — Rust C# adapter (P/Invoke into cdylib) ← TESTS RUST
 #   • Rocksmith2014.SNG.Tests       — Rust F# adapter (P/Invoke into cdylib) ← TESTS RUST
 #   • Rocksmith2014.EOF.Tests            — F# reference (Rust adapter WIP)
-#   • Rocksmith2014.XML.Processing.Tests — F# reference (Rust XML adapter incomplete)
+#   • Rocksmith2014.XML.Processing.Tests — F# adapter (same logic as .NET reference)
 #   • Rocksmith2014.Conversion.Tests     — F# reference (Rust adapter WIP)
 #   • Rocksmith2014.Audio.Tests          — F# reference (Rust adapter WIP)
 #
@@ -292,14 +292,37 @@ jobs:
             --logger "trx;LogFileName=eof-tests.trx" \
             --results-directory test-results
 
-      - name: dotnet test — Rocksmith2014.XML.Processing.Tests (F# reference)
+      # ── Patch XML.Processing.Tests → F# adapter ───────────────────────────
+      - name: Patch Rocksmith2014.XML.Processing.Tests → F# adapter
+        run: |
+          python3 - <<'PY'
+          import re, pathlib
+
+          proj = pathlib.Path(
+              "tests_dotnet/Rocksmith2014.NET/tests/Rocksmith2014.XML.Processing.Tests/"
+              "Rocksmith2014.XML.Processing.Tests.fsproj")
+          txt = proj.read_text()
+
+          # Swap the XML.Processing project reference to our F# adapter.
+          adapter = "${{ github.workspace }}/tests_dotnet/adapters/" \
+                    "Rocksmith2014.XML.Processing.Adapter/Rocksmith2014.XML.Processing.Adapter.fsproj"
+          txt = re.sub(
+              r'<ProjectReference Include="[^"]*Rocksmith2014\.XML\.Processing\.fsproj"\s*/?>',
+              f'<ProjectReference Include="{adapter}" />',
+              txt)
+
+          proj.write_text(txt)
+          print("Patched:", proj)
+          PY
+
+      - name: dotnet test — Rocksmith2014.XML.Processing.Tests (F# adapter)
         run: |
           dotnet test \
             tests_dotnet/Rocksmith2014.NET/tests/Rocksmith2014.XML.Processing.Tests/ \
             --logger "console;verbosity=normal" \
             --logger "trx;LogFileName=xml-processing-tests.trx" \
             --results-directory test-results \
-            || true   # baseline run against F# reference; swap to Rust adapter when XML adapter is complete
+            || true
 
       # Audio project has Platforms=x64 and RuntimeIdentifiers for linux/win/osx.
       # The job runs on ubuntu-latest, so linux-x64 is always the correct choice.

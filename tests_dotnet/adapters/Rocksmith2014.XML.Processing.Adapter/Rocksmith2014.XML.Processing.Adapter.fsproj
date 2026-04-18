@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <AssemblyName>Rocksmith2014.XML.Processing</AssemblyName>
+    <RootNamespace>Rocksmith2014.XML.Processing</RootNamespace>
+    <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Types.fs" />
+    <Compile Include="Utils.fs" />
+    <Compile Include="Improvers/BasicFixes.fs" />
+    <Compile Include="Improvers/CrowdEventAdder.fs" />
+    <Compile Include="Improvers/ChordNameProcessor.fs" />
+    <Compile Include="Improvers/ExtraBeatRemover.fs" />
+    <Compile Include="Improvers/EOFFixes.fs" />
+    <Compile Include="Improvers/PhraseMover.fs" />
+    <Compile Include="Improvers/CustomEvents.fs" />
+    <Compile Include="Improvers/AnchorMover.fs" />
+    <Compile Include="Improvers/HandShapeAdjuster.fs" />
+    <Compile Include="Checkers/InstrumentalChecker.fs" />
+    <Compile Include="Checkers/VocalsChecker.fs" />
+    <Compile Include="Checkers/ShowLightsChecker.fs" />
+    <Compile Include="PhraseGenerator.fs" />
+    <Compile Include="ArrangementImprover.fs" />
+    <Compile Include="ArrangementChecker.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FSharp.Core" Version="8.0.401" />
+  </ItemGroup>
+
+  <!-- Original .NET FSharpExtensions (provides ResizeArray.tryFind etc.) -->
+  <ItemGroup>
+    <ProjectReference Include="../../Rocksmith2014.NET/src/Rocksmith2014.FSharpExtensions/Rocksmith2014.FSharpExtensions.fsproj" />
+  </ItemGroup>
+
+  <!-- Original .NET XML library (provides InstrumentalArrangement, Note, etc.) -->
+  <ItemGroup>
+    <ProjectReference Include="../../Rocksmith2014.NET/src/Rocksmith2014.XML/Rocksmith2014.XML.csproj" />
+  </ItemGroup>
+</Project>
