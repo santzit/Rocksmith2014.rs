@@ -16,6 +16,8 @@ A port of the [Rocksmith2014.NET](https://github.com/iminashi/Rocksmith2014.NET)
 | Audio | 17 | 21 | 21 | 0 | 0 |
 | Common | 38 | 38 | 38 | 0 | 0 |
 | Conversion | 74 | 74 | 73 | 1 | 0 |
+| DD | 33 | 33 | 33 | 0 | 0 |
+| DD Model | 0 | 5 | 5 | 0 | 0 |
 | DLCProject | 105 | 105 | 14 | 91 | 0 |
 | EOF | 4 | 5 | 5 | 0 | 0 |
 | FSharp Extensions | 15 | 33 | 33 | 0 | 0 |
@@ -37,6 +39,16 @@ Common types and utilities shared across the other crates, including platform de
 ### Conversion
 
 Converts between the XML arrangement format and the binary SNG format used by the game engine.
+
+### DD Model
+
+Decodes `MLModel.zip` archive metadata and exposes model input/output types (`ModelInput`/`ModelOutput`) for DD level-count prediction work. Includes ONNX runtime loading and prediction via `tract`.
+
+> The Rust crate now bundles:
+> - `rocksmith2014-dd-model/model/MLModel.zip`
+> - `rocksmith2014-dd-model/model/MLModel.onnx` (pre-converted)
+>
+> So local consumers do not need to convert the archive on every run.
 
 ### DLCProject
 

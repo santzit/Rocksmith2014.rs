@@ -1,0 +1,11 @@
+[package]
+name = "rocksmith2014-dd-model"
+version = "0.1.0"
+edition = "2021"
+description = "Rust DD model metadata and ML.NET archive decoding helpers"
+license = "MIT"
+
+[dependencies]
+thiserror = "2"
+tract-onnx = "0.21.11"
+zip = { version = "8.5.1", default-features = false, features = ["deflate"] }
